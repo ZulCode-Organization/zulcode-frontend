@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ZulCode</string>
+    <string name="title_activity_main">ZulCode</string>
+    <string name="package_name">com.zul.code</string>
+    <string name="custom_url_scheme">com.zul.code</string>
+</resources>

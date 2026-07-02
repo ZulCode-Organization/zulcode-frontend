@@ -5,7 +5,7 @@ import WelcomeHero from "@/components/blocks/welcome-hero";
 
 const buttonGroupData = { 
   labelPrimary: "COMEÇAR AGORA",
-  linkPrimary: "/onboarding/introduction",
+  linkPrimary: "/signup",
   labelSecond: "JÁ TENHO UMA CONTA",
   linkSecond: "/login"
 };

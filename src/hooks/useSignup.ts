@@ -52,7 +52,7 @@ export function useSignup() {
       if (typeof window !== "undefined" && (window as any).electron) {
         (window as any).electron.notifyAuthSuccess();
       } else {
-        router.push("/home");
+        router.push("/onboarding/introduction");
       }
     } catch {
       setError("Erro ao conectar com o servidor");

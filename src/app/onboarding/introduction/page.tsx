@@ -37,7 +37,7 @@ export default function IntroducaoPage() {
   if (result) {
     return (
       <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center">
-        <OnboardingSummary payload={result.payload} onContinue={() => router.push("/signup")} />
+        <OnboardingSummary payload={result.payload} onContinue={() => router.push("/home")} />
       </main>
     );
   }

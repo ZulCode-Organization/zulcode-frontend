@@ -28,7 +28,8 @@ export default function IntroducaoPage() {
 
   if (loading || !currentStep) {
     return (
-      <div className="flex min-h-dvh items-center justify-center">
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-3">
+        <span className="size-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
         <span className="text-sm text-muted-foreground">Carregando...</span>
       </div>
     );

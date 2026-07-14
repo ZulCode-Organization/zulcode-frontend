@@ -13,21 +13,31 @@ interface QuestionStepProps {
 export function QuestionStep({ question, title, selectedOptionId, onAnswer }: QuestionStepProps) {
   return (
     <div className="flex flex-col gap-6 px-4 pb-8 pt-2">
-      <h1 className="text-2xl font-extrabold leading-tight text-foreground">{title}</h1>
+      <h1 className="animate-fade-in-up text-2xl font-extrabold leading-tight text-foreground">
+        {title}
+      </h1>
 
       {question.subtitle && (
-        <p className="-mt-4 text-sm text-muted-foreground">{question.subtitle}</p>
+        <p className="-mt-4 animate-fade-in-up text-sm text-muted-foreground" style={{ animationDelay: "40ms" }}>
+          {question.subtitle}
+        </p>
       )}
 
       <div className="flex flex-col gap-3">
-        {question.options.map((option) => (
-          <OptionCard
+        {question.options.map((option, index) => (
+          <div
             key={option.id}
-            label={option.label}
-            emoji={option.emoji}
-            disabled={option.disabled}
-            onClick={() => onAnswer(option.id)}
-          />
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${index * 60}ms` }}
+          >
+            <OptionCard
+              label={option.label}
+              emoji={option.emoji}
+              disabled={option.disabled}
+              selected={selectedOptionId === option.id}
+              onClick={() => onAnswer(option.id)}
+            />
+          </div>
         ))}
       </div>
 

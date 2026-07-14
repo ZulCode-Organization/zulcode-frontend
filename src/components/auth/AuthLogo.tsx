@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 
 export function AuthLogo() {
@@ -15,16 +16,16 @@ export function AuthLogo() {
   const logo = resolvedTheme !== "dark" ? "/icon-only.svg" : "/icon-only-dark.svg";
 
   return (
-    <div className="flex flex-col items-center mb-10 gap-3">
-      <div className="w-16 h-16 relative flex items-center justify-center">
-        {mounted ? (
-          <Image src={logo} alt="Logo" width={64} height={64} className="object-contain rounded-2xl" />
-        ) : (
-          <div style={{ width: 64, height: 64 }} />
-        )}
-      </div>
-      <h1 className="text-2xl font-black tracking-tight">ZulCode</h1>
-      <p className="text-gray-500 text-sm text-center">Aprenda programação de forma gamificada</p>
-    </div>
+    <Link
+      href="/welcome"
+      className="absolute left-6 top-6 z-10 flex items-center gap-2 lg:left-10 lg:top-10"
+    >
+      {mounted ? (
+        <Image src={logo} alt="" width={32} height={32} className="rounded-lg" />
+      ) : (
+        <div style={{ width: 32, height: 32 }} />
+      )}
+      <span className="text-lg font-black tracking-tight text-foreground">ZulCode</span>
+    </Link>
   );
 }

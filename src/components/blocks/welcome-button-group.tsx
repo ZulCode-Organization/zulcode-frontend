@@ -12,15 +12,15 @@ interface ButtonGroupProps {
 
 export default function ButtonGroup({ data }: ButtonGroupProps) {
   return (
-    <div className="flex flex-col w-full gap-4">
+    <div className="flex w-full animate-fade-in-up flex-col gap-4" style={{ animationDelay: "160ms" }}>
       <Link href={data.linkPrimary} className="w-full">
-        <Button size="lg" className="w-full">
+        <Button size="lg" className="w-full uppercase tracking-wider">
           {data.labelPrimary}
         </Button>
       </Link>
-      
+
       <Link href={data.linkSecond} className="w-full">
-        <Button size="lg" variant="outline" className="w-full">
+        <Button size="lg" variant="outline" className="w-full uppercase tracking-wider">
           {data.labelSecond}
         </Button>
       </Link>

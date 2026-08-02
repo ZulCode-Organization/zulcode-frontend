@@ -18,6 +18,7 @@ export function useOnboarding() {
   const [questions, setQuestions] = useState<OnboardingQuestion[]>([]);
   const [languages, setLanguages] = useState<LanguageOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   const [languageId, setLanguageId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -29,14 +30,21 @@ export function useOnboarding() {
     response: OnboardingSubmissionResult;
   } | null>(null);
 
-  useEffect(() => {
+  const loadData = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
     Promise.all([getOnboardingQuestions(), getAvailableLanguages()])
       .then(([q, l]) => {
         setQuestions(q);
         setLanguages(l);
       })
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const steps: Step[] = useMemo(() => {
     const result: Step[] = [];
@@ -116,6 +124,8 @@ export function useOnboarding() {
 
   return {
     loading,
+    loadError,
+    retry: loadData,
     languages,
     steps,
     stepIndex,

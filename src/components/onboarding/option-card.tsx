@@ -21,11 +21,11 @@ export function OptionCard({ label, emoji, disabled, selected, onClick }: Option
       aria-pressed={selected}
       className={cn(
         "group relative flex w-full items-center gap-3 rounded-2xl border-2 bg-card px-4 py-4 text-left",
-        "text-base font-medium text-card-foreground transition-colors duration-150",
-        "hover:border-primary/50 hover:bg-primary/5",
+        "text-base font-medium text-card-foreground transition-all duration-150",
+        "hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm",
         "active:scale-[0.99]",
         "disabled:opacity-40 disabled:pointer-events-none",
-        selected ? "border-primary bg-primary/5" : "border-border"
+        selected ? "border-primary bg-primary/5 shadow-sm" : "border-border"
       )}
     >
       <span
@@ -45,7 +45,7 @@ export function OptionCard({ label, emoji, disabled, selected, onClick }: Option
       )}
 
       {selected && !disabled && (
-        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+        <span className="animate-check-pop flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
           <Check className="size-3.5" strokeWidth={3} />
         </span>
       )}

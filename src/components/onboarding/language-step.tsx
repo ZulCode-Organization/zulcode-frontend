@@ -11,12 +11,12 @@ interface LanguageStepProps {
 
 export function LanguageStep({ languages, onSelect }: LanguageStepProps) {
   return (
-    <div className="flex flex-col gap-6 px-4 pb-8 pt-2">
-      <h1 className="animate-fade-in-up text-2xl font-extrabold leading-tight text-foreground">
+    <div className="animate-slide-in-right flex flex-col gap-6 px-4 pb-8 pt-2 lg:px-0">
+      <h1 className="text-2xl font-extrabold leading-tight text-foreground lg:text-3xl">
         Qual linguagem você quer aprender primeiro?
       </h1>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         {languages.map((lang, index) => (
           <button
             key={lang.id}
@@ -24,7 +24,7 @@ export function LanguageStep({ languages, onSelect }: LanguageStepProps) {
             onClick={() => onSelect(lang.id)}
             className={cn(
               "group animate-fade-in-up flex flex-col items-center gap-3 rounded-2xl border-2 border-border bg-card px-4 py-6",
-              "transition-colors duration-150 hover:border-primary/50 hover:bg-primary/5",
+              "transition-all duration-150 hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm",
               "active:scale-[0.98]"
             )}
             style={{ animationDelay: `${index * 50}ms` }}

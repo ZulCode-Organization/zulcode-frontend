@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
+import { carregarUsuario, criarUsuarioNovo, salvarUsuario } from "@/lib/usuario-storage";
 
 export function useLogin() {
   const router = useRouter();
@@ -13,7 +15,7 @@ export function useLogin() {
     setLoading(true);
 
     try {
-      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/signin", {
+      const res = await fetchComTimeout(`${API_BASE_URL}/auth/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password: senha }),
@@ -29,6 +31,10 @@ export function useLogin() {
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("isNivelado", data.isNivelado ? "true" : "false");
 
+      if (!carregarUsuario()) {
+        salvarUsuario(criarUsuarioNovo(data.nome ?? data.name ?? email.split("@")[0], data.email ?? email));
+      }
+
       if (typeof window !== "undefined" && (window as any).electron) {
         (window as any).electron.notifyAuthSuccess();
       } else {
@@ -38,8 +44,12 @@ export function useLogin() {
           router.push("/onboarding/introduction");
         }
       }
-    } catch {
-      setError("Erro ao conectar com o servidor");
+    } catch (err) {
+      setError(
+        err instanceof DOMException && err.name === "AbortError"
+          ? "O servidor demorou para responder. Tente novamente."
+          : "Erro ao conectar com o servidor"
+      );
     } finally {
       setLoading(false);
     }

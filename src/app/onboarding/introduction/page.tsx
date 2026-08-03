@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useOnboarding } from "@/hooks/use-onboarding";
+import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { Button } from "@/components/ui/button";
 import { OnboardingProgress } from "@/components/onboarding/onboarding-progress";
 import { OnboardingShowcase } from "@/components/onboarding/onboarding-showcase";
@@ -10,6 +11,7 @@ import { LanguageStep } from "@/components/onboarding/language-step";
 import { OnboardingSummary } from "@/components/onboarding/onboarding-summary";
 
 export default function IntroducaoPage() {
+  useRequireAuth();
   const router = useRouter();
   const {
     loading,

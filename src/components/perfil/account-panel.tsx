@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Settings, Bell, Moon, LogOut, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Conquista } from "@/lib/types/usuario";
+import { limparUsuario } from "@/lib/usuario-storage";
 import { ConquistaIcon } from "./conquista-icon";
 
 const CONTA_ITEMS = [
@@ -22,6 +23,7 @@ export function AccountPanel({ destaques }: AccountPanelProps) {
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("isNivelado");
+    limparUsuario();
     router.replace("/welcome");
   };
 

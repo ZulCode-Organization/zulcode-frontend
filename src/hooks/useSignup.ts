@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
+import { criarUsuarioNovo, salvarUsuario } from "@/lib/usuario-storage";
 
 export function useSignup() {
   const router = useRouter();
@@ -21,7 +23,7 @@ export function useSignup() {
     setLoading(true);
 
     try {
-      const signupRes = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/signup", {
+      const signupRes = await fetchComTimeout(`${API_BASE_URL}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: nome, email, password: senha }),
@@ -34,7 +36,7 @@ export function useSignup() {
         return;
       }
 
-      const signinRes = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/signin", {
+      const signinRes = await fetchComTimeout(`${API_BASE_URL}/auth/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password: senha }),
@@ -48,14 +50,20 @@ export function useSignup() {
       }
 
       localStorage.setItem("accessToken", signinData.accessToken);
+      localStorage.setItem("isNivelado", "false");
+      salvarUsuario(criarUsuarioNovo(nome, email));
 
       if (typeof window !== "undefined" && (window as any).electron) {
         (window as any).electron.notifyAuthSuccess();
       } else {
         router.push("/onboarding/introduction");
       }
-    } catch {
-      setError("Erro ao conectar com o servidor");
+    } catch (err) {
+      setError(
+        err instanceof DOMException && err.name === "AbortError"
+          ? "O servidor demorou para responder. Tente novamente."
+          : "Erro ao conectar com o servidor"
+      );
     } finally {
       setLoading(false);
     }

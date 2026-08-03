@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Hammer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { limparUsuario } from "@/lib/usuario-storage";
 
 interface ComingSoonProps {
   titulo?: string;
@@ -18,6 +19,7 @@ export function ComingSoon({
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("isNivelado");
+    limparUsuario();
     router.replace("/welcome");
   };
 

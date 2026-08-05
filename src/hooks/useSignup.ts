@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
-import { criarUsuarioNovo, salvarUsuario } from "@/lib/usuario-storage";
 
 export function useSignup() {
   const router = useRouter();
@@ -49,9 +48,9 @@ export function useSignup() {
         return;
       }
 
+      // Só o token de sessão fica salvo localmente — o perfil (nome, XP,
+      // cursos etc.) é sempre buscado na API, nunca cacheado aqui.
       localStorage.setItem("accessToken", signinData.accessToken);
-      localStorage.setItem("isNivelado", "false");
-      salvarUsuario(criarUsuarioNovo(nome, email));
 
       if (typeof window !== "undefined" && (window as any).electron) {
         (window as any).electron.notifyAuthSuccess();

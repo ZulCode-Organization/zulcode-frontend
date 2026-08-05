@@ -1,20 +1,50 @@
 "use client";
 
+import { Award, Flame, Target, Zap } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
-import { useUsuario } from "@/hooks/use-usuario";
 import { AppShell } from "@/components/app-shell/app-shell";
-import { ComingSoon } from "@/components/shared/coming-soon";
+import { FeaturePreviewItem } from "@/components/shared/feature-preview-item";
+import { MissionBanner } from "@/components/desafio/mission-banner";
 
 export default function DesafioDiarioPage() {
   useRequireAuth();
-  const usuario = useUsuario();
 
   return (
-    <AppShell usuario={usuario}>
-      <ComingSoon
-        titulo="Desafio diário a caminho"
-        descricao="Em breve você vai poder encarar um novo desafio por dia e ganhar XP extra."
-      />
+    <AppShell>
+      <div className="flex flex-col gap-6">
+        <MissionBanner />
+
+        <div className="flex flex-col gap-3">
+          <h2 className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
+            Desafios do dia
+          </h2>
+
+          <FeaturePreviewItem
+            icon={Zap}
+            iconClassName="bg-amber-500/10 text-amber-500"
+            titulo="Ganhe XP hoje"
+            descricao="Some pontos de experiência completando lições."
+          />
+          <FeaturePreviewItem
+            icon={Target}
+            iconClassName="bg-primary/10 text-primary"
+            titulo="Complete uma lição sem errar"
+            descricao="Acerte todos os exercícios na primeira tentativa."
+          />
+          <FeaturePreviewItem
+            icon={Flame}
+            iconClassName="bg-orange-500/10 text-orange-500"
+            titulo="Mantenha sua sequência"
+            descricao="Pratique hoje pra não perder sua ofensiva."
+          />
+          <FeaturePreviewItem
+            icon={Award}
+            iconClassName="bg-violet-500/10 text-violet-500"
+            titulo="Recompensa do dia"
+            descricao="Complete os desafios de hoje pra desbloquear."
+          />
+        </div>
+      </div>
     </AppShell>
   );
 }

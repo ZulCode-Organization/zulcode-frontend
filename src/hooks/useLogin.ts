@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
-import { carregarUsuario, criarUsuarioNovo, salvarUsuario } from "@/lib/usuario-storage";
 
 export function useLogin() {
   const router = useRouter();
@@ -28,12 +27,10 @@ export function useLogin() {
         return;
       }
 
+      // Só o token de sessão fica salvo localmente. Nome, XP, streak, cursos
+      // etc. são sempre buscados na API (ver hooks/use-perfil.tsx) — nunca
+      // cacheados aqui, pra não ficarem desatualizados ou "fake".
       localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("isNivelado", data.isNivelado ? "true" : "false");
-
-      if (!carregarUsuario()) {
-        salvarUsuario(criarUsuarioNovo(data.nome ?? data.name ?? email.split("@")[0], data.email ?? email));
-      }
 
       if (typeof window !== "undefined" && (window as any).electron) {
         (window as any).electron.notifyAuthSuccess();

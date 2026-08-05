@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
       suppressHydrationWarning
     >
-      <body className="w-dvw h-dvh">
+      <body className="w-dvw h-dvh overflow-x-hidden">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

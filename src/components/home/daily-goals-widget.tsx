@@ -1,31 +1,20 @@
-import { Progress } from "@/components/ui/progress";
-import { MetaDiaria } from "@/data/painel-lateral";
+import Link from "next/link";
+import { Target } from "lucide-react";
 
-interface DailyGoalsWidgetProps {
-  metas: MetaDiaria[];
-}
-
-export function DailyGoalsWidget({ metas }: DailyGoalsWidgetProps) {
+export function DailyGoalsWidget() {
   return (
-    <div className="animate-fade-in-up rounded-2xl border border-border bg-card p-5" style={{ animationDelay: "60ms" }}>
-      <div className="mb-4 flex items-center justify-between">
+    <Link
+      href="/metas"
+      className="animate-fade-in-up flex items-center gap-3 rounded-2xl border border-border bg-card p-5 transition-colors duration-150 hover:border-primary/40"
+      style={{ animationDelay: "60ms" }}
+    >
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <Target className="size-4.5" />
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col">
         <h3 className="text-sm font-extrabold text-foreground">Metas Diárias</h3>
-        <span className="text-xs font-semibold text-primary">Ver todas</span>
+        <p className="text-xs text-muted-foreground">Em breve, acompanhe suas metas do dia por aqui.</p>
       </div>
-
-      <div className="flex flex-col gap-4">
-        {metas.map((meta) => (
-          <div key={meta.id} className="flex flex-col gap-1.5">
-            <div className="flex items-start justify-between gap-3">
-              <p className="text-sm text-foreground">{meta.titulo}</p>
-              <span className="shrink-0 text-xs font-semibold text-muted-foreground">
-                {meta.atual}/{meta.meta}
-              </span>
-            </div>
-            <Progress value={(meta.atual / meta.meta) * 100} className="h-1.5" />
-          </div>
-        ))}
-      </div>
-    </div>
+    </Link>
   );
 }

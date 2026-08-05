@@ -1,16 +1,16 @@
-import { Flame, Zap, Trophy, Star } from "lucide-react";
-import { DadosUsuario } from "@/lib/types/usuario";
+import { Flame, Zap, TrendingUp, Star } from "lucide-react";
+import { PerfilUsuario } from "@/lib/types/perfil";
 
 interface StatsGridProps {
-  usuario: DadosUsuario;
+  perfil: PerfilUsuario;
 }
 
-export function StatsGrid({ usuario }: StatsGridProps) {
+export function StatsGrid({ perfil }: StatsGridProps) {
   const stats = [
-    { id: "streak", icon: Flame, valor: usuario.streakDias, label: "Dias seguidos" },
-    { id: "xp", icon: Zap, valor: usuario.xpTotal.toLocaleString("pt-BR"), label: "XP Total" },
-    { id: "desafios", icon: Trophy, valor: usuario.desafiosCompletos, label: "Desafios" },
-    { id: "nivel", icon: Star, valor: usuario.nivel, label: "Nível" },
+    { id: "streak", icon: Flame, valor: perfil.streakAtual, label: "Dias seguidos" },
+    { id: "xp", icon: Zap, valor: perfil.xp.toLocaleString("pt-BR"), label: "XP Total" },
+    { id: "recorde", icon: TrendingUp, valor: perfil.streakRecorde, label: "Maior sequência" },
+    { id: "nivel", icon: Star, valor: perfil.nivel, label: "Nível" },
   ];
 
   return (

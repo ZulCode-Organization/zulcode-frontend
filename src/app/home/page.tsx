@@ -1,29 +1,24 @@
 "use client";
 
 import { useRequireAuth } from "@/hooks/useAuthGuard";
-import { useUsuario } from "@/hooks/use-usuario";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { UnitBanner } from "@/components/home/unit-banner";
 import { LessonTrail } from "@/components/home/lesson-trail";
+import { StreakWidget } from "@/components/home/streak-widget";
 import { LeaderboardWidget } from "@/components/home/leaderboard-widget";
 import { DailyGoalsWidget } from "@/components/home/daily-goals-widget";
 import { trilhaAtual } from "@/data/trilha";
-import { metasDiarias, tabelaLideresBloqueio } from "@/data/painel-lateral";
 
 export default function HomePage() {
   useRequireAuth();
-  const usuario = useUsuario();
 
   return (
     <AppShell
-      usuario={usuario}
       rightPanel={
         <>
-          <LeaderboardWidget
-            xpAtual={tabelaLideresBloqueio.xpAtual}
-            xpNecessario={tabelaLideresBloqueio.xpNecessario}
-          />
-          <DailyGoalsWidget metas={metasDiarias} />
+          <StreakWidget />
+          <LeaderboardWidget />
+          <DailyGoalsWidget />
         </>
       }
     >

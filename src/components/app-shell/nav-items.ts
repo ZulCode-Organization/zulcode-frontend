@@ -1,4 +1,4 @@
-import { Home, Zap, Target, Trophy, ShoppingBag, User, MoreVertical, type LucideIcon } from "lucide-react";
+import { Home, Zap, Target, Trophy, ShoppingBag, User, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   id: string;
@@ -14,7 +14,6 @@ export const sidebarNavItems: NavItem[] = [
   { id: "lideres", label: "Tabela de Líderes", href: "/tabela-lideres", icon: Trophy },
   { id: "loja", label: "Loja", href: "/loja", icon: ShoppingBag },
   { id: "perfil", label: "Perfil", href: "/perfil", icon: User },
-  { id: "mais", label: "Mais", icon: MoreVertical },
 ];
 
 export const bottomNavItems: NavItem[] = [

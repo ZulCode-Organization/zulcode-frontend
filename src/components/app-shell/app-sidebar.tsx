@@ -25,7 +25,12 @@ export function AppSidebar({ perfil, loading }: AppSidebarProps) {
   useEffect(() => setMounted(true), []);
 
   const logo = resolvedTheme !== "dark" ? "/icon-only.svg" : "/icon-only-dark.svg";
-  const progresso = perfil ? Math.round((perfil.xpNivelAtual / perfil.xpProximoNivel) * 100) : 0;
+  const progresso =
+    perfil && perfil.xpNecessarioNivel !== null
+      ? Math.round((perfil.xpNivelAtual / perfil.xpNecessarioNivel) * 100)
+      : perfil
+        ? 100 // nível máximo
+        : 0;
 
   return (
     <aside className="hidden h-dvh w-64 shrink-0 flex-col overflow-y-auto border-r border-border/60 bg-gradient-to-b from-card/60 to-card/20 px-4 py-6 lg:flex">

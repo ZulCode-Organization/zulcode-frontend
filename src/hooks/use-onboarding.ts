@@ -35,6 +35,12 @@ export function useOnboarding() {
     setLoadError(false);
     Promise.all([getOnboardingQuestions(), getAvailableLanguages()])
       .then(([q, l]) => {
+        // Resposta 200 com array vazio não é erro de rede, mas sem perguntas
+        // não há o que exibir — trata como falha pra não travar no loading.
+        if (q.length === 0) {
+          setLoadError(true);
+          return;
+        }
         setQuestions(q);
         setLanguages(l);
       })

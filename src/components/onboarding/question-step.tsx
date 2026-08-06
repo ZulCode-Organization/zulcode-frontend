@@ -30,7 +30,7 @@ export function QuestionStep({ question, title, selectedOptionId, onAnswer }: Qu
           >
             <OptionCard
               label={option.label}
-              emoji={option.emoji}
+              optionId={option.id}
               disabled={option.disabled}
               selected={selectedOptionId === option.id}
               onClick={() => onAnswer(option.id)}

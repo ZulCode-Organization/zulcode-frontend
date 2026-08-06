@@ -2,9 +2,8 @@
 
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
+import { calcularProgressoNivel } from "@/lib/leveling";
 import { CursoProgresso, PerfilUsuario } from "@/lib/types/perfil";
-
-const XP_POR_NIVEL = 500;
 
 function gerarIniciais(nome: string): string {
   const iniciais = nome
@@ -106,14 +105,19 @@ function usePerfilData(): PerfilState {
       buscarCursos(token),
     ])
       .then(([usuario, cursosData]) => {
+        // nivel/nivelLabel/xpProximoNivel vêm prontos da API — só a barra de
+        // progresso dentro do nível é calculada aqui (ver lib/leveling.ts).
+        const progresso = calcularProgressoNivel(usuario.xp, usuario.nivel);
         setPerfil({
           nome: usuario.name,
           email: usuario.email,
           iniciais: gerarIniciais(usuario.name),
           xp: usuario.xp,
-          nivel: Math.floor(usuario.xp / XP_POR_NIVEL) + 1,
-          xpNivelAtual: usuario.xp % XP_POR_NIVEL,
-          xpProximoNivel: XP_POR_NIVEL,
+          nivel: usuario.nivel,
+          nivelLabel: usuario.nivelLabel,
+          xpNivelAtual: progresso.xpNivelAtual,
+          xpNecessarioNivel: progresso.xpNecessarioNivel,
+          xpProximoNivel: usuario.xpProximoNivel,
           streakAtual: usuario.currentStreak,
           streakRecorde: usuario.longestStreak,
         });

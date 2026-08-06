@@ -12,5 +12,8 @@ export const trilhaAtual: UnidadeTrilha = {
     { id: "licao_3", titulo: "Interação", subtitulo: "Links e formulários", xp: 20, estado: "bloqueada" },
     { id: "licao_4", titulo: "Semântica", subtitulo: "Tags semânticas", xp: 25, estado: "bloqueada" },
     { id: "licao_5", titulo: "Projeto Final", subtitulo: "Construa uma página", xp: 30, estado: "bloqueada" },
+    { id: "licao_6", titulo: "Formulários", subtitulo: "Inputs e validação", xp: 25, estado: "bloqueada" },
+    { id: "licao_7", titulo: "Acessibilidade", subtitulo: "HTML que todo mundo usa", xp: 20, estado: "bloqueada" },
+    { id: "licao_8", titulo: "Revisão", subtitulo: "Feche a unidade", xp: 35, estado: "bloqueada" },
   ],
 };

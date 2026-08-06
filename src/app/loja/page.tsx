@@ -29,12 +29,14 @@ function LojaContent() {
           iconClassName="bg-rose-500/10 text-rose-500"
           titulo="Recuperar vidas"
           descricao="Recupere todas as suas vidas pra errar menos nas lições."
+          status="Chegando"
         />
         <FeaturePreviewItem
           icon={InfinityIcon}
           iconClassName="bg-sky-500/10 text-sky-500"
           titulo="Vidas ilimitadas"
           descricao="Nunca fique sem vidas enquanto pratica."
+          status="No radar"
         />
       </div>
 
@@ -45,12 +47,14 @@ function LojaContent() {
           iconClassName="bg-primary/10 text-primary"
           titulo="Congelar sequência"
           descricao="Mantenha sua sequência intacta mesmo se faltar um dia."
+          status="Em construção"
         />
         <FeaturePreviewItem
           icon={Zap}
           iconClassName="bg-amber-500/10 text-amber-500"
           titulo="XP em dobro"
           descricao="Ganhe o dobro de XP por um tempo limitado."
+          status="Testando"
         />
       </div>
     </div>

@@ -190,6 +190,36 @@
       transform: scale(1);
     }
   }
+  @keyframes shake {
+    10%,
+    90% {
+      transform: translateX(-1px);
+    }
+    20%,
+    80% {
+      transform: translateX(2px);
+    }
+    30%,
+    50%,
+    70% {
+      transform: translateX(-4px);
+    }
+    40%,
+    60% {
+      transform: translateX(4px);
+    }
+  }
+  @keyframes pulse-ring {
+    0% {
+      box-shadow: 0 0 0 0 rgba(24, 146, 255, 0.45);
+    }
+    70% {
+      box-shadow: 0 0 0 14px rgba(24, 146, 255, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(24, 146, 255, 0);
+    }
+  }
   .animate-fade-in-up {
     animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
@@ -207,5 +237,11 @@
   }
   .animate-check-pop {
     animation: check-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .animate-shake {
+    animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+  .animate-pulse-ring {
+    animation: pulse-ring 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 }

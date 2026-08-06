@@ -6,13 +6,13 @@ import { OptionIcon } from "./option-icon";
 
 interface OptionCardProps {
   label: string;
-  emoji?: string;
+  optionId: string;
   disabled?: boolean;
   selected?: boolean;
   onClick: () => void;
 }
 
-export function OptionCard({ label, emoji, disabled, selected, onClick }: OptionCardProps) {
+export function OptionCard({ label, optionId, disabled, selected, onClick }: OptionCardProps) {
   return (
     <button
       type="button"
@@ -35,7 +35,7 @@ export function OptionCard({ label, emoji, disabled, selected, onClick }: Option
           selected && "bg-primary/15 text-primary"
         )}
       >
-        <OptionIcon emoji={emoji} className="size-5" />
+        <OptionIcon optionId={optionId} className="size-5" />
       </span>
 
       <span className="flex-1">{label}</span>

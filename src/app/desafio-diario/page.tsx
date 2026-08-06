@@ -24,24 +24,28 @@ export default function DesafioDiarioPage() {
             iconClassName="bg-amber-500/10 text-amber-500"
             titulo="Ganhe XP hoje"
             descricao="Some pontos de experiência completando lições."
+            status="Chegando"
           />
           <FeaturePreviewItem
             icon={Target}
             iconClassName="bg-primary/10 text-primary"
             titulo="Complete uma lição sem errar"
             descricao="Acerte todos os exercícios na primeira tentativa."
+            status="No desenho"
           />
           <FeaturePreviewItem
             icon={Flame}
             iconClassName="bg-orange-500/10 text-orange-500"
             titulo="Mantenha sua sequência"
             descricao="Pratique hoje pra não perder sua ofensiva."
+            status="Testando"
           />
           <FeaturePreviewItem
             icon={Award}
             iconClassName="bg-violet-500/10 text-violet-500"
             titulo="Recompensa do dia"
             descricao="Complete os desafios de hoje pra desbloquear."
+            status="Em breve"
           />
         </div>
       </div>

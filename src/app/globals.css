@@ -1,0 +1,290 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.55);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.35);
+  --radius-2xl: calc(var(--radius) * 1.7);
+  --radius-3xl: calc(var(--radius) * 2.1);
+  --radius-4xl: calc(var(--radius) * 2.5);
+}
+
+:root {
+  --background: #f5f8fc;
+  --foreground: #0f1115;
+  --card: #ffffff;
+  --card-foreground: #0f1115;
+  --popover: #ffffff;
+  --popover-foreground: #0f1115;
+  --primary: #1892ff;
+  --primary-foreground: #ffffff;
+  --secondary: #eaf0f9;
+  --secondary-foreground: #151a20;
+  --muted: #eaf0f9;
+  --muted-foreground: #62707f;
+  --accent: #e3f0ff;
+  --accent-foreground: #0a63b8;
+  --destructive: #dc2626;
+  --border: #e1e8f0;
+  --input: #e1e8f0;
+  --ring: #1892ff;
+  --chart-1: #1892ff;
+  --chart-2: #0a63b8;
+  --chart-3: #4cabff;
+  --chart-4: #0f4c86;
+  --chart-5: #79c4ff;
+  --radius: 1rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f1115;
+  --sidebar-primary: #1892ff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eaf0f9;
+  --sidebar-accent-foreground: #151a20;
+  --sidebar-border: #e1e8f0;
+  --sidebar-ring: #1892ff;
+}
+
+.dark {
+  --background: #0f1115;
+  --foreground: #f3f6fa;
+  --card: #151a20;
+  --card-foreground: #f3f6fa;
+  --popover: #151a20;
+  --popover-foreground: #f3f6fa;
+  --primary: #1892ff;
+  --primary-foreground: #ffffff;
+  --secondary: #1b212a;
+  --secondary-foreground: #f3f6fa;
+  --muted: #1b212a;
+  --muted-foreground: #8b96a5;
+  --accent: #1b2a3d;
+  --accent-foreground: #6db8ff;
+  --destructive: #f0473f;
+  --border: #232a33;
+  --input: #1b212a;
+  --ring: #1892ff;
+  --chart-1: #1892ff;
+  --chart-2: #4cabff;
+  --chart-3: #79c4ff;
+  --chart-4: #0a63b8;
+  --chart-5: #0f4c86;
+  --sidebar: #151a20;
+  --sidebar-foreground: #f3f6fa;
+  --sidebar-primary: #1892ff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1b212a;
+  --sidebar-accent-foreground: #f3f6fa;
+  --sidebar-border: #232a33;
+  --sidebar-ring: #1892ff;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+    /* Levanta a base de todo o app (o rem escalado por Tailwind carrega
+       paddings, ícones e texto junto) — os elementos com px fixo (sidebar,
+       trilha, painel direito) recebem um aumento à parte em cada componente. */
+    font-size: 17px;
+  }
+}
+
+@layer utilities {
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes slide-out-left {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-24px);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  @keyframes check-pop {
+    0% {
+      transform: scale(0.5);
+    }
+    60% {
+      transform: scale(1.15);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes shake {
+    10%,
+    90% {
+      transform: translateX(-1px);
+    }
+    20%,
+    80% {
+      transform: translateX(2px);
+    }
+    30%,
+    50%,
+    70% {
+      transform: translateX(-4px);
+    }
+    40%,
+    60% {
+      transform: translateX(4px);
+    }
+  }
+  @keyframes pulse-ring {
+    0% {
+      box-shadow: 0 0 0 0 rgba(24, 146, 255, 0.45);
+    }
+    70% {
+      box-shadow: 0 0 0 14px rgba(24, 146, 255, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(24, 146, 255, 0);
+    }
+  }
+  .animate-fade-in-up {
+    animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .animate-pop-in {
+    animation: pop-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .animate-slide-in-right {
+    animation: slide-in-right 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .animate-slide-out-left {
+    animation: slide-out-left 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+  .animate-check-pop {
+    animation: check-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .animate-shake {
+    animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+  .animate-pulse-ring {
+    animation: pulse-ring 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Redesign: utilitários estruturais.
+   Só forma (raio, sombra, profundidade) — nenhuma cor de marca é definida
+   aqui, tudo continua vindo dos tokens --primary/--card/--border acima.
+   --------------------------------------------------------------------------- */
+@layer utilities {
+  /* Botão "chapado" estilo Duolingo: a sombra sólida embaixo some no :active,
+     dando a sensação de que a peça afunda de verdade em vez de só escurecer. */
+  .zc-press {
+    position: relative;
+    top: 0;
+    transition: top 0.08s ease, box-shadow 0.08s ease;
+  }
+  .zc-press-shadow {
+    box-shadow: 0 4px 0 var(--zc-press-color, rgba(0, 0, 0, 0.18));
+  }
+  .zc-press:active {
+    top: 4px;
+    box-shadow: 0 0 0 var(--zc-press-color, rgba(0, 0, 0, 0.18));
+  }
+
+  /* Placeholder tracejado dos mascotes que ainda não foram desenhados. */
+  .zc-hatch {
+    background: repeating-linear-gradient(
+      135deg,
+      var(--muted),
+      var(--muted) 7px,
+      var(--card) 7px,
+      var(--card) 14px
+    );
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .zc-press {
+      transition: none;
+    }
+  }
+}

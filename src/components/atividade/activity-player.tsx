@@ -77,13 +77,18 @@ function MoldeAtividade({ progresso, onSair, children, rodape }: MoldeAtividadeP
 }
 
 function textoRespostaCerta(pergunta: Pergunta): string {
-  if (pergunta.tipo === "alternativa" || pergunta.tipo === "logica") {
-    return pergunta.alternativas.find((a) => a.id === pergunta.respostaCorretaId)?.texto ?? "";
+  // switch (em vez de if/else) porque o discriminante "tipo" da
+  // PerguntaAlternativa é ele mesmo uma união ("alternativa" | "logica") —
+  // o TypeScript só estreita esse caso de forma confiável com switch/case.
+  switch (pergunta.tipo) {
+    case "alternativa":
+    case "logica":
+      return pergunta.alternativas.find((a) => a.id === pergunta.respostaCorretaId)?.texto ?? "";
+    case "completar":
+      return pergunta.respostaCorreta;
+    case "codigo":
+      return pergunta.resultadoEsperado;
   }
-  if (pergunta.tipo === "completar") {
-    return pergunta.respostaCorreta;
-  }
-  return pergunta.resultadoEsperado;
 }
 
 /**

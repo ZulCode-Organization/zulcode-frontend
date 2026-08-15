@@ -126,10 +126,6 @@
   }
   html {
     @apply font-sans;
-    /* Levanta a base de todo o app (o rem escalado por Tailwind carrega
-       paddings, ícones e texto junto) — os elementos com px fixo (sidebar,
-       trilha, painel direito) recebem um aumento à parte em cada componente. */
-    font-size: 17px;
   }
 }
 
@@ -280,6 +276,16 @@
       var(--card) 7px,
       var(--card) 14px
     );
+  }
+
+  /* Some com a trilha visual da barra de rolagem sem tirar o scroll de
+     verdade (roda do mouse, touch, teclado continuam funcionando). */
+  .zc-scroll-hidden {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Edge legado */
+  }
+  .zc-scroll-hidden::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Edge novo */
   }
 
   @media (prefers-reduced-motion: reduce) {

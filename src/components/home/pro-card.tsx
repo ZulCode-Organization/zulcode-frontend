@@ -2,7 +2,7 @@ import Link from "next/link";
 
 /**
  * Card PRO do painel direito (formato do redesign), levando pra Loja.
- * Paleta roxa própria (violet→blue), separada do --primary azul do resto do
+ * Roxo sólido próprio (violet-600), separado do --primary azul do resto do
  * app — é assim que o card se destaca como "premium" em vez de se misturar
  * com qualquer outro botão azul da tela.
  */
@@ -14,7 +14,7 @@ export function ProCard() {
     >
       <div className="flex items-start gap-4">
         <div className="min-w-0 flex-1">
-          <span className="inline-block rounded-md bg-gradient-to-r from-violet-600 to-blue-600 px-2.5 py-1 text-[0.75rem] font-black uppercase tracking-[0.12em] text-white">
+          <span className="inline-block rounded-md bg-violet-600 px-2.5 py-1 text-[0.75rem] font-black uppercase tracking-[0.12em] text-white">
             Pro
           </span>
           <h3 className="mt-2.5 text-base font-black text-foreground">
@@ -31,7 +31,7 @@ export function ProCard() {
       </div>
 
       <span
-        className="zc-press zc-press-shadow mt-4 block rounded-[13px] bg-gradient-to-r from-violet-600 to-blue-600 py-4 text-center text-[0.82rem] font-black uppercase tracking-[0.06em] text-white"
+        className="zc-press zc-press-shadow mt-4 block rounded-[13px] bg-violet-600 py-4 text-center text-[0.82rem] font-black uppercase tracking-[0.06em] text-white"
         style={{ ["--zc-press-color" as string]: "rgba(0,0,0,0.32)" }}
       >
         Ver o que vem por aí

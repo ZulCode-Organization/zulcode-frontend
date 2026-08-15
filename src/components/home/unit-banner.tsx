@@ -1,19 +1,29 @@
 import { Menu } from "lucide-react";
 import { UnidadeTrilha } from "@/lib/types/trilha";
+import { CorUnidade } from "@/data/trilha";
+import { cn } from "@/lib/utils";
 
 interface UnitBannerProps {
   unidade: UnidadeTrilha;
+  /** Cor da unidade ativa — o cabeçalho troca de cor junto com o nome
+   * conforme a trilha rola e entra em cada unidade nova. */
+  cor: CorUnidade;
 }
 
-export function UnitBanner({ unidade }: UnitBannerProps) {
+export function UnitBanner({ unidade, cor }: UnitBannerProps) {
   const total = unidade.licoes.length;
   const concluidas = unidade.licoes.filter((l) => l.estado === "concluida").length;
 
   return (
     // top-[72px] deixa o banner logo abaixo da barra de status, que é sticky em
     // top-0 — assim os dois empilham em vez de um passar por cima do outro.
+    // A transição de cor/texto é suave (duration-300) pra não trocar num piscar.
     <div
-      className="animate-fade-in-up sticky top-[72px] z-10 rounded-3xl bg-primary px-7 py-5 text-primary-foreground shadow-lg shadow-primary/20"
+      className={cn(
+        "animate-fade-in-up sticky top-[72px] z-10 rounded-3xl px-7 py-5 text-white shadow-lg transition-colors duration-300",
+        cor.bg,
+        cor.sombra
+      )}
       style={{ ["--zc-press-color" as string]: "rgba(0,0,0,0.18)" }}
     >
       <div className="flex flex-wrap items-center gap-4">
@@ -36,7 +46,7 @@ export function UnitBanner({ unidade }: UnitBannerProps) {
       <div className="mt-3.5 flex items-center gap-3">
         <div className="h-2 flex-1 overflow-hidden rounded-md bg-black/20">
           <div
-            className="h-full rounded-md bg-primary-foreground transition-[width] duration-300"
+            className="h-full rounded-md bg-white transition-[width] duration-300"
             style={{ width: `${Math.round((concluidas / total) * 100)}%` }}
           />
         </div>

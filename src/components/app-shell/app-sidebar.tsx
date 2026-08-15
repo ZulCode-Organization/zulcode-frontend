@@ -32,7 +32,7 @@ export function AppSidebar({ perfil, loading }: AppSidebarProps) {
         : 0;
 
   return (
-    <aside className="hidden h-dvh w-[288px] shrink-0 flex-col overflow-y-auto border-r border-border bg-card px-5 py-7 lg:flex">
+    <aside className="zc-scroll-hidden hidden h-dvh w-[288px] shrink-0 flex-col overflow-y-auto border-r border-border bg-card px-5 py-7 lg:flex">
       <Link href="/home" className="flex items-center gap-2.5 px-1 pb-2">
         {mounted ? (
           <Image src={logo} alt="" width={40} height={40} className="rounded-xl" />

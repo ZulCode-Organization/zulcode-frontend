@@ -1,8 +1,7 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
-import { useTrilha } from "@/hooks/use-trilha";
+import { useJornada } from "@/hooks/use-jornada";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { LessonTrail } from "@/components/home/lesson-trail";
 import { ProCard } from "@/components/home/pro-card";
@@ -10,9 +9,10 @@ import { LeaderboardWidget } from "@/components/home/leaderboard-widget";
 import { DailyGoalsWidget } from "@/components/home/daily-goals-widget";
 import { SideFooter } from "@/components/shared/side-footer";
 
-/** Esqueleto enquanto a trilha de verdade (GET /languages/javascript/track)
- * ainda não voltou — mesmo padrão de "pulso" usado no cartão de perfil da
- * sidebar. */
+/** Esqueleto só no primeiro carregamento, enquanto confirma o estado da
+ * lição conectada ao backend — mesmo padrão de "pulso" usado no cartão de
+ * perfil da sidebar. Depois de cacheado (useTrilha), isso não aparece mais
+ * ao trocar de tela e voltar. */
 function TrilhaEsqueleto() {
   return (
     <div className="mx-auto mt-7 flex max-w-[290px] flex-col items-center gap-5 pb-3">
@@ -24,26 +24,9 @@ function TrilhaEsqueleto() {
   );
 }
 
-function TrilhaErro({ onTentarNovamente }: { onTentarNovamente: () => void }) {
-  return (
-    <div className="mx-auto mt-16 flex max-w-sm flex-col items-center gap-4 text-center">
-      <p className="text-sm text-muted-foreground">Não deu pra carregar a sua trilha agora.</p>
-      <button
-        type="button"
-        onClick={onTentarNovamente}
-        className="zc-press zc-press-shadow flex items-center gap-2 rounded-2xl bg-primary px-5 py-2.5 text-[0.8rem] font-black uppercase tracking-[0.06em] text-primary-foreground"
-        style={{ ["--zc-press-color" as string]: "color-mix(in srgb, var(--primary) 70%, black)" }}
-      >
-        <RefreshCw className="size-4" />
-        Tentar de novo
-      </button>
-    </div>
-  );
-}
-
 export default function HomePage() {
   useRequireAuth();
-  const { unidades, loading, error, retry } = useTrilha("javascript");
+  const { unidades, loading } = useJornada();
 
   return (
     <AppShell
@@ -58,16 +41,12 @@ export default function HomePage() {
       }
     >
       {/* LessonTrail cuida do próprio cabeçalho fixo (UnitBanner) — ele troca
-          de nome/cor sozinho conforme o scroll entra em cada unidade. Os
-          dados vêm de verdade do backend: cada lição só libera depois que a
-          anterior é concluída de fato (GET /languages/javascript/track). */}
-      {loading ? (
-        <TrilhaEsqueleto />
-      ) : error || unidades.length === 0 ? (
-        <TrilhaErro onTentarNovamente={retry} />
-      ) : (
-        <LessonTrail unidades={unidades} />
-      )}
+          de nome/cor sozinho conforme o scroll entra em cada unidade. O
+          estado de cada lição (atual/bloqueada/concluída) é sempre
+          calculado a partir de progresso de verdade — da única lição
+          semeada no backend, ou do progresso local nas outras — nunca
+          hardcoded, então a 2ª lição só libera depois que a 1ª é concluída. */}
+      {loading ? <TrilhaEsqueleto /> : <LessonTrail unidades={unidades} />}
     </AppShell>
   );
 }

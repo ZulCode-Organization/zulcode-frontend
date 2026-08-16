@@ -64,14 +64,43 @@ function getToken(): string | null {
   return typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 }
 
+interface TrilhaCache {
+  /** Dono do cache — token + linguagem. Trocar de conta ou de idioma
+   * invalida o cache em vez de vazar dado errado. */
+  token: string;
+  languageSlug: string;
+  unidades: UnidadeTrilha[];
+}
+
 /**
- * Busca a trilha de verdade do backend pra uma linguagem. Sem cache em
- * memória (diferente do usePerfil): só a Jornada usa esse dado, e ele muda a
- * cada lição concluída — melhor buscar de novo a cada visita do que arriscar
- * mostrar um "bloqueada"/"atual" desatualizado.
+ * Cache em memória do módulo, no mesmo espírito do usePerfil: cada troca de
+ * tela remonta o componente que usa useTrilha do zero, então sem esse cache
+ * a Jornada rebuscava GET /track (e mostrava o esqueleto de novo) toda vez
+ * que a pessoa saía e voltava pra ela. Só se perde num reload de página de
+ * verdade, ou quando alguém chama limparTrilhaCache().
  */
+let trilhaCache: TrilhaCache | null = null;
+
+function cacheValidoPara(token: string | null, languageSlug: string): boolean {
+  return !!token && trilhaCache?.token === token && trilhaCache?.languageSlug === languageSlug;
+}
+
+/** Chamado depois de concluir uma lição de verdade (o estado "atual" /
+ * "bloqueada" muda) e no logout — sem isso, a tela seguinte reaproveitaria
+ * o cache antigo e mostraria a trilha desatualizada. */
+export function limparTrilhaCache() {
+  trilhaCache = null;
+}
+
+/** Busca a trilha de verdade do backend pra uma linguagem, cacheada em
+ * memória entre navegações — só busca de novo se o cache não existir, for
+ * de outra conta/idioma, ou alguém pedir explicitamente (retry ou depois de
+ * concluir uma lição). */
 export function useTrilha(languageSlug: string, enabled: boolean = true) {
-  const [state, setState] = useState<TrilhaState>({ loading: enabled, error: false, unidades: [] });
+  const cacheOk = enabled && cacheValidoPara(getToken(), languageSlug);
+  const [state, setState] = useState<TrilhaState>(
+    cacheOk ? { loading: false, error: false, unidades: trilhaCache!.unidades } : { loading: enabled, error: false, unidades: [] }
+  );
 
   const load = useCallback(() => {
     if (!enabled) return;
@@ -90,13 +119,20 @@ export function useTrilha(languageSlug: string, enabled: boolean = true) {
         if (!res.ok) throw new Error("Falha ao buscar trilha");
         return res.json();
       })
-      .then((track: TrackResponse) => setState({ loading: false, error: false, unidades: montarUnidades(track) }))
+      .then((track: TrackResponse) => {
+        const unidades = montarUnidades(track);
+        trilhaCache = { token, languageSlug, unidades };
+        setState({ loading: false, error: false, unidades });
+      })
       .catch(() => setState({ loading: false, error: true, unidades: [] }));
   }, [languageSlug, enabled]);
 
   useEffect(() => {
+    // Já tem cache válido (mesma conta/idioma) de uma tela anterior: usa
+    // ele e nem dispara a requisição.
+    if (cacheValidoPara(getToken(), languageSlug)) return;
     load();
-  }, [load]);
+  }, [load, languageSlug]);
 
   return { ...state, retry: load };
 }

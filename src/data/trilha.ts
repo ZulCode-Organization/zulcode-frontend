@@ -1,10 +1,13 @@
 import { UnidadeTrilha } from "@/lib/types/trilha";
 
 /**
- * Curso de JavaScript: 10 unidades de 8 lições cada (80 no total). Só a
- * primeira unidade tem uma lição "atual" + "disponivel" pra abrir o caminho
- * — as outras 9 ficam inteiramente bloqueadas, porque nesse mock ninguém
- * ainda progrediu além da unidade 1.
+ * Curso de JavaScript: 10 unidades de 8 lições cada (80 no total) — id,
+ * título, subtítulo e xp de cada lição vêm daqui. O campo `estado` abaixo é
+ * só um placeholder pra satisfazer o tipo: quem decide o estado de verdade
+ * (atual/bloqueada/concluida) é o hook useJornada (hooks/use-jornada.ts),
+ * calculado a partir do progresso real de cada lição — local (localStorage)
+ * pras 79 que só existem nesse mock, ou do backend pra única que existe de
+ * fato (ID_LICAO_CONECTADA). Os valores daqui nunca chegam a aparecer na tela.
  */
 export const unidadesTrilha: UnidadeTrilha[] = [
   {

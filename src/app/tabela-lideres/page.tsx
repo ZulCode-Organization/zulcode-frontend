@@ -23,7 +23,7 @@ function LideresContent() {
 
   return (
     <div className="mx-auto max-w-[640px] pt-3">
-      <div className="flex flex-wrap items-end justify-center gap-3.5">
+      <div className="flex origin-top scale-[0.8] flex-wrap items-end justify-center gap-3.5 sm:scale-100">
         {DIVISOES.map((divisao) => (
           <span
             key={divisao.id}
@@ -38,16 +38,16 @@ function LideresContent() {
         ))}
       </div>
 
-      <div className="mt-5.5 text-center">
-        <h1 className="text-2xl font-black text-foreground">Divisão Bronze</h1>
-        <p className="mt-2 text-[0.95rem] text-muted-foreground">
+      <div className="-mt-2 text-center sm:mt-5.5">
+        <h1 className="text-xl font-black text-foreground sm:text-2xl">Divisão Bronze</h1>
+        <p className="mt-2 text-[0.88rem] text-muted-foreground sm:text-[0.95rem]">
           O ranking abre quando você alcançar {tabelaLideresBloqueio.xpNecessario} XP.
         </p>
       </div>
 
-      <div className="my-5.5 h-px bg-border" aria-hidden />
+      <div className="my-4 h-px bg-border sm:my-5.5" aria-hidden />
 
-      <div className="rounded-[20px] border border-border bg-card p-6">
+      <div className="rounded-[20px] border border-border bg-card p-4 sm:p-6">
         <div className="flex items-center justify-between gap-3 text-sm font-extrabold">
           <span className="text-foreground">Seu progresso</span>
           <span className="text-primary">

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Settings, Bell, Sun, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { limparPerfilCache } from "@/hooks/use-perfil";
+import { limparTrilhaCache } from "@/hooks/use-trilha";
 
 const CONTA_ITEMS = [
   { id: "config", label: "Configurações", icon: Settings },
@@ -15,10 +16,12 @@ export function AccountPanel() {
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
-    // O cache do perfil vive em memória e sobrevive ao router.replace (não é
-    // reload de página) — sem limpar, a próxima conta logada nesse navegador
-    // veria por um instante o perfil da conta anterior.
+    // O cache do perfil e da trilha vive em memória e sobrevive ao
+    // router.replace (não é reload de página) — sem limpar, a próxima conta
+    // logada nesse navegador veria por um instante o perfil/trilha da conta
+    // anterior.
     limparPerfilCache();
+    limparTrilhaCache();
     router.replace("/welcome");
   };
 

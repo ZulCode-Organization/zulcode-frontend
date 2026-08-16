@@ -22,6 +22,10 @@ interface ActivityPlayerProps {
    * /lessons/:id/complete de verdade) ou não (undefined, mantém o XP só
    * como celebração visual, sem nada persistido). */
   aoConcluir?: (acertos: number, total: number) => Promise<{ xpEarned: number } | null>;
+  /** Chamado uma única vez ao concluir, independente de aoConcluir — é o
+   * gancho pra marcar progresso local (localStorage) nas lições que não
+   * existem no backend, sem misturar isso com XP/rede. */
+  onConcluirLocal?: () => void;
 }
 
 type Fase = "introducao" | "quiz" | "concluida";
@@ -107,7 +111,7 @@ function textoRespostaCerta(pergunta: Pergunta): string {
  * /lessons/:id/complete — nas outras, continua sendo só uma celebração
  * visual com o xp mockado da lição.
  */
-export function ActivityPlayer({ atividade, licao, aoConcluir }: ActivityPlayerProps) {
+export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }: ActivityPlayerProps) {
   const router = useRouter();
   const { introducao, perguntas } = atividade;
   const totalPassos = introducao.length + perguntas.length;
@@ -123,6 +127,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir }: ActivityPlayerP
   const [salvandoXp, setSalvandoXp] = useState(false);
   const [erroSalvarXp, setErroSalvarXp] = useState(false);
   const jaEnviouRef = useRef(false);
+  const jaMarcouLocalRef = useRef(false);
 
   const sair = () => router.push("/home");
 
@@ -144,6 +149,16 @@ export function ActivityPlayer({ atividade, licao, aoConcluir }: ActivityPlayerP
         }
       })
       .finally(() => setSalvandoXp(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fase]);
+
+  // Efeito separado (e independente de aoConcluir) só pra marcar progresso
+  // local — dispara mesmo em lições sem XP real, é o que libera a próxima
+  // lição mockada na trilha.
+  useEffect(() => {
+    if (fase !== "concluida" || !onConcluirLocal || jaMarcouLocalRef.current) return;
+    jaMarcouLocalRef.current = true;
+    onConcluirLocal();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fase]);
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
@@ -9,6 +10,8 @@ import { OnboardingShowcase } from "@/components/onboarding/onboarding-showcase"
 import { QuestionStep } from "@/components/onboarding/question-step";
 import { LanguageStep } from "@/components/onboarding/language-step";
 import { OnboardingSummary } from "@/components/onboarding/onboarding-summary";
+import { NivelamentoQuiz } from "@/components/onboarding/nivelamento-quiz";
+import { salvarNivelamentoLocal, ResultadoNivelamento } from "@/lib/nivelamento-local";
 
 export default function IntroducaoPage() {
   useRequireAuth();
@@ -34,6 +37,14 @@ export default function IntroducaoPage() {
     finish,
   } = useOnboarding();
 
+  // Depois que o questionário geral termina (result preenchido), entra o
+  // teste de nivelamento — 5 perguntas técnicas sobre a linguagem escolhida.
+  // Só então mostra o resumo final. Fora do useOnboarding de propósito: não
+  // existe endpoint no backend pra essas respostas ainda (ver
+  // lib/nivelamento-local.ts), então isso não deve se misturar com o envio
+  // de verdade que já aconteceu em `finish()`.
+  const [nivelamentoConcluido, setNivelamentoConcluido] = useState(false);
+
   if (loadError) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
@@ -54,7 +65,23 @@ export default function IntroducaoPage() {
     );
   }
 
-  if (result) {
+  if (result && !nivelamentoConcluido) {
+    const linguagemEscolhida = languages.find((l) => l.id === result.payload.languageId);
+
+    return (
+      <NivelamentoQuiz
+        languageSlug={result.payload.languageId}
+        languageName={linguagemEscolhida?.name ?? "programação"}
+        onFinish={(resultadoNivelamento: ResultadoNivelamento) => {
+          const token = localStorage.getItem("accessToken");
+          if (token) salvarNivelamentoLocal(token, resultadoNivelamento);
+          setNivelamentoConcluido(true);
+        }}
+      />
+    );
+  }
+
+  if (result && nivelamentoConcluido) {
     return (
       <div className="flex min-h-dvh flex-col bg-background lg:flex-row">
         <div className="hidden items-center justify-center bg-secondary/40 px-16 lg:flex lg:w-2/5">

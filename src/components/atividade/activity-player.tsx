@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,11 @@ import { TelaConclusao } from "./tela-conclusao";
 interface ActivityPlayerProps {
   atividade: Atividade;
   licao: LicaoTrilha;
+  /** Quando presente, é chamado uma única vez ao concluir a lição — quem
+   * fornece decide se isso é uma lição real (chama POST
+   * /lessons/:id/complete de verdade) ou não (undefined, mantém o XP só
+   * como celebração visual, sem nada persistido). */
+  aoConcluir?: (acertos: number, total: number) => Promise<{ xpEarned: number } | null>;
 }
 
 type Fase = "introducao" | "quiz" | "concluida";
@@ -97,10 +102,12 @@ function textoRespostaCerta(pergunta: Pergunta): string {
  * introdução, então vira aprendizado de verdade em vez de chute. Quatro
  * formatos de pergunta (alternativa, lógica com código, completar com
  * blocos, escrever código de verdade), até acabar — aí mostra a tela de
- * "lição concluída". O XP mostrado ali é só uma celebração visual (a
- * trilha inteira ainda é dado mock, não bate com GET /user).
+ * "lição concluída". Quando `aoConcluir` é passado (lição real, conectada
+ * ao backend), o XP exibido ali é o de verdade, devolvido por POST
+ * /lessons/:id/complete — nas outras, continua sendo só uma celebração
+ * visual com o xp mockado da lição.
  */
-export function ActivityPlayer({ atividade, licao }: ActivityPlayerProps) {
+export function ActivityPlayer({ atividade, licao, aoConcluir }: ActivityPlayerProps) {
   const router = useRouter();
   const { introducao, perguntas } = atividade;
   const totalPassos = introducao.length + perguntas.length;
@@ -112,8 +119,33 @@ export function ActivityPlayer({ atividade, licao }: ActivityPlayerProps) {
   const [verificado, setVerificado] = useState(false);
   const [correto, setCorreto] = useState(false);
   const [acertos, setAcertos] = useState(0);
+  const [xpConfirmado, setXpConfirmado] = useState(licao.xp);
+  const [salvandoXp, setSalvandoXp] = useState(false);
+  const [erroSalvarXp, setErroSalvarXp] = useState(false);
+  const jaEnviouRef = useRef(false);
 
   const sair = () => router.push("/home");
+
+  // Dispara uma única vez por visita à tela, no instante em que a lição
+  // termina — mesmo se der "Revisar lição" e concluir de novo, não reenvia
+  // (o backend soma XP a cada chamada, sem checar se já tinha sido feita).
+  useEffect(() => {
+    if (fase !== "concluida" || !aoConcluir || jaEnviouRef.current) return;
+    jaEnviouRef.current = true;
+    setSalvandoXp(true);
+    setErroSalvarXp(false);
+
+    aoConcluir(acertos, perguntas.length)
+      .then((resultado) => {
+        if (resultado) {
+          setXpConfirmado(resultado.xpEarned);
+        } else {
+          setErroSalvarXp(true);
+        }
+      })
+      .finally(() => setSalvandoXp(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fase]);
 
   const reiniciar = () => {
     setFase(introducao.length > 0 ? "introducao" : "quiz");
@@ -128,11 +160,13 @@ export function ActivityPlayer({ atividade, licao }: ActivityPlayerProps) {
   if (fase === "concluida") {
     return (
       <TelaConclusao
-        xp={licao.xp}
+        xp={xpConfirmado}
         acertos={acertos}
         total={perguntas.length}
         onRevisar={reiniciar}
         onContinuar={sair}
+        salvando={salvandoXp}
+        erroSalvar={erroSalvarXp}
       />
     );
   }

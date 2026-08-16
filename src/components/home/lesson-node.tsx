@@ -116,7 +116,9 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
       >
         {licao.titulo}
       </span>
-      <span className="text-center text-[0.78rem] text-muted-foreground">{licao.subtitulo}</span>
+      {licao.subtitulo && (
+        <span className="text-center text-[0.78rem] text-muted-foreground">{licao.subtitulo}</span>
+      )}
       {!bloqueada && (
         <span className="text-[0.8rem] font-extrabold text-primary">+{licao.xp} XP</span>
       )}

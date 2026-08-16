@@ -23,8 +23,7 @@ export function NextSectionLocked({ secao }: NextSectionLockedProps) {
       </div>
 
       <p className="mx-auto mt-2 max-w-[300px] text-[0.9rem] leading-relaxed text-muted-foreground">
-        Estruturas de dados avançadas, assincronia e boas práticas pra ir além
-        do básico.
+        Mais lições chegando em breve pra você continuar evoluindo.
       </p>
 
       <button

@@ -6,6 +6,13 @@ interface TelaConclusaoProps {
   total: number;
   onRevisar: () => void;
   onContinuar: () => void;
+  /** true enquanto o XP de verdade ainda está sendo confirmado no backend
+   * (POST /lessons/:id/complete) — só existe pra lição conectada de
+   * verdade; nas outras, xp já chega pronto e isso nunca é true. */
+  salvando?: boolean;
+  /** POST falhou (rede caiu, sessão expirou etc.) — avisa em vez de fingir
+   * que o XP foi salvo. */
+  erroSalvar?: boolean;
 }
 
 function qualificador(percentual: number): string {
@@ -15,7 +22,7 @@ function qualificador(percentual: number): string {
   return "Continue tentando";
 }
 
-export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar }: TelaConclusaoProps) {
+export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salvando, erroSalvar }: TelaConclusaoProps) {
   const percentual = Math.round((acertos / total) * 100);
 
   return (
@@ -29,7 +36,7 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar }: Te
             <p className="text-[0.7rem] font-black uppercase tracking-[0.08em] text-amber-600">Total de XP</p>
             <p className="mt-1 flex items-center justify-center gap-1.5 text-2xl font-black text-amber-600">
               <Zap className="size-5 fill-current" />
-              {xp}
+              {salvando ? "…" : xp}
             </p>
           </div>
           <div className="rounded-2xl border-2 border-emerald-400 bg-emerald-400/10 px-7 py-4">
@@ -46,6 +53,11 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar }: Te
         <p className="text-sm text-muted-foreground">
           Você acertou {acertos} de {total} perguntas.
         </p>
+        {erroSalvar && (
+          <p className="text-xs font-bold text-red-500">
+            Não deu pra confirmar seu XP agora. Verifica sua conexão e tenta de novo mais tarde.
+          </p>
+        )}
       </div>
 
       <div className="mx-auto flex w-full max-w-md gap-3 px-4 pb-8">

@@ -13,6 +13,14 @@ export interface PerfilUsuario {
   xpProximoNivel: number | null;
   streakAtual: number;
   streakRecorde: number;
+  /** Vidas restantes (as "penas"). null enquanto a API não devolver o campo. */
+  vidas: number | null;
+  /** Moedas. null enquanto a API não devolver o campo. */
+  moedas: number | null;
+  /** XP ganho hoje. null enquanto a API não recortar progresso por dia. */
+  xpHoje: number | null;
+  /** Lições concluídas hoje. null enquanto a API não recortar por dia. */
+  licoesHoje: number | null;
 }
 
 export interface CursoProgresso {

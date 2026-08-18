@@ -5,14 +5,15 @@ import Link from "next/link";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { SideFooter } from "@/components/shared/side-footer";
-import { metasDiarias } from "@/data/painel-lateral";
+import { useMetasDiarias } from "@/hooks/use-metas-diarias";
 
 const ICONES = [Target, Zap, Timer];
 const CORES = ["text-emerald-500", "text-sky-500", "text-amber-500"];
 const BAUS = ["bg-[#C08457]", "bg-slate-400", "bg-amber-400"];
 
 function MetasContent() {
-  const concluidas = metasDiarias.filter((meta) => meta.atual >= meta.meta).length;
+  const { metas, conectada } = useMetasDiarias();
+  const concluidas = metas.filter((meta) => (meta.atual ?? 0) >= meta.meta).length;
 
   return (
     <div className="pt-3">
@@ -20,11 +21,20 @@ function MetasContent() {
         <div className="min-w-[200px] flex-1 basis-65">
           <h1 className="text-xl font-black text-pretty sm:text-2xl">Ganhe recompensas com as metas!</h1>
           <p className="mt-2.5 text-[0.9rem] opacity-90 sm:text-[0.95rem]">
-            Você fez{" "}
-            <span className="font-black">
-              {concluidas} de {metasDiarias.length}
-            </span>{" "}
-            metas hoje.
+            {conectada ? (
+              <>
+                Você fez{" "}
+                <span className="font-black">
+                  {concluidas} de {metas.length}
+                </span>{" "}
+                metas hoje.
+              </>
+            ) : (
+              <>
+                A contagem do dia ainda não vem do servidor, então as metas
+                abaixo aparecem zeradas.
+              </>
+            )}
           </p>
         </div>
 
@@ -42,10 +52,11 @@ function MetasContent() {
       </div>
 
       <div className="mt-3 rounded-[20px] border border-border bg-card px-4 py-1 sm:px-5.5 sm:py-1.5">
-        {metasDiarias.map((meta, index) => {
+        {metas.map((meta, index) => {
           const Icon = ICONES[index % ICONES.length];
           const cor = CORES[index % CORES.length];
-          const pct = Math.min(100, Math.round((meta.atual / meta.meta) * 100));
+          const feito = meta.atual ?? 0;
+          const pct = Math.min(100, Math.round((feito / meta.meta) * 100));
 
           return (
             <div
@@ -67,7 +78,7 @@ function MetasContent() {
                       style={{ width: `${pct}%` }}
                     />
                     <span className="absolute inset-0 flex items-center justify-center text-[0.68rem] font-black text-muted-foreground sm:text-[0.72rem]">
-                      {meta.atual} / {meta.meta}
+                      {feito} / {meta.meta}
                     </span>
                   </div>
                   <span

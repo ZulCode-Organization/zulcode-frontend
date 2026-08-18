@@ -9,6 +9,20 @@ interface ExercicioCodigoProps {
 }
 
 /**
+ * Compara a saída impressa com a esperada, normalizando o que não deveria
+ * reprovar ninguém: espaço sobrando nas pontas e acento em forma decomposta
+ * (o "é" que chega como e + acento — comum em teclado de celular e em texto
+ * colado de outro lugar; aparece igualzinho na tela, mas não batia no ===).
+ *
+ * O que a pessoa escreveu em volta do texto (ponto e vírgula no fim, aspas
+ * simples ou duplas, quebras de linha) nunca interferiu: a validação roda o
+ * código de verdade e olha só o que o console imprimiu.
+ */
+function mesmaSaida(saida: string, esperado: string): boolean {
+  return saida.normalize("NFC").trim() === esperado.normalize("NFC").trim();
+}
+
+/**
  * Escreva o código de verdade: quem responde escreve, roda (o próprio botão
  * "Rodar" do bloco já é a verificação) e a resposta é validada rodando o
  * código de verdade — comparando a saída real com o que era esperado, não
@@ -20,7 +34,9 @@ export function ExercicioCodigo({ pergunta, onRodar }: ExercicioCodigoProps) {
     const correto =
       !resultado.erro &&
       !resultado.esgotouTempo &&
-      resultado.logs.some((linha) => linha.tipo === "log" && linha.texto === pergunta.resultadoEsperado);
+      resultado.logs.some(
+        (linha) => linha.tipo === "log" && mesmaSaida(linha.texto, pergunta.resultadoEsperado)
+      );
     onRodar(resultado, correto);
   };
 

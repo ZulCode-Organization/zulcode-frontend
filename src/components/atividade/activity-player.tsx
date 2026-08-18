@@ -118,14 +118,19 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }
 
   const [fase, setFase] = useState<Fase>(introducao.length > 0 ? "introducao" : "quiz");
   const [indiceIntro, setIndiceIntro] = useState(0);
-  const [indicePergunta, setIndicePergunta] = useState(0);
+  // Fila das perguntas que ainda faltam: quem erra volta pro fim dela, e a
+  // lição só termina quando a fila esvazia — ou seja, tem que acertar todas.
+  const [fila, setFila] = useState<number[]>(() => perguntas.map((_, indice) => indice));
+  // Perguntas erradas pelo menos uma vez. Acertar na repescagem destrava a
+  // lição, mas a porcentagem do fim continua contando como erro.
+  const [errouAlguma, setErrouAlguma] = useState<number[]>([]);
   const [resposta, setResposta] = useState<string | null>(null);
   const [verificado, setVerificado] = useState(false);
   const [correto, setCorreto] = useState(false);
-  const [acertos, setAcertos] = useState(0);
   const [xpConfirmado, setXpConfirmado] = useState(licao.xp);
   const [salvandoXp, setSalvandoXp] = useState(false);
   const [erroSalvarXp, setErroSalvarXp] = useState(false);
+  const acertos = perguntas.length - errouAlguma.length;
   const jaEnviouRef = useRef(false);
   const jaMarcouLocalRef = useRef(false);
 
@@ -165,11 +170,11 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }
   const reiniciar = () => {
     setFase(introducao.length > 0 ? "introducao" : "quiz");
     setIndiceIntro(0);
-    setIndicePergunta(0);
+    setFila(perguntas.map((_, indice) => indice));
+    setErrouAlguma([]);
     setResposta(null);
     setVerificado(false);
     setCorreto(false);
-    setAcertos(0);
   };
 
   if (fase === "concluida") {
@@ -186,7 +191,10 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }
     );
   }
 
-  const passoGlobal = fase === "introducao" ? indiceIntro : introducao.length + indicePergunta;
+  // A barra mede pergunta resolvida (que saiu da fila), não posição — assim
+  // ela não avança quando a pessoa erra e a pergunta volta pro fim.
+  const passoGlobal =
+    fase === "introducao" ? indiceIntro : introducao.length + (perguntas.length - fila.length);
   const progresso = Math.round((passoGlobal / totalPassos) * 100);
 
   const avancarIntro = () => {
@@ -229,7 +237,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }
     );
   }
 
-  const pergunta = perguntas[indicePergunta];
+  const pergunta = perguntas[fila[0]];
 
   const aplicarResultado = (ok: boolean) => {
     setVerificado(true);
@@ -253,13 +261,21 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }
   };
 
   const continuar = () => {
-    if (correto) setAcertos((atual) => atual + 1);
+    const atual = fila[0];
+    // Acertou, sai da fila; errou, vai pro fim dela e aparece de novo depois.
+    const restante = correto ? fila.slice(1) : [...fila.slice(1), atual];
 
-    if (indicePergunta + 1 >= perguntas.length) {
+    if (!correto && !errouAlguma.includes(atual)) {
+      setErrouAlguma((anteriores) => [...anteriores, atual]);
+    }
+
+    setFila(restante);
+
+    if (restante.length === 0) {
       setFase("concluida");
       return;
     }
-    setIndicePergunta((atual) => atual + 1);
+
     setResposta(null);
     setVerificado(false);
     setCorreto(false);

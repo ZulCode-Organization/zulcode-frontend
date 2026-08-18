@@ -17,7 +17,7 @@ const DIVISOES = [
 
 function LideresContent() {
   const { perfil } = usePerfil();
-  const xpAtual = perfil?.xp ?? tabelaLideresBloqueio.xpAtual;
+  const xpAtual = perfil?.xp ?? 0;
   const falta = Math.max(0, tabelaLideresBloqueio.xpNecessario - xpAtual);
   const pct = Math.min(100, Math.round((xpAtual / tabelaLideresBloqueio.xpNecessario) * 100));
 

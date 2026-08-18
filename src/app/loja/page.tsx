@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, Infinity as InfinityIcon, ShieldCheck, Zap } from "lucide-react";
+import { Feather, Infinity as InfinityIcon, ShieldCheck, Zap } from "lucide-react";
 import Link from "next/link";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { usePerfil } from "@/hooks/use-perfil";
@@ -26,7 +26,7 @@ function LojaContent() {
 
       <SecaoLoja titulo="Vidas">
         <FeaturePreviewItem
-          icon={Heart}
+          icon={Feather}
           iconClassName="text-rose-500"
           titulo="Recuperar vidas"
           descricao="Recupere todas as suas vidas pra errar menos nas lições."

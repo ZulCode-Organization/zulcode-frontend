@@ -16,6 +16,15 @@ function gerarIniciais(nome: string): string {
   return iniciais || "?";
 }
 
+/** Aceita o número só se a API mandou mesmo — qualquer outra coisa vira
+ * null, e a tela mostra o ícone sem valor em vez de um zero que o usuário
+ * leria como saldo dele. Os dois nomes possíveis estão previstos porque o
+ * campo ainda não existe no backend: quando existir, funciona nos dois. */
+function numeroOuNulo(...valores: unknown[]): number | null {
+  const achado = valores.find((valor) => typeof valor === "number");
+  return typeof achado === "number" ? achado : null;
+}
+
 function authHeaders(token: string) {
   return { Authorization: `Bearer ${token}` };
 }
@@ -154,6 +163,10 @@ function usePerfilData(): PerfilState {
           xpProximoNivel: usuario.xpProximoNivel,
           streakAtual: usuario.currentStreak,
           streakRecorde: usuario.longestStreak,
+          vidas: numeroOuNulo(usuario.hearts, usuario.vidas),
+          moedas: numeroOuNulo(usuario.coins, usuario.moedas),
+          xpHoje: numeroOuNulo(usuario.xpHoje, usuario.xpToday),
+          licoesHoje: numeroOuNulo(usuario.licoesHoje, usuario.lessonsToday),
         };
         perfilCache = { token, perfil: perfilCarregado, cursos: cursosData };
         setPerfil(perfilCarregado);

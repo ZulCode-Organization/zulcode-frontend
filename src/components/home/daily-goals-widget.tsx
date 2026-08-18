@@ -1,12 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import { Target, Timer, Zap } from "lucide-react";
-import { metasDiarias } from "@/data/painel-lateral";
+import { useMetasDiarias } from "@/hooks/use-metas-diarias";
 
 const ICONES = [Target, Zap, Timer];
 const CORES = ["text-emerald-500", "text-sky-500", "text-amber-500"];
 const BAUS = ["bg-[#C08457]", "bg-slate-400", "bg-amber-400"];
 
 export function DailyGoalsWidget() {
+  const { metas, conectada } = useMetasDiarias();
+
   return (
     <div
       className="animate-fade-in-up rounded-[20px] border border-border bg-card p-6"
@@ -22,10 +26,18 @@ export function DailyGoalsWidget() {
         </Link>
       </div>
 
+      {!conectada && (
+        <p className="mb-5 rounded-xl bg-muted px-3.5 py-2.5 text-[0.78rem] leading-snug text-muted-foreground">
+          A contagem do dia ainda não vem do servidor — por isso as barras
+          estão zeradas.
+        </p>
+      )}
+
       <div className="flex flex-col gap-5">
-        {metasDiarias.map((meta, index) => {
+        {metas.map((meta, index) => {
           const Icon = ICONES[index % ICONES.length];
-          const pct = Math.min(100, Math.round((meta.atual / meta.meta) * 100));
+          const feito = meta.atual ?? 0;
+          const pct = Math.min(100, Math.round((feito / meta.meta) * 100));
 
           return (
             <div key={meta.id} className="flex items-center gap-4">
@@ -47,7 +59,7 @@ export function DailyGoalsWidget() {
                     style={{ width: `${pct}%` }}
                   />
                   <span className="absolute inset-0 flex items-center justify-center text-[0.65rem] font-black text-muted-foreground">
-                    {meta.atual} / {meta.meta}
+                    {feito} / {meta.meta}
                   </span>
                 </div>
               </div>

@@ -80,6 +80,14 @@ async function buscarCursos(token: string): Promise<CursoProgresso[]> {
   return cursos.filter((curso): curso is CursoProgresso => curso !== null);
 }
 
+/* Um formato só (em vez de união discriminada) porque o projeto roda com
+ * strict: false, e sem strictNullChecks o TypeScript não estreita `ok` de
+ * forma confiável nos dois ramos do if. */
+export interface ResultadoSalvar {
+  ok: boolean;
+  mensagem?: string;
+}
+
 interface PerfilState {
   loading: boolean;
   error: boolean;
@@ -87,6 +95,18 @@ interface PerfilState {
   cursosEmAndamento: CursoProgresso[];
   cursosConcluidos: CursoProgresso[];
   retry: () => void;
+  /** Salva nome e/ou e-mail em PUT /user e atualiza a tela e o cache. */
+  salvarDados: (dados: { nome?: string; email?: string }) => Promise<ResultadoSalvar>;
+}
+
+/** A API do Nest devolve o motivo em `message`, às vezes como lista (quando
+ * são erros de validação de vários campos). Aqui vira uma frase só. */
+function mensagemDoErro(corpo: unknown, status: number): string {
+  const message = (corpo as { message?: unknown } | null)?.message;
+  if (typeof message === "string") return message;
+  if (Array.isArray(message) && typeof message[0] === "string") return message.join(". ");
+  if (status === 409) return "Esse e-mail já está em uso por outra conta.";
+  return "Não deu pra salvar agora. Tente de novo.";
 }
 
 interface PerfilCache {
@@ -183,6 +203,51 @@ function usePerfilData(): PerfilState {
     load();
   }, [load]);
 
+  const salvarDados = useCallback(
+    async (dados: { nome?: string; email?: string }): Promise<ResultadoSalvar> => {
+      const token = getToken();
+      if (!token) return { ok: false, mensagem: "Sua sessão expirou. Entre de novo." };
+
+      try {
+        const res = await fetchComTimeout(`${API_BASE_URL}/user`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", ...authHeaders(token) },
+          body: JSON.stringify({
+            ...(dados.nome !== undefined ? { name: dados.nome } : {}),
+            ...(dados.email !== undefined ? { email: dados.email } : {}),
+          }),
+        });
+
+        const corpo = await res.json().catch(() => null);
+        if (!res.ok) return { ok: false, mensagem: mensagemDoErro(corpo, res.status) };
+
+        // A resposta é o perfil inteiro atualizado: usa o que veio de lá, e
+        // só cai no que foi digitado se algum campo não vier.
+        const nome = corpo?.name ?? dados.nome;
+        const email = corpo?.email ?? dados.email;
+
+        setPerfil((atual) => {
+          if (!atual) return atual;
+          const atualizado: PerfilUsuario = {
+            ...atual,
+            nome: nome ?? atual.nome,
+            email: email ?? atual.email,
+            iniciais: gerarIniciais(nome ?? atual.nome),
+          };
+          // O cache em memória é o que outras telas leem ao montar — sem
+          // atualizar aqui, a sidebar continuaria com o nome antigo.
+          if (perfilCache?.token === token) perfilCache = { ...perfilCache, perfil: atualizado };
+          return atualizado;
+        });
+
+        return { ok: true };
+      } catch {
+        return { ok: false, mensagem: "Sem conexão com o servidor." };
+      }
+    },
+    []
+  );
+
   const cursosEmAndamento = useMemo(
     () => cursos.filter((curso) => curso.licoesConcluidas < curso.totalLicoes),
     [cursos]
@@ -192,7 +257,7 @@ function usePerfilData(): PerfilState {
     [cursos]
   );
 
-  return { loading, error, perfil, cursosEmAndamento, cursosConcluidos, retry: load };
+  return { loading, error, perfil, cursosEmAndamento, cursosConcluidos, retry: load, salvarDados };
 }
 
 const PerfilContext = createContext<PerfilState | null>(null);

@@ -8,6 +8,7 @@ import { ProfileHeader } from "@/components/perfil/profile-header";
 import { StatsGrid } from "@/components/perfil/stats-grid";
 import { CoursesSection } from "@/components/perfil/courses-section";
 import { AccountPanel } from "@/components/perfil/account-panel";
+import { DadosConta } from "@/components/perfil/dados-conta";
 import { SideFooter } from "@/components/shared/side-footer";
 
 function PerfilContent() {
@@ -35,6 +36,7 @@ function PerfilContent() {
       <ProfileHeader perfil={perfil} />
       <StatsGrid perfil={perfil} />
       <CoursesSection emAndamento={cursosEmAndamento} concluidos={cursosConcluidos} />
+      <DadosConta />
     </div>
   );
 }

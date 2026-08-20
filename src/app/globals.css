@@ -294,3 +294,33 @@
     }
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Chamas do PRO. Fora de @layer utilities de propósito: regra dentro da camada
+   é tratada como utilitário candidato pelo Tailwind v4 e pode ser podada se a
+   classe não for encontrada no scan.
+   --------------------------------------------------------------------------- */
+@keyframes zc-chama-respira {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50%      { transform: translateY(-7px) scaleY(1.07); }
+}
+
+.zc-chama {
+  transform-origin: bottom center;
+  will-change: transform;
+}
+
+.zc-chama--lenta  { animation: zc-chama-respira 5.5s ease-in-out infinite; }
+.zc-chama--media  { animation: zc-chama-respira 4.1s ease-in-out infinite reverse; }
+.zc-chama--rapida { animation: zc-chama-respira 3.2s ease-in-out infinite; }
+
+/* Brilho pulsando atrás da ave, como se o fogo iluminasse ela. */
+@keyframes zc-brasa {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.08); }
+}
+.zc-brasa { animation: zc-brasa 4.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .zc-chama, .zc-brasa { animation: none; }
+}

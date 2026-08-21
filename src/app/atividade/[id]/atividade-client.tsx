@@ -1,16 +1,15 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Hammer, X } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
-import { ID_LICAO_CONECTADA } from "@/hooks/use-jornada";
 import { limparPerfilCache } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
 import { ActivityPlayer } from "@/components/atividade/activity-player";
-import { atividades, LICAO_REAL_VARIAVEIS_ID } from "@/data/atividades";
-import { unidadesTrilha } from "@/data/trilha";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
-import { marcarLicaoConcluidaLocal } from "@/lib/progresso-local";
+import { atividadeDaApi, ApiLesson } from "@/lib/course-content";
+import { LicaoTrilha } from "@/lib/types/trilha";
 
 /** Sem sidebar/topbar/painel direito de propósito — a tela de fazer a
  * lição é tela cheia, sem distração, como no app de verdade. */
@@ -74,29 +73,31 @@ interface AtividadeClientProps {
 
 export function AtividadeClient({ id }: AtividadeClientProps) {
   useRequireAuth();
+  const [lesson, setLesson] = useState<ApiLesson | null>(null);
+  const [error, setError] = useState(false);
 
-  const licao = unidadesTrilha.flatMap((unidade) => unidade.licoes).find((l) => l.id === id);
-  const atividade = atividades[id];
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+    fetchComTimeout(`${API_BASE_URL}/lessons/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        if (!res.ok) throw new Error("Aula não encontrada");
+        return res.json();
+      })
+      .then((data: ApiLesson) => setLesson(data))
+      .catch(() => setError(true));
+  }, [id]);
 
-  if (!licao || !atividade) {
+  if (error || (lesson && lesson.exercises.length === 0)) {
     return <AtividadeEmConstrucao />;
   }
 
-  // Só o slot ID_LICAO_CONECTADA fala com o backend de verdade (é a única
-  // lição que existe no banco hoje) — todas as outras 79 só marcam
-  // progresso local, pra próxima lição da trilha liberar.
-  const ehConectada = id === ID_LICAO_CONECTADA;
+  if (!lesson) {
+    return <div className="flex min-h-dvh items-center justify-center text-sm font-bold text-muted-foreground">Carregando aula…</div>;
+  }
 
-  const aoConcluir = ehConectada
-    ? (acertos: number, total: number) =>
-        completarLicaoReal(LICAO_REAL_VARIAVEIS_ID, Math.round((acertos / total) * 100))
-    : undefined;
+  const licao: LicaoTrilha = { id: lesson.id, titulo: lesson.title, subtitulo: "", xp: lesson.xpReward, estado: "atual" };
+  const atividade = atividadeDaApi(lesson);
 
-  const onConcluirLocal = () => {
-    if (ehConectada) return; // essa já é rastreada pelo backend, não precisa de localStorage
-    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-    if (token) marcarLicaoConcluidaLocal(token, id);
-  };
-
-  return <ActivityPlayer atividade={atividade} licao={licao} aoConcluir={aoConcluir} onConcluirLocal={onConcluirLocal} />;
+  return <ActivityPlayer atividade={atividade} licao={licao} aoConcluir={(acertos, total) => completarLicaoReal(id, Math.round((acertos / total) * 100))} />;
 }

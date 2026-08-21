@@ -32,6 +32,13 @@ export function useLogin() {
       // cacheados aqui, pra não ficarem desatualizados ou "fake".
       localStorage.setItem("accessToken", data.accessToken);
 
+      // O painel administrativo vive neste mesmo app. A API continua sendo a
+      // autoridade: todas as rotas administrativas também exigem role ADMIN.
+      if (data.role === "ADMIN") {
+        router.push("/admin/home");
+        return;
+      }
+
       if (typeof window !== "undefined" && (window as any).electron) {
         (window as any).electron.notifyAuthSuccess();
       } else {

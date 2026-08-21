@@ -9,7 +9,7 @@ import { Flame } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { PerfilUsuario } from "@/lib/types/perfil";
 import { cn } from "@/lib/utils";
-import { sidebarNavItems } from "./nav-items";
+import { adminEntry, adminNavItems, sidebarNavItems } from "./nav-items";
 
 interface AppSidebarProps {
   perfil: PerfilUsuario | null;
@@ -20,6 +20,7 @@ export function AppSidebar({ perfil, loading }: AppSidebarProps) {
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [cadastrosAberto, setCadastrosAberto] = useState(true);
 
   useEffect(() => setMounted(true), []);
 
@@ -30,6 +31,8 @@ export function AppSidebar({ perfil, loading }: AppSidebarProps) {
       : perfil
         ? 100 // nível máximo
         : 0;
+  const isAdminArea = pathname.startsWith("/admin");
+  const navItems = isAdminArea ? adminNavItems : perfil?.role === "ADMIN" ? [...sidebarNavItems, adminEntry] : sidebarNavItems;
 
   return (
     <aside className="zc-scroll-hidden hidden h-dvh w-[288px] shrink-0 flex-col overflow-y-auto border-r border-border bg-card px-5 py-7 lg:flex">
@@ -47,7 +50,18 @@ export function AppSidebar({ perfil, loading }: AppSidebarProps) {
       </span>
 
       <nav className="flex flex-col gap-1">
-        {sidebarNavItems.map((item) => {
+        {isAdminArea && <span className="px-1 pb-1 text-[0.67rem] font-black uppercase tracking-[0.08em] text-primary">Administrativo</span>}
+        {!isAdminArea && perfil?.role === "ADMIN" && <span className="px-1 pb-1 text-[0.67rem] font-black uppercase tracking-[0.08em] text-primary">Gestão</span>}
+        {isAdminArea && (
+          <button
+            type="button"
+            onClick={() => setCadastrosAberto((aberto) => !aberto)}
+            className="mt-2 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-black uppercase tracking-[0.07em] text-muted-foreground hover:bg-muted"
+          >
+            Cadastros <span>{cadastrosAberto ? "−" : "+"}</span>
+          </button>
+        )}
+        {navItems.filter((item) => !isAdminArea || cadastrosAberto || !["admin-cursos", "admin-metas"].includes(item.id)).map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href;
 

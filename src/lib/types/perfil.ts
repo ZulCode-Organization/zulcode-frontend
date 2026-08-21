@@ -1,4 +1,5 @@
 export interface PerfilUsuario {
+  role: "USER" | "ADMIN";
   nome: string;
   email: string;
   iniciais: string;

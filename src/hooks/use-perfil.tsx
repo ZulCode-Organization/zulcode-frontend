@@ -172,6 +172,7 @@ function usePerfilData(): PerfilState {
         // progresso dentro do nível é calculada aqui (ver lib/leveling.ts).
         const progresso = calcularProgressoNivel(usuario.xp, usuario.nivel);
         const perfilCarregado: PerfilUsuario = {
+          role: usuario.role,
           nome: usuario.name,
           email: usuario.email,
           iniciais: gerarIniciais(usuario.name),

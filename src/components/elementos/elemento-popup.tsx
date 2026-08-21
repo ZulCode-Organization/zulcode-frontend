@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { BookOpen } from "lucide-react";
-import { ElementoGlossario } from "@/data/elementos";
+import { ElementoGlossario } from "@/lib/types/elemento";
 
 interface ElementoPopupProps {
   elemento: ElementoGlossario;
@@ -84,15 +84,15 @@ export function ElementoPopup({ elemento, anchor, onClose }: ElementoPopupProps)
           </span>
 
           <h2 id="elemento-popup-titulo" className="mt-3 font-mono text-lg font-black text-foreground">
-            {elemento.termo}
+            {elemento.term}
           </h2>
-          <p className="mt-2 text-[0.85rem] leading-relaxed text-muted-foreground">{elemento.significado}</p>
+          <p className="mt-2 text-[0.85rem] leading-relaxed text-muted-foreground">{elemento.meaning}</p>
 
           <p className="mt-4 text-[0.7rem] font-black uppercase tracking-[0.06em] text-muted-foreground/70">
             Exemplo
           </p>
           <pre className="mt-1.5 whitespace-pre-wrap break-words rounded-xl border border-border bg-muted/50 px-3.5 py-3 font-mono text-[0.8rem] leading-relaxed text-foreground">
-            {elemento.exemplo}
+            {elemento.example}
           </pre>
 
           <button

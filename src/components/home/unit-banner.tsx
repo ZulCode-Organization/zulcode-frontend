@@ -4,6 +4,7 @@ import { UnidadeTrilha } from "@/lib/types/trilha";
 import { CorUnidade } from "@/data/trilha";
 import { cn } from "@/lib/utils";
 import { CursoDaJornada } from "@/hooks/use-jornada";
+import { LanguageIcon } from "@/components/onboarding/language-icon";
 
 interface UnitBannerProps {
   unidade: UnidadeTrilha;
@@ -54,7 +55,7 @@ export function UnitBanner({ unidade, cor, unidades, cursos, cursoAtual, onCurso
       {aberto && <div className="mt-5 border-t border-white/25 pt-4">
         <div className="flex gap-2 overflow-x-auto pb-3">
           {cursos.map(curso => <button key={curso.id} type="button" onClick={() => { onCursoChange(curso.id); setAberto(false); }} title={curso.name} className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/15", curso.id === cursoAtual && "ring-2 ring-white") }>
-            <span className="size-7 [&>svg]:size-full" dangerouslySetInnerHTML={{ __html: curso.icon }} />
+            <LanguageIcon id={curso.id} name={curso.name} className="size-6" />
           </button>)}
         </div>
         <p className="mb-2 text-[0.7rem] font-black uppercase tracking-[0.08em] opacity-80">Seções de {cursos.find(c => c.id === cursoAtual)?.name}</p>

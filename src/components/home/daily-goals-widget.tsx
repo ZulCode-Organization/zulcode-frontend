@@ -34,10 +34,10 @@ export function DailyGoalsWidget() {
       )}
 
       <div className="flex flex-col gap-5">
-        {metas.map((meta, index) => {
+        {metas.filter((meta) => meta.period === "DAILY").map((meta, index) => {
           const Icon = ICONES[index % ICONES.length];
-          const feito = meta.atual ?? 0;
-          const pct = Math.min(100, Math.round((feito / meta.meta) * 100));
+          const feito = meta.current;
+          const pct = Math.min(100, Math.round((feito / meta.target) * 100));
 
           return (
             <div key={meta.id} className="flex items-center gap-4">
@@ -49,7 +49,7 @@ export function DailyGoalsWidget() {
 
               <div className="min-w-0 flex-1">
                 <p className="text-[0.86rem] font-extrabold leading-snug text-foreground text-pretty">
-                  {meta.titulo}
+                  {meta.title}
                 </p>
                 {/* O rótulo fica centralizado por cima da barra, como no
                     redesign — a barra preenche por baixo sem empurrar o texto. */}
@@ -59,7 +59,7 @@ export function DailyGoalsWidget() {
                     style={{ width: `${pct}%` }}
                   />
                   <span className="absolute inset-0 flex items-center justify-center text-[0.65rem] font-black text-muted-foreground">
-                    {feito} / {meta.meta}
+                    {feito} / {meta.target}
                   </span>
                 </div>
               </div>
@@ -68,7 +68,7 @@ export function DailyGoalsWidget() {
                 className={`flex h-8 w-9 shrink-0 items-center justify-center rounded-[5px_5px_7px_7px] shadow-[inset_0_-3px_0_rgba(0,0,0,0.2)] ${BAUS[index % BAUS.length]}`}
                 aria-hidden
               >
-                <span className="h-3 w-2.5 rounded-sm bg-black/30" />
+                <span className="text-[0.62rem] font-black text-amber-950">+{meta.coinReward}</span>
               </span>
             </div>
           );

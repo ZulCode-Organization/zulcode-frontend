@@ -46,15 +46,21 @@ export function ElementoPopup({ elemento, anchor, onClose }: ElementoPopupProps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const alturaEstimada = 260;
-  const paraCima = anchor.top - alturaEstimada - GAP_ANCORA > ALTURA_CABECALHO_FIXO;
+  const alturaPreferida = Math.min(420, window.innerHeight - 32);
+  const cabeAbaixo = anchor.bottom + GAP_ANCORA + alturaPreferida <= window.innerHeight - 16;
+  const paraCima = !cabeAbaixo && anchor.top - GAP_ANCORA - alturaPreferida > ALTURA_CABECALHO_FIXO;
 
   const centroAncora = anchor.left + anchor.width / 2;
   const esquerda = Math.min(
     Math.max(centroAncora - LARGURA_POPUP / 2, MARGEM_TELA),
     window.innerWidth - LARGURA_POPUP - MARGEM_TELA
   );
-  const topo = paraCima ? anchor.top - GAP_ANCORA : anchor.bottom + GAP_ANCORA;
+  const espacoDisponivel = paraCima
+    ? Math.max(160, anchor.top - GAP_ANCORA - 16)
+    : Math.max(160, window.innerHeight - anchor.bottom - GAP_ANCORA - 16);
+  const topo = paraCima
+    ? Math.max(16, anchor.top - GAP_ANCORA - Math.min(alturaPreferida, espacoDisponivel))
+    : anchor.bottom + GAP_ANCORA;
   const posicaoSeta = Math.min(Math.max(centroAncora - esquerda, 24), LARGURA_POPUP - 24);
 
   return createPortal(
@@ -65,9 +71,10 @@ export function ElementoPopup({ elemento, anchor, onClose }: ElementoPopupProps)
         className="fixed z-50 transition-all ease-out"
         style={{
           left: esquerda,
-          top: paraCima ? undefined : topo,
-          bottom: paraCima ? window.innerHeight - topo : undefined,
+          top: topo,
+          bottom: undefined,
           width: LARGURA_POPUP,
+          maxHeight: `${espacoDisponivel}px`,
           transitionDuration: `${DURACAO_MS}ms`,
           transformOrigin: `${posicaoSeta}px ${paraCima ? "100%" : "0%"}`,
           opacity: visivel ? 1 : 0,
@@ -78,7 +85,10 @@ export function ElementoPopup({ elemento, anchor, onClose }: ElementoPopupProps)
         aria-labelledby="elemento-popup-titulo"
         onClick={(evento) => evento.stopPropagation()}
       >
-        <div className="relative rounded-[24px] border border-border bg-card p-5 shadow-xl">
+        <div
+          className="zc-element-scroll relative overflow-y-auto rounded-[24px] border border-border bg-card p-5 shadow-xl"
+          style={{ maxHeight: `${espacoDisponivel}px` }}
+        >
           <span className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
             <BookOpen className="size-5" />
           </span>

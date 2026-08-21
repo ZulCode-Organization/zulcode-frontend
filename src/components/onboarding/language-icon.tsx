@@ -135,11 +135,13 @@ interface LanguageIconProps {
   id: string;
   name?: string;
   className?: string;
+  /** Útil em fundos coloridos, onde o ícone precisa herdar o contraste do layout. */
+  monochrome?: boolean;
 }
 
-export function LanguageIcon({ id, name, className }: LanguageIconProps) {
+export function LanguageIcon({ id, name, className, monochrome = false }: LanguageIconProps) {
   const key = ICONS[normalize(id)] ? normalize(id) : name ? normalize(name) : normalize(id);
   const Icon = ICONS[key] ?? Code2;
   const color = COLORS[key];
-  return <Icon className={className} style={color ? { color } : undefined} />;
+  return <Icon className={className} style={!monochrome && color ? { color } : undefined} />;
 }

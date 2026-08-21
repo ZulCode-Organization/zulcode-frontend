@@ -1,19 +1,32 @@
 "use client";
 
 import { Clock, Target, Timer, Zap } from "lucide-react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { SideFooter } from "@/components/shared/side-footer";
 import { useMetasDiarias } from "@/hooks/use-metas-diarias";
 
-const ICONES = [Target, Zap, Timer];
-const CORES = ["text-emerald-500", "text-sky-500", "text-amber-500"];
+const ICONES = { PERFECT_LESSONS: Target, XP_EARNED: Zap, LESSONS_COMPLETED: Timer };
+const CORES = { PERFECT_LESSONS: "text-emerald-500", XP_EARNED: "text-sky-500", LESSONS_COMPLETED: "text-amber-500" };
 const BAUS = ["bg-[#C08457]", "bg-slate-400", "bg-amber-400"];
+const PERIODOS = { DAILY: "Diária", WEEKLY: "Semanal", MONTHLY: "Mensal" } as const;
+const PERIODOS_PLURAL = { DAILY: "diárias", WEEKLY: "semanais", MONTHLY: "mensais" } as const;
+
+function MetaItem({ meta, index, onClaim }: { meta: ReturnType<typeof useMetasDiarias>["metas"][number]; index: number; onClaim:(id:string)=>void }) {
+  const Icon = ICONES[meta.type]; const cor = CORES[meta.type]; const pct = Math.min(100, Math.round((meta.current / meta.target) * 100));
+  return <div className="flex items-center gap-3 border-b border-border py-4 last:border-b-0 sm:gap-4.5 sm:py-5.5">
+    <span className={`flex size-9 shrink-0 items-center justify-center sm:size-11 ${cor}`}><Icon className="size-7 sm:size-9" /></span>
+    <div className="min-w-0 flex-1"><p className="text-[0.92rem] font-extrabold text-foreground text-pretty sm:text-base">{meta.title}</p><div className="mt-2.5 flex items-center gap-2.5 sm:mt-3 sm:gap-3"><div className="relative h-5 flex-1 overflow-hidden rounded-xl bg-muted sm:h-[22px]"><div className={`absolute inset-y-0 left-0 rounded-xl ${cor.replace("text-", "bg-")}`} style={{ width: `${pct}%` }} /><span className="absolute inset-0 flex items-center justify-center text-[0.78rem] font-black text-foreground drop-shadow-[0_1px_0_rgba(255,255,255,0.7)]">{meta.current} / {meta.target}</span></div>{meta.claimable ? <button onClick={()=>onClaim(meta.id)} className="zc-press zc-press-shadow shrink-0 rounded-xl bg-amber-400 px-3 py-2 text-[0.66rem] font-black uppercase text-amber-950">Resgatar +{meta.coinReward}</button> : <span className={`flex h-7 w-8 shrink-0 items-center justify-center rounded-[6px_6px_8px_8px] shadow-[inset_0_-4px_0_rgba(0,0,0,0.2)] sm:h-[34px] sm:w-9.5 ${BAUS[index % BAUS.length]}`}><span className="text-[0.65rem] font-black text-amber-950">+{meta.coinReward}</span></span>}</div></div>
+  </div>;
+}
 
 function MetasContent() {
-  const { metas, conectada } = useMetasDiarias();
-  const concluidas = metas.filter((meta) => (meta.atual ?? 0) >= meta.meta).length;
+  const { metas, conectada, resgatar } = useMetasDiarias();
+  const [moedas, setMoedas] = useState(0);
+  const resgatarMeta = async (id:string) => { const ganho=await resgatar(id); if(ganho){setMoedas(ganho); window.setTimeout(()=>setMoedas(0),1800);} };
+  const concluidas = metas.filter((meta) => meta.completed).length;
 
   return (
     <div className="pt-3">
@@ -27,7 +40,7 @@ function MetasContent() {
                 <span className="font-black">
                   {concluidas} de {metas.length}
                 </span>{" "}
-                metas hoje.
+                metas ativas.
               </>
             ) : (
               <>
@@ -42,57 +55,12 @@ function MetasContent() {
           <img src="/mascot.png" alt="" className="size-full object-contain" />
         </div>
       </div>
+      {moedas > 0 && <div className="animate-pop-in fixed left-1/2 top-20 z-50 -translate-x-1/2 rounded-2xl bg-amber-400 px-6 py-3 text-lg font-black text-amber-950 shadow-xl">+{moedas} moedas ✦</div>}
 
-      <div className="mt-6 flex items-center justify-between gap-3 sm:mt-7">
-        <h2 className="text-lg font-black text-foreground sm:text-xl">Metas do dia</h2>
-        <span className="flex shrink-0 items-center gap-1.5 text-[0.7rem] font-black uppercase tracking-[0.06em] text-amber-500 sm:text-[0.78rem]">
-          <Clock className="size-3.5 sm:size-4" />
-          Renova à meia-noite
-        </span>
-      </div>
-
-      <div className="mt-3 rounded-[20px] border border-border bg-card px-4 py-1 sm:px-5.5 sm:py-1.5">
-        {metas.map((meta, index) => {
-          const Icon = ICONES[index % ICONES.length];
-          const cor = CORES[index % CORES.length];
-          const feito = meta.atual ?? 0;
-          const pct = Math.min(100, Math.round((feito / meta.meta) * 100));
-
-          return (
-            <div
-              key={meta.id}
-              className="flex items-center gap-3 border-b border-border py-4 last:border-b-0 sm:gap-4.5 sm:py-5.5"
-            >
-              <span className={`flex size-9 shrink-0 items-center justify-center sm:size-11 ${cor}`}>
-                <Icon className="size-7 sm:size-9" />
-              </span>
-
-              <div className="min-w-0 flex-1">
-                <p className="text-[0.92rem] font-extrabold text-foreground text-pretty sm:text-base">
-                  {meta.titulo}
-                </p>
-                <div className="mt-2.5 flex items-center gap-2.5 sm:mt-3 sm:gap-3">
-                  <div className="relative h-5 flex-1 overflow-hidden rounded-xl bg-muted sm:h-[22px]">
-                    <div
-                      className={`absolute inset-y-0 left-0 rounded-xl ${cor.replace("text-", "bg-")}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                    <span className="absolute inset-0 flex items-center justify-center text-[0.68rem] font-black text-muted-foreground sm:text-[0.72rem]">
-                      {feito} / {meta.meta}
-                    </span>
-                  </div>
-                  <span
-                    className={`flex h-7 w-8 shrink-0 items-center justify-center rounded-[6px_6px_8px_8px] shadow-[inset_0_-4px_0_rgba(0,0,0,0.2)] sm:h-[34px] sm:w-9.5 ${BAUS[index % BAUS.length]}`}
-                    aria-hidden
-                  >
-                    <span className="h-2.5 w-2 rounded-sm bg-black/30 sm:h-3" />
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {(["DAILY", "WEEKLY", "MONTHLY"] as const).map(periodo => {
+        const grupo = metas.filter(meta => meta.period === periodo); if (!grupo.length) return null;
+        return <section key={periodo} className="mt-7"><div className="flex items-center justify-between gap-3"><h2 className="text-lg font-black text-foreground sm:text-xl">Metas {PERIODOS_PLURAL[periodo]}</h2>{periodo === "DAILY" && <span className="flex shrink-0 items-center gap-1.5 text-[0.7rem] font-black uppercase tracking-[0.06em] text-amber-500"><Clock className="size-3.5" />Renova à meia-noite</span>}</div><div className="mt-3 rounded-[20px] border border-border bg-card px-4 py-1 sm:px-5.5 sm:py-1.5">{grupo.map((meta,index)=><MetaItem key={meta.id} meta={meta} index={index} onClaim={resgatarMeta} />)}</div></section>;
+      })}
     </div>
   );
 }

@@ -1,12 +1,9 @@
 "use client";
 
-import { MetaDiaria, metasDiarias } from "@/data/painel-lateral";
-import { usePerfil } from "./use-perfil";
+import { useCallback, useEffect, useState } from "react";
+import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 
-export interface MetaDoDia extends MetaDiaria {
-  /** Quanto já foi feito hoje. null = a API ainda não conta isso. */
-  atual: number | null;
-}
+export interface MetaDoDia { id:string; title:string; period:"DAILY"|"WEEKLY"|"MONTHLY"; type:"PERFECT_LESSONS"|"XP_EARNED"|"LESSONS_COMPLETED"; target:number; coinReward:number; current:number; completed:boolean; claimable:boolean; }
 
 /**
  * Casa cada meta do dia com o dado real do perfil.
@@ -20,16 +17,10 @@ export interface MetaDoDia extends MetaDiaria {
  * "Resolver 3 desafios na primeira tentativa" depende de acerto por questão,
  * que não existe em lugar nenhum da API — essa continua sem fonte.
  */
-export function useMetasDiarias(): { metas: MetaDoDia[]; conectada: boolean } {
-  const { perfil } = usePerfil();
-
-  const porMeta: Record<string, number | null> = {
-    ganhar_xp: perfil?.xpHoje ?? null,
-    completar_licoes: perfil?.licoesHoje ?? null,
-    primeira_tentativa: null,
-  };
-
-  const metas = metasDiarias.map((meta) => ({ ...meta, atual: porMeta[meta.id] ?? null }));
-
-  return { metas, conectada: metas.some((meta) => meta.atual !== null) };
+export function useMetasDiarias(): { metas: MetaDoDia[]; conectada: boolean; resgatar: (id: string) => Promise<number> } {
+  const [metas, setMetas] = useState<MetaDoDia[]>([]); const [conectada, setConectada] = useState(false);
+  const carregar = useCallback(() => { const token=localStorage.getItem("accessToken"); if (!token) return; fetchComTimeout(`${API_BASE_URL}/goals`, { headers:{ Authorization:`Bearer ${token}` } }).then(r=>r.ok?r.json():[]).then(data=>{setMetas(data);setConectada(true)}).catch(()=>setConectada(false)); }, []);
+  useEffect(carregar, [carregar]);
+  const resgatar = useCallback(async (id:string) => { const token=localStorage.getItem("accessToken"); if (!token) return 0; const res=await fetchComTimeout(`${API_BASE_URL}/goals/${id}/claim`,{method:"POST",headers:{Authorization:`Bearer ${token}`}}); if(!res.ok)return 0; const data=await res.json(); carregar(); return data.coinsEarned ?? 0; },[carregar]);
+  return { metas, conectada, resgatar };
 }

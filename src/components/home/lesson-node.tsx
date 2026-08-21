@@ -19,6 +19,7 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
   const { estado } = licao;
   const bloqueada = estado === "bloqueada";
   const preenchido = estado === "concluida" || estado === "atual";
+  const emAndamento = estado === "atual" && licao.subtitulo === "1/2 etapas";
   const [popupAberto, setPopupAberto] = useState(false);
   const [anchor, setAnchor] = useState<DOMRect | null>(null);
   const botaoRef = useRef<HTMLButtonElement>(null);
@@ -73,10 +74,7 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
         )}
 
         <span
-          className={cn(
-            "absolute left-[8px] top-[17px] size-[80px] rounded-[30px]",
-            preenchido ? "bg-primary brightness-75" : "bg-border"
-          )}
+          className={cn("absolute left-[8px] top-[17px] size-[80px] rounded-[30px]", preenchido ? "bg-primary brightness-75" : "bg-border")}
           aria-hidden
         />
 
@@ -102,6 +100,14 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
 
           {estado === "concluida" && (
             <span className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-amber-400 text-amber-950 ring-[3px] ring-background">
+              <Star className="size-3.5 fill-current" strokeWidth={0} />
+            </span>
+          )}
+          {emAndamento && (
+            <span
+              className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full text-amber-950 ring-[3px] ring-background"
+              style={{ background: "linear-gradient(to bottom right, #fbbf24 0 50%, #aeb6c1 50% 100%)" }}
+            >
               <Star className="size-3.5 fill-current" strokeWidth={0} />
             </span>
           )}

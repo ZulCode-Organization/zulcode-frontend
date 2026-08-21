@@ -23,7 +23,11 @@ export function useJornada() {
     if (!token) return;
     Promise.all([
       fetchComTimeout(`${API_BASE_URL}/languages`).then(r => r.json()),
-      fetchComTimeout(`${API_BASE_URL}/languages/current`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
+      fetchComTimeout(`${API_BASE_URL}/languages/current`, { headers: { Authorization: `Bearer ${token}` } }).then(async r => {
+        if (!r.ok || r.status === 204) return null;
+        const body = await r.text();
+        return body ? JSON.parse(body) : null;
+      }),
     ]).then(([available, current]) => { setCursos(available); if (current?.id) setCursoAtual(current.id); });
   }, []);
   const trilhaReal = useTrilha(cursoAtual);

@@ -12,14 +12,17 @@ interface ApiLesson {
   title: string;
   xpReward: number;
   exercises: ApiExercise[];
+  introduction: { title: string; text: string; codigo?: string }[];
+  theoryCompleted: boolean;
+  completed: boolean;
 }
 
 const asStrings = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 
 /** Converte o formato persistido pelo CMS para os componentes do player. */
-export function atividadeDaApi(lesson: ApiLesson): Atividade {
-  const perguntas: Pergunta[] = lesson.exercises.map((exercise) => {
+export function atividadeDaApi(lesson: ApiLesson, stage: "THEORY" | "REVIEW"): Atividade {
+  const perguntas: Pergunta[] = lesson.exercises.filter((exercise) => exercise.content?.stage === stage).map((exercise) => {
     const content = exercise.content ?? {};
     const correctAnswer = String(content.correctAnswer ?? "");
 
@@ -56,7 +59,7 @@ export function atividadeDaApi(lesson: ApiLesson): Atividade {
     };
   });
 
-  return { licaoId: lesson.id, introducao: [], perguntas };
+  return { licaoId: lesson.id, introducao: stage === "THEORY" ? (lesson.introduction ?? []).map(slide => ({ titulo: slide.title, texto: slide.text, codigo: slide.codigo })) : [], perguntas };
 }
 
 export type { ApiLesson };

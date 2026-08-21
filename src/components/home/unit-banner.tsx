@@ -1,16 +1,24 @@
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { useState } from "react";
 import { UnidadeTrilha } from "@/lib/types/trilha";
 import { CorUnidade } from "@/data/trilha";
 import { cn } from "@/lib/utils";
+import { CursoDaJornada } from "@/hooks/use-jornada";
 
 interface UnitBannerProps {
   unidade: UnidadeTrilha;
   /** Cor da unidade ativa — o cabeçalho troca de cor junto com o nome
    * conforme a trilha rola e entra em cada unidade nova. */
   cor: CorUnidade;
+  unidades: UnidadeTrilha[];
+  cursos: CursoDaJornada[];
+  cursoAtual: string;
+  onCursoChange: (slug: string) => void;
+  onUnidadeClick: (index: number) => void;
 }
 
-export function UnitBanner({ unidade, cor }: UnitBannerProps) {
+export function UnitBanner({ unidade, cor, unidades, cursos, cursoAtual, onCursoChange, onUnidadeClick }: UnitBannerProps) {
+  const [aberto, setAberto] = useState(false);
   const total = unidade.licoes.length;
   const concluidas = unidade.licoes.filter((l) => l.estado === "concluida").length;
 
@@ -36,12 +44,24 @@ export function UnitBanner({ unidade, cor }: UnitBannerProps) {
 
         <button
           type="button"
-          className="zc-press zc-press-shadow flex shrink-0 items-center gap-2 rounded-2xl bg-black/15 px-4.5 py-3"
+          onClick={() => setAberto(v => !v)} aria-label="Abrir guia do curso"
+          className="zc-press zc-press-shadow flex shrink-0 items-center justify-center rounded-2xl bg-black/15 p-3"
         >
-          <Menu className="size-4.5" strokeWidth={2.4} />
-          <span className="text-[0.8rem] font-black uppercase tracking-[0.06em]">Guia</span>
+          {aberto ? <X className="size-4.5" strokeWidth={2.4} /> : <Menu className="size-4.5" strokeWidth={2.4} />}
         </button>
       </div>
+
+      {aberto && <div className="mt-5 border-t border-white/25 pt-4">
+        <div className="flex gap-2 overflow-x-auto pb-3">
+          {cursos.map(curso => <button key={curso.id} type="button" onClick={() => { onCursoChange(curso.id); setAberto(false); }} title={curso.name} className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/15", curso.id === cursoAtual && "ring-2 ring-white") }>
+            <span className="size-7 [&>svg]:size-full" dangerouslySetInnerHTML={{ __html: curso.icon }} />
+          </button>)}
+        </div>
+        <p className="mb-2 text-[0.7rem] font-black uppercase tracking-[0.08em] opacity-80">Seções de {cursos.find(c => c.id === cursoAtual)?.name}</p>
+        <div className="grid gap-2">
+          {unidades.map((item, index) => <button key={item.id} type="button" onClick={() => { onUnidadeClick(index); setAberto(false); }} className="rounded-xl bg-black/15 px-3 py-2 text-left text-sm font-bold hover:bg-black/25">Unidade {index + 1}: {item.titulo}</button>)}
+        </div>
+      </div>}
 
       <div className="mt-3.5 flex items-center gap-3">
         <div className="h-2 flex-1 overflow-hidden rounded-md bg-black/20">

@@ -6,9 +6,13 @@ import { CORES_UNIDADE } from "@/data/trilha";
 import { LessonNode } from "./lesson-node";
 import { UnitBanner } from "./unit-banner";
 import { NextSectionLocked } from "./next-section-locked";
+import { CursoDaJornada } from "@/hooks/use-jornada";
 
 interface LessonTrailProps {
   unidades: UnidadeTrilha[];
+  cursos: CursoDaJornada[];
+  cursoAtual: string;
+  onCursoChange: (slug: string) => void;
 }
 
 const SHAKE_MS = 400;
@@ -23,7 +27,7 @@ const ALINHAMENTO = ["justify-start", "justify-end", "justify-center"] as const;
  * a unidade cujo bloco cruza essa faixa vira a "ativa" no cabeçalho. */
 const OBSERVER_ROOT_MARGIN = "-140px 0px -70% 0px";
 
-export function LessonTrail({ unidades }: LessonTrailProps) {
+export function LessonTrail({ unidades, cursos, cursoAtual, onCursoChange }: LessonTrailProps) {
   const nodeRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const unidadeRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const [shakingId, setShakingId] = useState<string | null>(null);
@@ -70,7 +74,7 @@ export function LessonTrail({ unidades }: LessonTrailProps) {
 
   return (
     <>
-      <UnitBanner unidade={unidadeAtiva} cor={corAtiva} />
+      <UnitBanner unidade={unidadeAtiva} cor={corAtiva} unidades={unidades} cursos={cursos} cursoAtual={cursoAtual} onCursoChange={onCursoChange} onUnidadeClick={(index) => unidadeRefs.current[index]?.scrollIntoView({ behavior: "smooth", block: "start" })} />
 
       {/* Coluna estreita (290px) centralizada: o deslocamento dos nós acontece
           dentro dela, então a trilha nunca gera scroll horizontal na página. */}

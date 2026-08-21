@@ -26,7 +26,7 @@ function TrilhaEsqueleto() {
 
 export default function HomePage() {
   useRequireAuth();
-  const { unidades, loading } = useJornada();
+  const { unidades, loading, cursos, cursoAtual, selecionarCurso } = useJornada();
 
   return (
     <AppShell
@@ -46,7 +46,7 @@ export default function HomePage() {
           calculado a partir de progresso de verdade — da única lição
           semeada no backend, ou do progresso local nas outras — nunca
           hardcoded, então a 2ª lição só libera depois que a 1ª é concluída. */}
-      {loading ? <TrilhaEsqueleto /> : <LessonTrail unidades={unidades} />}
+      {loading ? <TrilhaEsqueleto /> : <LessonTrail unidades={unidades} cursos={cursos} cursoAtual={cursoAtual} onCursoChange={selecionarCurso} />}
     </AppShell>
   );
 }

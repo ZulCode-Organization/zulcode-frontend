@@ -9,6 +9,7 @@ interface LicaoTrack {
   title: string;
   xpReward: number;
   completed: boolean;
+  theoryCompleted: boolean;
 }
 
 interface UnidadeTrack {
@@ -55,7 +56,7 @@ function montarUnidades(track: TrackResponse): UnidadeTrilha[] {
       } else {
         estado = "bloqueada";
       }
-      return { id: licao.id, titulo: licao.title, subtitulo: "", xp: licao.xpReward, estado };
+      return { id: licao.id, titulo: licao.title, subtitulo: licao.completed ? "2/2 etapas" : licao.theoryCompleted ? "1/2 etapas" : "0/2 etapas", xp: licao.xpReward, estado };
     }),
   }));
 }

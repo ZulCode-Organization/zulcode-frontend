@@ -96,8 +96,22 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
     return <div className="flex min-h-dvh items-center justify-center text-sm font-bold text-muted-foreground">Carregando aula…</div>;
   }
 
-  const licao: LicaoTrilha = { id: lesson.id, titulo: lesson.title, subtitulo: "", xp: lesson.xpReward, estado: "atual" };
-  const atividade = atividadeDaApi(lesson);
+  const etapa = lesson.theoryCompleted ? "REVIEW" : "THEORY";
+  const licao: LicaoTrilha = { id: lesson.id, titulo: lesson.title, subtitulo: etapa === "THEORY" ? "Etapa 1 de 2" : "Etapa 2 de 2", xp: lesson.xpReward, estado: "atual" };
+  const atividade = atividadeDaApi(lesson, etapa);
 
-  return <ActivityPlayer atividade={atividade} licao={licao} aoConcluir={(acertos, total) => completarLicaoReal(id, Math.round((acertos / total) * 100))} />;
+  return <ActivityPlayer atividade={atividade} licao={licao} aoConcluir={(acertos, total) => etapa === "THEORY"
+    ? completarEtapaTeorica(id)
+    : completarLicaoReal(id, Math.round((acertos / total) * 100))} />;
+}
+
+async function completarEtapaTeorica(id: string): Promise<{ xpEarned: number } | null> {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return null;
+  try {
+    const res = await fetchComTimeout(`${API_BASE_URL}/lessons/${id}/theory-complete`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return null;
+    limparTrilhaCache();
+    return { xpEarned: 0 };
+  } catch { return null; }
 }

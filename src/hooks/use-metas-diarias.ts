@@ -21,6 +21,6 @@ export function useMetasDiarias(): { metas: MetaDoDia[]; conectada: boolean; res
   const [metas, setMetas] = useState<MetaDoDia[]>([]); const [conectada, setConectada] = useState(false);
   const carregar = useCallback(() => { const token=localStorage.getItem("accessToken"); if (!token) return; fetchComTimeout(`${API_BASE_URL}/goals`, { headers:{ Authorization:`Bearer ${token}` } }).then(r=>r.ok?r.json():[]).then(data=>{setMetas(data);setConectada(true)}).catch(()=>setConectada(false)); }, []);
   useEffect(carregar, [carregar]);
-  const resgatar = useCallback(async (id:string) => { const token=localStorage.getItem("accessToken"); if (!token) return 0; const res=await fetchComTimeout(`${API_BASE_URL}/goals/${id}/claim`,{method:"POST",headers:{Authorization:`Bearer ${token}`}}); if(!res.ok)return 0; const data=await res.json(); carregar(); return data.coinsEarned ?? 0; },[carregar]);
+  const resgatar = useCallback(async (id:string) => { const token=localStorage.getItem("accessToken"); if (!token) return 0; const res=await fetchComTimeout(`${API_BASE_URL}/goals/${id}/claim`,{method:"POST",headers:{Authorization:`Bearer ${token}`}}); if(!res.ok)return 0; const data=await res.json(); const ganho=data.coinsEarned ?? 0; if (ganho > 0) window.dispatchEvent(new CustomEvent("zulcode:moedas", { detail: ganho })); carregar(); return ganho; },[carregar]);
   return { metas, conectada, resgatar };
 }

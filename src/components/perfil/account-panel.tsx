@@ -1,18 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Settings, Bell, Sun, LogOut } from "lucide-react";
+import { Bell, BellRing, Sun, LogOut } from "lucide-react";
+import { useState } from "react";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { limparPerfilCache } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
-
-const CONTA_ITEMS = [
-  { id: "config", label: "Configurações", icon: Settings },
-  { id: "notificacoes", label: "Notificações", icon: Bell },
-];
+import { ativarNotificacoesNativas } from "@/lib/push-notifications";
 
 export function AccountPanel() {
   const router = useRouter();
+  const [pushMensagem, setPushMensagem] = useState<string | null>(null);
+  const [ativandoPush, setAtivandoPush] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
@@ -23,6 +22,13 @@ export function AccountPanel() {
     limparPerfilCache();
     limparTrilhaCache();
     router.replace("/welcome");
+  };
+
+  const ativarPush = async () => {
+    setAtivandoPush(true);
+    const resultado = await ativarNotificacoesNativas();
+    setPushMensagem(resultado.mensagem);
+    setAtivandoPush(false);
   };
 
   return (
@@ -39,24 +45,16 @@ export function AccountPanel() {
         <ThemeToggle />
 
         <div className="mt-3.5 border-t border-border pt-3.5">
-          {CONTA_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={item.id}
-                className="flex cursor-default items-center justify-between py-2.5"
-                title="Em breve"
-              >
-                <span className="flex items-center gap-2.5 text-sm font-semibold text-muted-foreground/70">
-                  <Icon className="size-4.5" />
-                  {item.label}
-                </span>
-                <span className="text-[0.6rem] font-extrabold uppercase tracking-[0.05em] text-muted-foreground/70">
-                  Em breve
-                </span>
-              </div>
-            );
-          })}
+          <div className="flex items-center gap-2.5 text-sm font-semibold text-foreground">
+            <Bell className="size-4.5 text-primary" />
+            Notificações
+          </div>
+          <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">Receba avisos e novidades do ZulCode neste aparelho.</p>
+          <button type="button" disabled={ativandoPush} onClick={ativarPush} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2.5 text-xs font-black text-primary-foreground disabled:opacity-60">
+            <BellRing className="size-4" />
+            {ativandoPush ? "Ativando…" : "Ativar notificações"}
+          </button>
+          {pushMensagem && <p className="mt-2 text-xs font-semibold text-muted-foreground">{pushMensagem}</p>}
         </div>
 
         <button

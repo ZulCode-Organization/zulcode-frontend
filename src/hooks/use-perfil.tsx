@@ -95,8 +95,8 @@ interface PerfilState {
   cursosEmAndamento: CursoProgresso[];
   cursosConcluidos: CursoProgresso[];
   retry: () => void;
-  /** Salva nome e/ou e-mail em PUT /user e atualiza a tela e o cache. */
-  salvarDados: (dados: { nome?: string; email?: string }) => Promise<ResultadoSalvar>;
+  /** Salva dados do perfil em PUT /user e atualiza a tela e o cache. */
+  salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string }) => Promise<ResultadoSalvar>;
 }
 
 /** A API do Nest devolve o motivo em `message`, às vezes como lista (quando
@@ -173,8 +173,12 @@ function usePerfilData(): PerfilState {
         const progresso = calcularProgressoNivel(usuario.xp, usuario.nivel);
         const perfilCarregado: PerfilUsuario = {
           role: usuario.role,
+          id: usuario.id,
+          publicCode: usuario.publicCode,
           nome: usuario.name,
           email: usuario.email,
+          avatarId: usuario.avatarId,
+          bannerColor: usuario.bannerColor,
           iniciais: gerarIniciais(usuario.name),
           xp: usuario.xp,
           nivel: usuario.nivel,
@@ -204,8 +208,25 @@ function usePerfilData(): PerfilState {
     load();
   }, [load]);
 
+  // Metas e loja podem conceder moedas sem recarregar a página. O evento é
+  // usado por esses fluxos para manter topbar/sidebar sincronizadas na hora.
+  useEffect(() => {
+    const atualizarMoedas = (event: Event) => {
+      const ganho = (event as CustomEvent<number>).detail;
+      if (typeof ganho !== "number" || ganho <= 0) return;
+      setPerfil((atual) => {
+        if (!atual) return atual;
+        const atualizado = { ...atual, moedas: (atual.moedas ?? 0) + ganho };
+        if (perfilCache?.token === getToken()) perfilCache = { ...perfilCache, perfil: atualizado };
+        return atualizado;
+      });
+    };
+    window.addEventListener("zulcode:moedas", atualizarMoedas);
+    return () => window.removeEventListener("zulcode:moedas", atualizarMoedas);
+  }, []);
+
   const salvarDados = useCallback(
-    async (dados: { nome?: string; email?: string }): Promise<ResultadoSalvar> => {
+    async (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string }): Promise<ResultadoSalvar> => {
       const token = getToken();
       if (!token) return { ok: false, mensagem: "Sua sessão expirou. Entre de novo." };
 
@@ -216,6 +237,8 @@ function usePerfilData(): PerfilState {
           body: JSON.stringify({
             ...(dados.nome !== undefined ? { name: dados.nome } : {}),
             ...(dados.email !== undefined ? { email: dados.email } : {}),
+            ...(dados.avatarId !== undefined ? { avatarId: dados.avatarId } : {}),
+            ...(dados.bannerColor !== undefined ? { bannerColor: dados.bannerColor } : {}),
           }),
         });
 
@@ -233,6 +256,8 @@ function usePerfilData(): PerfilState {
             ...atual,
             nome: nome ?? atual.nome,
             email: email ?? atual.email,
+            avatarId: corpo?.avatarId ?? dados.avatarId ?? atual.avatarId,
+            bannerColor: corpo?.bannerColor ?? dados.bannerColor ?? atual.bannerColor,
             iniciais: gerarIniciais(nome ?? atual.nome),
           };
           // O cache em memória é o que outras telas leem ao montar — sem

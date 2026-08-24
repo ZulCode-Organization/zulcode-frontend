@@ -5,32 +5,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { ChevronDown, Flame, FolderPlus, LogOut } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import { PerfilUsuario } from "@/lib/types/perfil";
+import { ChevronDown, FolderPlus, LogOut } from "lucide-react";
+import { usePerfil } from "@/hooks/use-perfil";
 import { cn } from "@/lib/utils";
 import { adminEntry, adminNavItems, sidebarNavItems } from "./nav-items";
 
-interface AppSidebarProps {
-  perfil: PerfilUsuario | null;
-  loading: boolean;
-}
-
-export function AppSidebar({ perfil, loading }: AppSidebarProps) {
+export function AppSidebar() {
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
+  const { perfil } = usePerfil();
   const [mounted, setMounted] = useState(false);
   const [cadastrosAberto, setCadastrosAberto] = useState(true);
 
   useEffect(() => setMounted(true), []);
 
   const logo = resolvedTheme !== "dark" ? "/icon-only.svg" : "/icon-only-dark.svg";
-  const progresso =
-    perfil && perfil.xpNecessarioNivel !== null
-      ? Math.round((perfil.xpNivelAtual / perfil.xpNecessarioNivel) * 100)
-      : perfil
-        ? 100 // nível máximo
-        : 0;
   const isAdminArea = pathname.startsWith("/admin");
   const navItems = perfil?.role === "ADMIN" ? [...sidebarNavItems, adminEntry] : sidebarNavItems;
 
@@ -60,7 +49,7 @@ export function AppSidebar({ perfil, loading }: AppSidebarProps) {
 
   return (
     <aside className="zc-scroll-hidden hidden h-dvh w-[288px] shrink-0 flex-col overflow-y-auto border-r border-border bg-card px-5 py-7 lg:flex">
-      <div className="flex items-center justify-between px-1 pb-2">
+      <div className="sticky top-0 z-10 -mx-5 flex items-center justify-between bg-card px-6 pb-2 pt-1">
         <Link href="/home" className="flex items-center gap-2.5">
           {mounted ? <Image src={logo} alt="" width={40} height={40} className="rounded-xl" /> : <div style={{ width: 40, height: 40 }} />}
           <span className="text-xl font-black tracking-tight text-foreground">ZulCode</span>
@@ -84,43 +73,6 @@ export function AppSidebar({ perfil, loading }: AppSidebarProps) {
         </> : navItems.map((item) => renderNavLink(item))}
       </nav>
 
-      <div className="flex-1" aria-hidden />
-
-      <Link
-        href="/perfil"
-        className="flex items-center gap-3 rounded-2xl bg-muted p-3.5 transition-colors duration-150 hover:bg-muted/70"
-      >
-        {loading || !perfil ? (
-          <>
-            <div className="size-11 shrink-0 animate-pulse rounded-xl bg-border" />
-            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <div className="h-3 w-3/4 animate-pulse rounded-full bg-border" />
-              <div className="h-1.5 w-full animate-pulse rounded-full bg-border" />
-            </div>
-          </>
-        ) : (
-          <>
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-[0.85rem] font-extrabold text-primary-foreground">
-              {perfil.iniciais}
-            </span>
-            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <div className="flex items-center justify-between gap-2">
-                <span className="truncate text-[0.85rem] font-extrabold text-foreground">
-                  {perfil.nome}
-                </span>
-                <span className="flex shrink-0 items-center gap-0.5 text-[0.8rem] font-semibold text-orange-500">
-                  <Flame className="size-4" />
-                  {perfil.streakAtual}
-                </span>
-              </div>
-              <Progress
-                value={progresso}
-                className="h-1.5 bg-border [&>div]:bg-orange-500"
-              />
-            </div>
-          </>
-        )}
-      </Link>
     </aside>
   );
 }

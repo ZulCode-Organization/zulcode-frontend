@@ -1,7 +1,9 @@
 import { cn } from "@/lib/utils";
+import { AvatarIcon } from "./avatar-icon";
 
 interface UserAvatarProps {
   iniciais: string;
+  avatarId?: string | null;
   nivel?: number;
   size?: "sm" | "md" | "lg";
   className?: string;
@@ -13,7 +15,7 @@ const SIZE_CLASSES: Record<NonNullable<UserAvatarProps["size"]>, string> = {
   lg: "size-24 rounded-3xl text-3xl",
 };
 
-export function UserAvatar({ iniciais, nivel, size = "md", className }: UserAvatarProps) {
+export function UserAvatar({ iniciais, avatarId, nivel, size = "md", className }: UserAvatarProps) {
   return (
     <div className={cn("relative inline-flex", className)}>
       <div
@@ -22,7 +24,7 @@ export function UserAvatar({ iniciais, nivel, size = "md", className }: UserAvat
           SIZE_CLASSES[size]
         )}
       >
-        {iniciais}
+        {avatarId ? <AvatarIcon id={avatarId} /> : iniciais}
       </div>
       {typeof nivel === "number" && (
         <span className="absolute -bottom-1.5 -right-1.5 rounded-md bg-secondary px-1.5 py-0.5 text-[0.65rem] font-bold leading-none text-secondary-foreground shadow-sm ring-2 ring-background">

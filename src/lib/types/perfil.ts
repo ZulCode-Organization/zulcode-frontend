@@ -1,8 +1,12 @@
 export interface PerfilUsuario {
+  id: string;
+  publicCode?: string;
   role: "USER" | "ADMIN";
   nome: string;
   email: string;
   iniciais: string;
+  avatarId?: string;
+  bannerColor?: string | null;
   xp: number;
   nivel: number;
   nivelLabel: string;

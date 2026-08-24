@@ -36,7 +36,7 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salv
             <p className="text-[0.7rem] font-black uppercase tracking-[0.08em] text-amber-600">Total de XP</p>
             <p className="mt-1 flex items-center justify-center gap-1.5 text-2xl font-black text-amber-600">
               <Zap className="size-5 fill-current" />
-              {salvando ? "…" : xp}
+              {xp}
             </p>
           </div>
           <div className="rounded-2xl border-2 border-emerald-400 bg-emerald-400/10 px-7 py-4">
@@ -53,6 +53,7 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salv
         <p className="text-sm text-muted-foreground">
           Você acertou {acertos} de {total} perguntas.
         </p>
+        {salvando && <p className="text-xs font-bold text-primary">Confirmando conclusão e recompensas…</p>}
         {erroSalvar && (
           <p className="text-xs font-bold text-red-500">
             Não deu pra confirmar seu XP agora. Verifica sua conexão e tenta de novo mais tarde.
@@ -63,15 +64,17 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salv
       <div className="mx-auto flex w-full max-w-md gap-3 px-4 pb-8">
         <button
           type="button"
+          disabled={salvando}
           onClick={onRevisar}
-          className="zc-press flex-1 rounded-2xl border-2 border-border py-3.5 text-[0.8rem] font-black uppercase tracking-[0.06em] text-muted-foreground"
+          className="zc-press flex-1 rounded-2xl border-2 border-border py-3.5 text-[0.8rem] font-black uppercase tracking-[0.06em] text-muted-foreground disabled:cursor-wait disabled:opacity-50"
         >
           Revisar lição
         </button>
         <button
           type="button"
+          disabled={salvando}
           onClick={onContinuar}
-          className="zc-press zc-press-shadow flex-1 rounded-2xl bg-emerald-500 py-3.5 text-[0.8rem] font-black uppercase tracking-[0.06em] text-white"
+          className="zc-press zc-press-shadow flex-1 rounded-2xl bg-emerald-500 py-3.5 text-[0.8rem] font-black uppercase tracking-[0.06em] text-white disabled:cursor-wait disabled:opacity-50"
           style={{ ["--zc-press-color" as string]: "color-mix(in srgb, #10b981 70%, black)" }}
         >
           Continuar

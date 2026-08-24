@@ -7,15 +7,17 @@ import { MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { bottomNavItems, moreNavItems } from "./nav-items";
 import { MaisMenu } from "./mais-menu";
+import { usePerfil } from "@/hooks/use-perfil";
 
 export function AppBottomNav() {
   const pathname = usePathname();
   const [maisAberto, setMaisAberto] = useState(false);
+  const { perfil } = usePerfil();
 
   // Metas e Líderes só existem dentro do menu "Mais" no celular — sem
   // checar isso aqui, nenhum ícone da barra ficaria "ativo" quando a
   // pessoa estivesse numa dessas duas telas.
-  const maisAtivo = moreNavItems.some((item) => item.href === pathname);
+  const maisAtivo = moreNavItems.some((item) => item.href === pathname) || (perfil?.role === "ADMIN" && pathname.startsWith("/admin"));
 
   return (
     <nav className="sticky bottom-0 z-20 flex items-center justify-around border-t border-border bg-background/95 px-2 py-2 backdrop-blur-md lg:hidden">

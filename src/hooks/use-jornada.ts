@@ -16,11 +16,14 @@ export interface CursoDaJornada { id: string; name: string; icon: string; }
  * é concluída de verdade, em toda a trilha, não só na lição conectada.
  */
 export function useJornada() {
-  const [cursoAtual, setCursoAtual] = useState("javascript");
+  // Não assume JavaScript: em um reload isso iniciava uma requisição e
+  // renderizava a trilha errada antes de a API responder o curso do usuário.
+  const [cursoAtual, setCursoAtual] = useState<string | null>(null);
   const [cursos, setCursos] = useState<CursoDaJornada[]>([]);
+  const [carregandoCurso, setCarregandoCurso] = useState(true);
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
-    if (!token) return;
+    if (!token) { setCarregandoCurso(false); return; }
     Promise.all([
       fetchComTimeout(`${API_BASE_URL}/languages`).then(r => r.json()),
       fetchComTimeout(`${API_BASE_URL}/languages/current`, { headers: { Authorization: `Bearer ${token}` } }).then(async r => {
@@ -28,9 +31,12 @@ export function useJornada() {
         const body = await r.text();
         return body ? JSON.parse(body) : null;
       }),
-    ]).then(([available, current]) => { setCursos(available); if (current?.id) setCursoAtual(current.id); });
+    ]).then(([available, current]) => {
+      setCursos(available);
+      setCursoAtual(current?.id ?? available[0]?.id ?? null);
+    }).catch(() => setCursoAtual(null)).finally(() => setCarregandoCurso(false));
   }, []);
-  const trilhaReal = useTrilha(cursoAtual);
+  const trilhaReal = useTrilha(cursoAtual ?? "", !!cursoAtual);
 
   const marcarConcluidaLocal = useCallback((_licaoId: string) => undefined, []);
   const selecionarCurso = useCallback(async (slug: string) => {
@@ -45,9 +51,9 @@ export function useJornada() {
     // Só bloqueia a tela inteira no primeiro carregamento — depois de
     // cacheado (useTrilha), essa página nunca mais fica presa esperando
     // rede de novo.
-    loading: trilhaReal.loading,
+    loading: carregandoCurso || !cursoAtual || trilhaReal.loading,
     marcarConcluidaLocal,
-    cursoAtual,
+    cursoAtual: cursoAtual ?? "",
     cursos,
     selecionarCurso,
   };

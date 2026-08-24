@@ -1,6 +1,6 @@
 "use client";
 
-import { Coins, Feather, Zap } from "lucide-react";
+import { Coins, Feather, Flame, Zap } from "lucide-react";
 import { usePerfil } from "@/hooks/use-perfil";
 
 /**
@@ -41,6 +41,11 @@ export function AppTopBar() {
       <span className={`${chip} text-yellow-500`} title="Moedas">
         <Coins className="size-5" />
         {valor(perfil?.moedas)}
+      </span>
+
+      <span className={`${chip} text-orange-500`} title="Dias seguidos">
+        <Flame className="size-5 fill-current" />
+        {valor(perfil?.streakAtual)}
       </span>
     </div>
   );

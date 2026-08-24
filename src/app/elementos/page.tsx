@@ -10,11 +10,12 @@ import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { ElementoGlossario } from "@/lib/types/elemento";
 
 function ElementosContent() {
-  const { cursoAtual, cursos } = useJornada();
+  const { cursoAtual, cursos, loading } = useJornada();
   const [elementos, setElementos] = useState<ElementoGlossario[]>([]);
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
-    if (!token) return;
+    if (!token || !cursoAtual) return;
+    setElementos([]);
     fetchComTimeout(`${API_BASE_URL}/languages/${cursoAtual}/elements`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => res.ok ? res.json() : [])
       .then(setElementos);
@@ -28,7 +29,7 @@ function ElementosContent() {
         Toque num elemento pra ver o significado e um exemplo de novo.
       </p>
 
-      {categorias.map(([categoria, itens]) => (
+      {loading ? <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">{[0, 1, 2].map((item) => <div key={item} className="h-28 animate-pulse rounded-3xl bg-muted" />)}</div> : categorias.map(([categoria, itens]) => (
         <div key={categoria} className="mt-8">
           <div className="flex items-center gap-3.5">
             <h2 className="shrink-0 text-lg font-black text-foreground">{categoria}</h2>
@@ -43,7 +44,7 @@ function ElementosContent() {
         </div>
       ))}
 
-      {elementos.length === 0 && <p className="mt-10 text-center text-[0.85rem] text-muted-foreground">Conclua aulas deste curso para desbloquear elementos.</p>}
+      {!loading && elementos.length === 0 && <p className="mt-10 text-center text-[0.85rem] text-muted-foreground">Conclua aulas deste curso para desbloquear elementos.</p>}
     </div>
   );
 }

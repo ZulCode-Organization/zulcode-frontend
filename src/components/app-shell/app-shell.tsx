@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { PerfilProvider, usePerfil } from "@/hooks/use-perfil";
+import { PerfilProvider } from "@/hooks/use-perfil";
 import { AppSidebar } from "./app-sidebar";
 import { AppBottomNav } from "./app-bottom-nav";
 import { AppTopBar } from "./app-topbar";
@@ -8,6 +8,9 @@ import { StickyBottomPanel } from "./sticky-bottom-panel";
 interface AppShellProps {
   children: ReactNode;
   rightPanel?: ReactNode;
+  /** Largura máxima da área de conteúdo. Páginas como Perfil usam a área
+   * inteira, enquanto as telas de leitura mantêm a coluna mais estreita. */
+  contentClassName?: string;
   /** "sticky-top" (padrão): painel fica no topo, do jeito normal — serve
    * pra quase toda página, onde o conteúdo principal é curto ou parecido
    * em altura com o painel. "sticky-bottom": rola normal e trava no rodapé
@@ -17,14 +20,12 @@ interface AppShellProps {
   rightPanelVariant?: "sticky-top" | "sticky-bottom";
 }
 
-function AppShellContent({ children, rightPanel, rightPanelVariant = "sticky-top" }: AppShellProps) {
-  const { perfil, loading } = usePerfil();
-
+function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl", rightPanelVariant = "sticky-top" }: AppShellProps) {
   return (
     // h-dvh + overflow-hidden trava o viewport inteiro: nada rola aqui fora,
     // cada coluna (sidebar, conteúdo, painel direito) cuida do próprio scroll.
     <div className="flex h-dvh overflow-hidden bg-background">
-      <AppSidebar perfil={perfil} loading={loading} />
+      <AppSidebar />
 
       {/* Sem topbar no mobile: a navegação já vive inteira na barra inferior,
           então uma segunda barra fixa no topo só duplicava e sobrava. */}
@@ -44,7 +45,7 @@ function AppShellContent({ children, rightPanel, rightPanelVariant = "sticky-top
               dele em telas grandes. */}
           <div className="flex">
             <main className="w-full min-w-0 flex-1 px-4 pb-10 lg:px-8">
-              <div className="mx-auto max-w-3xl">{children}</div>
+              <div className={`mx-auto ${contentClassName}`}>{children}</div>
             </main>
 
             {rightPanel &&

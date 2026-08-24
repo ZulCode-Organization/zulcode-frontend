@@ -133,9 +133,14 @@ export function useTrilha(languageSlug: string, enabled: boolean = true) {
   }, [languageSlug, enabled]);
 
   useEffect(() => {
-    // Já tem cache válido (mesma conta/idioma) de uma tela anterior: usa
-    // ele e nem dispara a requisição.
-    if (cacheValidoPara(getToken(), languageSlug)) return;
+    // Ao voltar para a Jornada o hook é montado de novo. Nesse caso o estado
+    // inicia vazio, mas o cache pode existir: além de evitar a requisição,
+    // é obrigatório reidratar o estado com ele. Antes só retornávamos aqui,
+    // deixando a tela com `loading: false` e nenhuma unidade.
+    if (cacheValidoPara(getToken(), languageSlug) && trilhaCache) {
+      setState({ loading: false, error: false, unidades: trilhaCache.unidades });
+      return;
+    }
     load();
   }, [load, languageSlug]);
 

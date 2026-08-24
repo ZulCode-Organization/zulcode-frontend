@@ -8,7 +8,8 @@ import { X, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { limparPerfilCache } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
-import { moreNavItems } from "./nav-items";
+import { adminEntry, moreNavItems } from "./nav-items";
+import { usePerfil } from "@/hooks/use-perfil";
 
 interface MaisMenuProps {
   onClose: () => void;
@@ -27,6 +28,8 @@ export function MaisMenu({ onClose }: MaisMenuProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [visivel, setVisivel] = useState(false);
+  const { perfil } = usePerfil();
+  const itens = perfil?.role === "ADMIN" ? [...moreNavItems, adminEntry] : moreNavItems;
 
   useLayoutEffect(() => {
     const id = requestAnimationFrame(() => setVisivel(true));
@@ -89,7 +92,7 @@ export function MaisMenu({ onClose }: MaisMenuProps) {
         </button>
 
         <div className="flex flex-col gap-1">
-          {moreNavItems.map((item) => {
+          {itens.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href;
             return (

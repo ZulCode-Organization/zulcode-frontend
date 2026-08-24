@@ -7,11 +7,11 @@ import { usePerfil } from "@/hooks/use-perfil";
 /**
  * Não existe divisão/liga/ranking no backend — nenhum model, nenhuma rota.
  * O único dado real aqui é o xp do usuário (GET /user, via usePerfil). O
- * "alvo" de 100 XP é só uma referência visual local pra dar sentido à barra
+ * "alvo" de 300 XP acompanha o limiar real de Prata na tela de ranking.
  * de progresso; o "ainda bloqueada" continua sendo a verdade honesta:
  * ninguém entra numa disputa que ainda não existe.
  */
-const XP_ALVO = 100;
+const XP_ALVO = 300;
 
 export function LeaderboardWidget() {
   const { perfil, loading } = usePerfil();
@@ -37,13 +37,13 @@ export function LeaderboardWidget() {
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="text-[0.95rem] font-extrabold text-foreground">Ainda bloqueada</p>
+          <p className="text-[0.95rem] font-extrabold text-foreground">Em progresso</p>
           <p className="mt-1 text-[0.85rem] leading-snug text-muted-foreground">
             {loading
               ? "Carregando…"
               : faltam > 0
-                ? `Faltam ${faltam} XP pra você entrar na disputa.`
-                : "Você já tem XP de sobra — a disputa de verdade ainda não abriu."}
+                ? `Faltam ${faltam} XP para chegar à divisão Prata.`
+                : "Você já alcançou a divisão Prata!"}
           </p>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
             <div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${pct}%` }} />

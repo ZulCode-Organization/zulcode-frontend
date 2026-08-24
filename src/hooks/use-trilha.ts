@@ -10,6 +10,8 @@ interface LicaoTrack {
   xpReward: number;
   completed: boolean;
   theoryCompleted: boolean;
+  stageCount?: number;
+  completedStages?: number;
 }
 
 interface UnidadeTrack {
@@ -56,7 +58,9 @@ function montarUnidades(track: TrackResponse): UnidadeTrilha[] {
       } else {
         estado = "bloqueada";
       }
-      return { id: licao.id, titulo: licao.title, subtitulo: licao.completed ? "2/2 etapas" : licao.theoryCompleted ? "1/2 etapas" : "0/2 etapas", xp: licao.xpReward, estado };
+      const totalEtapas = Math.max(1, licao.stageCount ?? 2);
+      const feitas = licao.completed ? totalEtapas : Math.min(totalEtapas, licao.completedStages ?? (licao.theoryCompleted ? 1 : 0));
+      return { id: licao.id, titulo: licao.title, subtitulo: `${feitas}/${totalEtapas} etapas`, xp: licao.xpReward, estado };
     }),
   }));
 }

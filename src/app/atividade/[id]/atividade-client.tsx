@@ -96,13 +96,28 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
     return <div className="flex min-h-dvh items-center justify-center text-sm font-bold text-muted-foreground">Carregando aula…</div>;
   }
 
-  const etapa = lesson.theoryCompleted ? "REVIEW" : "THEORY";
-  const licao: LicaoTrilha = { id: lesson.id, titulo: lesson.title, subtitulo: etapa === "THEORY" ? "Etapa 1 de 2" : "Etapa 2 de 2", xp: lesson.xpReward, estado: "atual" };
+  const totalEtapas = Math.max(1, lesson.stageCount ?? 2);
+  const concluidas = lesson.completed ? totalEtapas : Math.min(totalEtapas, lesson.completedStages ?? (lesson.theoryCompleted ? 1 : 0));
+  const etapaAtual = Math.min(totalEtapas, concluidas + 1);
+  // Aulas antigas usam THEORY/REVIEW; aulas flexíveis usam STAGE_1, STAGE_2…
+  const etapa = totalEtapas === 2 ? (etapaAtual === 1 ? "THEORY" : "REVIEW") : `STAGE_${etapaAtual}`;
+  const licao: LicaoTrilha = { id: lesson.id, titulo: lesson.title, subtitulo: `Etapa ${etapaAtual} de ${totalEtapas}`, xp: lesson.xpReward, estado: "atual" };
   const atividade = atividadeDaApi(lesson, etapa);
 
-  return <ActivityPlayer atividade={atividade} licao={licao} aoConcluir={(acertos, total) => etapa === "THEORY"
-    ? completarEtapaTeorica(id)
+  return <ActivityPlayer atividade={atividade} licao={licao} aoConcluir={(acertos, total) => etapaAtual < totalEtapas
+    ? (totalEtapas === 2 ? completarEtapaTeorica(id) : completarEtapa(id, etapaAtual))
     : completarLicaoReal(id, Math.round((acertos / total) * 100))} />;
+}
+
+async function completarEtapa(id: string, etapa: number): Promise<{ xpEarned: number } | null> {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return null;
+  try {
+    const res = await fetchComTimeout(`${API_BASE_URL}/lessons/${id}/stages/${etapa}/complete`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return null;
+    limparTrilhaCache();
+    return { xpEarned: 0 };
+  } catch { return null; }
 }
 
 async function completarEtapaTeorica(id: string): Promise<{ xpEarned: number } | null> {

@@ -66,6 +66,17 @@ export function LessonTrail({ unidades, cursos, cursoAtual, onCursoChange }: Les
     return () => observer.disconnect();
   }, [unidades]);
 
+  // Um curso recém-criado pelo administrativo pode ainda não ter nenhuma
+  // unidade. Não renderizamos o UnitBanner sem uma unidade válida.
+  if (unidades.length === 0) {
+    return (
+      <div className="mt-7 rounded-3xl border border-dashed bg-card p-8 text-center">
+        <h2 className="text-xl font-black">Este curso ainda está sendo preparado</h2>
+        <p className="mt-2 text-sm text-muted-foreground">As aulas aparecerão aqui assim que a primeira unidade for cadastrada.</p>
+      </div>
+    );
+  }
+
   const unidadeAtiva = unidades[unidadeAtivaIndex] ?? unidades[0];
   const corAtiva = CORES_UNIDADE[unidadeAtivaIndex % CORES_UNIDADE.length];
   const ultimaSecao = unidades[unidades.length - 1]?.secao ?? 1;

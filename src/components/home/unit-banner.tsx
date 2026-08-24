@@ -31,8 +31,8 @@ export function UnitBanner({ unidade, cor, unidades, cursos, cursoAtual, onCurso
     document.addEventListener("touchstart", fecharFora);
     return () => { document.removeEventListener("mousedown", fecharFora); document.removeEventListener("touchstart", fecharFora); };
   }, [aberto]);
-  const total = unidade.licoes.length;
-  const concluidas = unidade.licoes.filter((l) => l.estado === "concluida").length;
+  const total = unidade?.licoes?.length ?? 0;
+  const concluidas = unidade?.licoes?.filter((l) => l.estado === "concluida").length ?? 0;
 
   return (
     // top-[72px] deixa o banner logo abaixo da barra de status, que é sticky em
@@ -90,7 +90,7 @@ export function UnitBanner({ unidade, cor, unidades, cursos, cursoAtual, onCurso
         <div className="h-2 flex-1 overflow-hidden rounded-md bg-black/20">
           <div
             className="h-full rounded-md bg-white transition-[width] duration-300"
-            style={{ width: `${Math.round((concluidas / total) * 100)}%` }}
+            style={{ width: `${total ? Math.round((concluidas / total) * 100) : 0}%` }}
           />
         </div>
         <span className="shrink-0 text-xs font-black opacity-90">

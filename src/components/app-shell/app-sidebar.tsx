@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { Flame } from "lucide-react";
+import { ChevronDown, Flame, FolderPlus, LogOut } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { PerfilUsuario } from "@/lib/types/perfil";
 import { cn } from "@/lib/utils";
@@ -32,65 +32,56 @@ export function AppSidebar({ perfil, loading }: AppSidebarProps) {
         ? 100 // nível máximo
         : 0;
   const isAdminArea = pathname.startsWith("/admin");
-  const navItems = isAdminArea ? adminNavItems : perfil?.role === "ADMIN" ? [...sidebarNavItems, adminEntry] : sidebarNavItems;
+  const navItems = perfil?.role === "ADMIN" ? [...sidebarNavItems, adminEntry] : sidebarNavItems;
+
+  const renderNavLink = (item: (typeof sidebarNavItems)[number], nested = false) => {
+    const Icon = item.icon;
+    const active = pathname === item.href;
+    return (
+      <Link
+        key={item.id}
+        href={item.href!}
+        aria-current={active ? "page" : undefined}
+        className={cn(
+          "group flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-black uppercase tracking-[0.05em] transition-colors duration-150",
+          nested && "ml-5 rounded-xl py-2.5 text-[0.78rem]",
+          active
+            ? "border-primary/30 bg-primary/10 text-primary"
+            : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+        )}
+      >
+        <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-[10px] transition-colors duration-150", nested && "size-8 rounded-lg", active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:text-foreground")}>
+          <Icon className={nested ? "size-4" : "size-5"} />
+        </span>
+        {item.label}
+      </Link>
+    );
+  };
 
   return (
     <aside className="zc-scroll-hidden hidden h-dvh w-[288px] shrink-0 flex-col overflow-y-auto border-r border-border bg-card px-5 py-7 lg:flex">
-      <Link href="/home" className="flex items-center gap-2.5 px-1 pb-2">
-        {mounted ? (
-          <Image src={logo} alt="" width={40} height={40} className="rounded-xl" />
-        ) : (
-          <div style={{ width: 40, height: 40 }} />
-        )}
-        <span className="text-xl font-black tracking-tight text-foreground">ZulCode</span>
-      </Link>
+      <div className="flex items-center justify-between px-1 pb-2">
+        <Link href="/home" className="flex items-center gap-2.5">
+          {mounted ? <Image src={logo} alt="" width={40} height={40} className="rounded-xl" /> : <div style={{ width: 40, height: 40 }} />}
+          <span className="text-xl font-black tracking-tight text-foreground">ZulCode</span>
+        </Link>
+        {isAdminArea && <Link href="/home" title="Sair do administrativo" aria-label="Sair do administrativo" className="flex size-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><LogOut className="size-5" /></Link>}
+      </div>
 
-      <span className="mb-2.5 mt-6 px-1 text-[0.7rem] font-extrabold uppercase tracking-[0.09em] text-muted-foreground/70">
-        Menu
-      </span>
-
-      <nav className="flex flex-col gap-1">
-        {isAdminArea && <span className="px-1 pb-1 text-[0.67rem] font-black uppercase tracking-[0.08em] text-primary">Administrativo</span>}
-        {!isAdminArea && perfil?.role === "ADMIN" && <span className="px-1 pb-1 text-[0.67rem] font-black uppercase tracking-[0.08em] text-primary">Gestão</span>}
-        {isAdminArea && (
+      <nav className="mt-6 flex flex-col gap-1">
+        {isAdminArea ? <>
+          {renderNavLink(adminNavItems[0])}
           <button
             type="button"
             onClick={() => setCadastrosAberto((aberto) => !aberto)}
-            className="mt-2 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-black uppercase tracking-[0.07em] text-muted-foreground hover:bg-muted"
+            className="group mt-1 flex w-full items-center gap-3 rounded-2xl border border-transparent px-4 py-3 text-left text-sm font-black uppercase tracking-[0.05em] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
           >
-            Cadastros <span>{cadastrosAberto ? "−" : "+"}</span>
+            <span className="flex size-9 items-center justify-center rounded-[10px] bg-muted text-muted-foreground group-hover:text-foreground"><FolderPlus className="size-5" /></span>
+            <span className="flex-1">Cadastros</span><ChevronDown className={cn("size-4 transition-transform", cadastrosAberto && "rotate-180")} />
           </button>
-        )}
-        {navItems.filter((item) => !isAdminArea || cadastrosAberto || !["admin-cursos", "admin-metas"].includes(item.id)).map((item) => {
-          const Icon = item.icon;
-          const active = pathname === item.href;
-
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "group flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-black uppercase tracking-[0.05em] transition-colors duration-150",
-                active
-                  ? "border-primary/30 bg-primary/10 text-primary"
-                  : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-              )}
-            >
-              <span
-                className={cn(
-                  "flex size-9 shrink-0 items-center justify-center rounded-[10px] transition-colors duration-150",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground group-hover:text-foreground"
-                )}
-              >
-                <Icon className="size-5" />
-              </span>
-              {item.label}
-            </Link>
-          );
-        })}
+          {cadastrosAberto && adminNavItems.slice(1, 3).map((item) => renderNavLink(item, true))}
+          {adminNavItems.slice(3).map((item) => renderNavLink(item))}
+        </> : navItems.map((item) => renderNavLink(item))}
       </nav>
 
       <div className="flex-1" aria-hidden />

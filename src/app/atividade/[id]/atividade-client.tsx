@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Hammer, X } from "lucide-react";
+import { Feather, Hammer, X } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { limparPerfilCache } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
@@ -75,16 +75,28 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
   useRequireAuth();
   const [lesson, setLesson] = useState<ApiLesson | null>(null);
   const [error, setError] = useState(false);
+  const [semPenas, setSemPenas] = useState(false);
+  const [livesState, setLivesState] = useState<{ lives: number; isUnlimited?: boolean } | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
-    fetchComTimeout(`${API_BASE_URL}/lessons/${id}`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => {
-        if (!res.ok) throw new Error("Aula não encontrada");
-        return res.json();
+    Promise.all([
+      fetchComTimeout(`${API_BASE_URL}/lessons/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetchComTimeout(`${API_BASE_URL}/lessons/${id}/start`, { method: "POST", headers: { Authorization: `Bearer ${token}` } }),
+    ])
+      .then(async ([lessonRes, livesRes]) => {
+        if (!livesRes.ok) {
+          if (livesRes.status === 422) { setSemPenas(true); return null; }
+          throw new Error("Não foi possível consultar as penas");
+        }
+        const lives: { lives: number; isUnlimited?: boolean } = await livesRes.json();
+        if (lives.lives <= 0) { setSemPenas(true); return null; }
+        setLivesState(lives);
+        if (!lessonRes.ok) throw new Error("Aula não encontrada");
+        return lessonRes.json();
       })
-      .then((data: ApiLesson) => setLesson(data))
+      .then((data: ApiLesson | null) => { if (data) setLesson(data); })
       .catch(() => setError(true));
   }, [id]);
 
@@ -92,7 +104,8 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
     return <AtividadeEmConstrucao />;
   }
 
-  if (!lesson) {
+  if (!lesson || !livesState) {
+    if (semPenas) return <SemPenas />;
     return <div className="flex min-h-dvh items-center justify-center text-sm font-bold text-muted-foreground">Carregando aula…</div>;
   }
 
@@ -106,7 +119,24 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
 
   return <ActivityPlayer atividade={atividade} licao={licao} aoConcluir={(acertos, total) => etapaAtual < totalEtapas
     ? (totalEtapas === 2 ? completarEtapaTeorica(id) : completarEtapa(id, etapaAtual))
-    : completarLicaoReal(id, Math.round((acertos / total) * 100))} />;
+    : completarLicaoReal(id, Math.round((acertos / total) * 100))} aoErrar={consumirPena} vidas={livesState.lives} vidasIlimitadas={livesState.isUnlimited} />;
+}
+
+function SemPenas() {
+  const router = useRouter();
+  return <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center"><span className="flex size-20 items-center justify-center rounded-[28px] bg-rose-500/10 text-rose-500"><Feather className="size-10" /></span><h1 className="mt-6 text-3xl font-black">Sem penas para começar</h1><p className="mt-3 max-w-md text-muted-foreground">Você precisa ter ao menos uma pena para iniciar uma aula. A próxima pena será recuperada em até uma hora.</p><button type="button" onClick={() => router.push("/home")} className="mt-7 rounded-2xl bg-primary px-7 py-3.5 text-sm font-black text-primary-foreground">Voltar para a jornada</button></div>;
+}
+
+async function consumirPena(): Promise<{ lives: number; isUnlimited?: boolean } | null> {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return null;
+  try {
+    const res = await fetchComTimeout(`${API_BASE_URL}/user/lives/use`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return { lives: 0 };
+    const estado: { lives: number; isUnlimited?: boolean } = await res.json();
+    limparPerfilCache();
+    return estado;
+  } catch { return null; }
 }
 
 async function completarEtapa(id: string, etapa: number): Promise<{ xpEarned: number } | null> {

@@ -8,13 +8,12 @@
  * São bem mais altas que largas de propósito — na primeira versão elas eram
  * baixas e o desenho lia como serra de montanha.
  *
- * O SVG usa "xMidYMax slice" em vez de esticar: deformar horizontalmente
- * afinava as línguas e trazia a serra de volta. O que sobra da largura é
- * cortado, e a base fica sempre colada embaixo.
+ * O desenho preenche qualquer largura sem usar `slice`: em telas largas,
+ * `slice` ampliava o SVG e cortava justamente as pontas das chamas.
  */
 export function ChamasRoxas({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 1200 420" preserveAspectRatio="xMidYMax slice" aria-hidden className={className}>
+    <svg viewBox="0 0 1200 420" preserveAspectRatio="none" aria-hidden className={className}>
       <defs>
         <linearGradient id="zc-chama-fundo" x1="0" y1="1" x2="0" y2="0">
           <stop offset="0%" stopColor="#2e1065" />

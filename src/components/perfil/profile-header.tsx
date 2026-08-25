@@ -7,6 +7,7 @@ import { PerfilUsuario } from "@/lib/types/perfil";
 import { cn } from "@/lib/utils";
 import { AVATARES, AvatarIcon } from "@/components/shared/avatar-icon";
 import { usePerfil } from "@/hooks/use-perfil";
+import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 
 interface ProfileHeaderProps {
   perfil: PerfilUsuario;
@@ -39,10 +40,24 @@ export function ProfileHeader({ perfil, editavel = true }: ProfileHeaderProps) {
   const [nome, setNome] = useState(perfil.nome);
   const [email, setEmail] = useState(perfil.email);
   const [salvando, setSalvando] = useState(false);
+  const [avataresComprados, setAvataresComprados] = useState<string[]>([]);
+  const [bannersComprados, setBannersComprados] = useState<{ id: string; name: string; gradient: string }[]>([]);
   const seletorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setCorCapa(perfil.bannerColor ?? "#22c55e"), [perfil.bannerColor]);
   useEffect(() => setAvatar(perfil.avatarId ?? "orbit"), [perfil.avatarId]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+    fetchComTimeout(`${API_BASE_URL}/user/zulcoins/cosmetics`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => res.ok ? res.json() : [])
+      .then((itens: { id: string; name: string; kind: string; owned: boolean; value: { avatarId?: string; gradient?: string } }[]) => {
+        setAvataresComprados(itens.filter((item) => item.kind === "AVATAR" && item.owned && item.value.avatarId).map((item) => item.value.avatarId!));
+        setBannersComprados(itens.filter((item) => item.kind === "BANNER" && item.owned && item.value.gradient).map((item) => ({ id: item.id, name: item.name, gradient: item.value.gradient! })));
+      })
+      .catch(() => { setAvataresComprados([]); setBannersComprados([]); });
+  }, []);
 
   useEffect(() => {
     if (!seletorAberto && !avatarAberto) return;
@@ -59,6 +74,10 @@ export function ProfileHeader({ perfil, editavel = true }: ProfileHeaderProps) {
 
   const escolherCor = (cor: string) => {
     setCorCapa(cor);
+    setSeletorAberto(false);
+  };
+  const escolherBannerComprado = (banner: { id: string; gradient: string }) => {
+    setCorCapa(banner.gradient);
     setSeletorAberto(false);
   };
   const escolherAvatar = (proximo: string) => { setAvatar(proximo); setAvatarAberto(false); };
@@ -81,7 +100,7 @@ export function ProfileHeader({ perfil, editavel = true }: ProfileHeaderProps) {
             seletorAberto && "ring-2 ring-primary/40",
             !corCapa && "zc-hatch"
           )}
-          style={corCapa ? { backgroundColor: corCapa } : undefined}
+          style={corCapa ? { background: corCapa } : undefined}
         >
           {!corCapa && (
             <span className="absolute inset-0 flex items-center justify-center font-mono text-[0.72rem] text-muted-foreground/70">
@@ -103,10 +122,10 @@ export function ProfileHeader({ perfil, editavel = true }: ProfileHeaderProps) {
 
           {modoEdicao && seletorAberto && (
             <div
-              className="animate-pop-in absolute right-0 top-11 z-20 flex w-[168px] flex-wrap gap-2.5 rounded-2xl border border-border bg-card p-3.5 shadow-lg"
+              className="animate-pop-in absolute right-0 top-11 z-20 w-[220px] rounded-2xl border border-border bg-card p-3.5 shadow-lg"
               role="menu"
             >
-              {CORES_CAPA.map((cor) => (
+              <div className="flex flex-wrap gap-2.5">{CORES_CAPA.map((cor) => (
                 <button
                   key={cor.id}
                   type="button"
@@ -123,20 +142,21 @@ export function ProfileHeader({ perfil, editavel = true }: ProfileHeaderProps) {
                 >
                   {corCapa === cor.valor && <Check className="size-4 text-white" strokeWidth={3} />}
                 </button>
-              ))}
+              ))}</div>
+              {[...(perfil.isPro ? [{ id: "pro-banner", name: "Banner PRO", gradient: "linear-gradient(135deg, #7c3aed, #d946ef 55%, #f0abfc)" }] : []), ...bannersComprados].length > 0 && <div className="mt-3 border-t border-border pt-3"><p className="mb-2 text-[0.65rem] font-black uppercase tracking-wider text-muted-foreground">Banners disponíveis</p><div className="grid gap-2">{[...(perfil.isPro ? [{ id: "pro-banner", name: "Banner PRO", gradient: "linear-gradient(135deg, #7c3aed, #d946ef 55%, #f0abfc)" }] : []), ...bannersComprados].map((banner) => <button key={banner.id} type="button" onClick={() => escolherBannerComprado(banner)} className="flex items-center gap-2 rounded-xl p-1.5 text-left text-xs font-bold hover:bg-muted"><span className="h-8 w-12 rounded-lg" style={{ background: banner.gradient }} /><span className="truncate">{banner.name}</span></button>)}</div></div>}
             </div>
           )}
         </div>}
       </div>
 
       <div className="relative px-1.5" data-seletor-avatar>
-        <button type="button" onClick={() => editavel && modoEdicao && setAvatarAberto(v => !v)} aria-label={modoEdicao ? "Escolher ícone do perfil" : undefined} className={cn("relative -mt-[42px] flex size-24 items-center justify-center rounded-[28px] border-[5px] border-background bg-primary text-3xl font-black text-primary-foreground", editavel && modoEdicao && "cursor-pointer", avatarAberto && "ring-2 ring-primary/40")}>
+        <button type="button" onClick={() => editavel && modoEdicao && setAvatarAberto(v => !v)} aria-label={modoEdicao ? "Escolher ícone do perfil" : undefined} className={cn("relative -mt-[42px] flex size-24 items-center justify-center rounded-[28px] border-[5px] border-background bg-primary text-3xl font-black text-primary-foreground", editavel && modoEdicao && "cursor-pointer", avatarAberto && "ring-2 ring-primary/40")} style={{ background: corCapa ?? "#22c55e" }}>
           <AvatarIcon id={avatar} />
           <span className="absolute -bottom-1.5 -right-1.5 rounded-lg border-[3px] border-background bg-amber-400 px-2 py-0.5 text-[0.68rem] font-black text-amber-950">
             Nv.{perfil.nivel}
           </span>
         </button>
-        {modoEdicao && avatarAberto && <div className="animate-pop-in absolute left-1.5 top-[68px] z-20 flex max-w-[300px] flex-wrap gap-2 rounded-2xl border border-border bg-card p-3 shadow-lg">{AVATARES.map(({ id, label }) => <button type="button" key={id} onClick={() => escolherAvatar(id)} aria-label={`Usar ícone ${label}`} title={label} className={cn("grid size-10 place-items-center rounded-xl bg-muted text-xl hover:bg-primary/15", avatar === id && "bg-primary text-primary-foreground")}><AvatarIcon id={id} /></button>)}</div>}
+        {modoEdicao && avatarAberto && <div className="animate-pop-in absolute left-1.5 top-[68px] z-20 max-w-[300px] rounded-2xl border border-border bg-card p-3 shadow-lg"><p className="mb-2 text-xs font-black text-muted-foreground">Ícones do perfil</p><div className="flex flex-wrap gap-2">{AVATARES.filter(({ id }) => (id !== "comet" || avataresComprados.includes(id)) && (id !== "pro" || perfil.isPro)).map(({ id, label }) => <button type="button" key={id} onClick={() => escolherAvatar(id)} aria-label={`Usar ícone ${label}`} title={label} className={cn("grid size-10 place-items-center rounded-xl bg-muted text-xl hover:bg-primary/15", avatar === id && "bg-primary text-primary-foreground")}><AvatarIcon id={id} /></button>)}</div></div>}
 
         <div className="mt-3.5">
           <div className="flex items-center gap-3">{modoEdicao && campoAtivo === "nome" ? <input autoFocus value={nome} onChange={e => setNome(e.target.value)} onBlur={() => setCampoAtivo(null)} className="w-full rounded-xl border border-primary bg-background px-3 py-1 text-2xl font-black text-foreground outline-none ring-2 ring-primary/20" /> : <button type="button" onClick={() => editavel && modoEdicao && setCampoAtivo("nome")} className={cn("block text-left text-2xl font-black text-foreground", editavel && modoEdicao && "cursor-text")}>{nome}</button>}{perfil.publicCode && <span className="text-sm font-black text-muted-foreground">#{perfil.publicCode}</span>}</div>

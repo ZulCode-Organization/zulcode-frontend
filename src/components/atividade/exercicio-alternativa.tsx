@@ -18,11 +18,10 @@ export function ExercicioAlternativa({ pergunta, selecionada, onSelecionar, veri
         ? "border-primary bg-accent text-foreground"
         : "border-border text-foreground hover:border-primary/40";
     }
-    if (alternativaId === pergunta.respostaCorretaId) {
-      return "border-emerald-500 bg-emerald-500/10 text-foreground";
-    }
     if (alternativaId === selecionada) {
-      return "border-red-500 bg-red-500/10 text-foreground";
+      return alternativaId === pergunta.respostaCorretaId
+        ? "border-emerald-500 bg-emerald-500/10 text-foreground"
+        : "border-red-500 bg-red-500/10 text-foreground";
     }
     return "border-border text-muted-foreground/60";
   };

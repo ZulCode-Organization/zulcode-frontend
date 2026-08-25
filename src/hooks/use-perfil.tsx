@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { CSSProperties, ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { calcularProgressoNivel } from "@/lib/leveling";
 import { CursoProgresso, PerfilUsuario } from "@/lib/types/perfil";
@@ -27,6 +27,48 @@ function numeroOuNulo(...valores: unknown[]): number | null {
 
 function authHeaders(token: string) {
   return { Authorization: `Bearer ${token}` };
+}
+
+type Palette = Record<string, string>;
+
+// Cada tema troca todos os tokens visuais, como o seletor claro/escuro faz.
+// `themeColor` guarda a cor primária do cosmético comprado, que identifica a
+// paleta mesmo depois de fechar e abrir o app.
+const THEME_PALETTES: Record<string, { light: Palette; dark: Palette }> = {
+  "#0284c7": {
+    light: { "--background": "#eef8ff", "--foreground": "#0b2235", "--card": "#ffffff", "--card-foreground": "#0b2235", "--popover": "#ffffff", "--popover-foreground": "#0b2235", "--primary": "#0284c7", "--primary-foreground": "#ffffff", "--secondary": "#dff1fc", "--secondary-foreground": "#0b2235", "--muted": "#e8f5fc", "--muted-foreground": "#527187", "--accent": "#cceeff", "--accent-foreground": "#075985", "--border": "#b9e1f5", "--input": "#b9e1f5", "--ring": "#0284c7", "--sidebar": "#f8fcff", "--sidebar-foreground": "#0b2235", "--sidebar-primary": "#0284c7", "--sidebar-primary-foreground": "#ffffff", "--sidebar-accent": "#dff1fc", "--sidebar-accent-foreground": "#0b2235" },
+    dark: { "--background": "#061923", "--foreground": "#e5f6ff", "--card": "#0b2635", "--card-foreground": "#e5f6ff", "--popover": "#0b2635", "--popover-foreground": "#e5f6ff", "--primary": "#22b7ef", "--primary-foreground": "#04202e", "--secondary": "#123746", "--secondary-foreground": "#e5f6ff", "--muted": "#123746", "--muted-foreground": "#8bb6c9", "--accent": "#123f55", "--accent-foreground": "#8de0ff", "--border": "#1b4658", "--input": "#1b4658", "--ring": "#22b7ef", "--sidebar": "#08212e", "--sidebar-foreground": "#e5f6ff", "--sidebar-primary": "#22b7ef", "--sidebar-primary-foreground": "#04202e", "--sidebar-accent": "#123746", "--sidebar-accent-foreground": "#e5f6ff" },
+  },
+  "#f97316": {
+    light: { "--background": "#fff7ed", "--foreground": "#2c1607", "--card": "#fffdf9", "--card-foreground": "#2c1607", "--popover": "#fffdf9", "--popover-foreground": "#2c1607", "--primary": "#f97316", "--primary-foreground": "#ffffff", "--secondary": "#ffead5", "--secondary-foreground": "#2c1607", "--muted": "#fff0e1", "--muted-foreground": "#8a6248", "--accent": "#ffe0c2", "--accent-foreground": "#b3440a", "--border": "#f5d1b1", "--input": "#f5d1b1", "--ring": "#f97316", "--sidebar": "#fffaf4", "--sidebar-foreground": "#2c1607", "--sidebar-primary": "#f97316", "--sidebar-primary-foreground": "#ffffff", "--sidebar-accent": "#ffead5", "--sidebar-accent-foreground": "#2c1607" },
+    dark: { "--background": "#211108", "--foreground": "#fff0df", "--card": "#321a0d", "--card-foreground": "#fff0df", "--popover": "#321a0d", "--popover-foreground": "#fff0df", "--primary": "#fb923c", "--primary-foreground": "#341305", "--secondary": "#48230f", "--secondary-foreground": "#fff0df", "--muted": "#48230f", "--muted-foreground": "#d5a27c", "--accent": "#542713", "--accent-foreground": "#ffc28f", "--border": "#643018", "--input": "#643018", "--ring": "#fb923c", "--sidebar": "#281407", "--sidebar-foreground": "#fff0df", "--sidebar-primary": "#fb923c", "--sidebar-primary-foreground": "#341305", "--sidebar-accent": "#48230f", "--sidebar-accent-foreground": "#fff0df" },
+  },
+  "#a855f7": {
+    light: { "--background": "#fbf7ff", "--foreground": "#21102f", "--card": "#ffffff", "--card-foreground": "#21102f", "--popover": "#ffffff", "--popover-foreground": "#21102f", "--primary": "#a855f7", "--primary-foreground": "#ffffff", "--secondary": "#f2e7ff", "--secondary-foreground": "#21102f", "--muted": "#f6efff", "--muted-foreground": "#76588f", "--accent": "#eedcff", "--accent-foreground": "#7e22ce", "--border": "#e5c9ff", "--input": "#e5c9ff", "--ring": "#a855f7", "--sidebar": "#fdfaff", "--sidebar-foreground": "#21102f", "--sidebar-primary": "#a855f7", "--sidebar-primary-foreground": "#ffffff", "--sidebar-accent": "#f2e7ff", "--sidebar-accent-foreground": "#21102f" },
+    dark: { "--background": "#180b25", "--foreground": "#f8efff", "--card": "#261038", "--card-foreground": "#f8efff", "--popover": "#261038", "--popover-foreground": "#f8efff", "--primary": "#c084fc", "--primary-foreground": "#2a0c45", "--secondary": "#391850", "--secondary-foreground": "#f8efff", "--muted": "#391850", "--muted-foreground": "#c8a8dd", "--accent": "#492064", "--accent-foreground": "#e5c4ff", "--border": "#552875", "--input": "#552875", "--ring": "#c084fc", "--sidebar": "#200d31", "--sidebar-foreground": "#f8efff", "--sidebar-primary": "#c084fc", "--sidebar-primary-foreground": "#2a0c45", "--sidebar-accent": "#391850", "--sidebar-accent-foreground": "#f8efff" },
+  },
+};
+
+const DEFAULT_PALETTES: { light: Palette; dark: Palette } = {
+  light: { "--background": "#f5f8fc", "--foreground": "#0f1115", "--card": "#ffffff", "--card-foreground": "#0f1115", "--popover": "#ffffff", "--popover-foreground": "#0f1115", "--primary": "#1892ff", "--primary-foreground": "#ffffff", "--secondary": "#eaf0f9", "--secondary-foreground": "#151a20", "--muted": "#eaf0f9", "--muted-foreground": "#62707f", "--accent": "#e3f0ff", "--accent-foreground": "#0a63b8", "--border": "#e1e8f0", "--input": "#e1e8f0", "--ring": "#1892ff", "--sidebar": "#ffffff", "--sidebar-foreground": "#0f1115", "--sidebar-primary": "#1892ff", "--sidebar-primary-foreground": "#ffffff", "--sidebar-accent": "#eaf0f9", "--sidebar-accent-foreground": "#151a20" },
+  dark: { "--background": "#0f1115", "--foreground": "#f3f6fa", "--card": "#151a20", "--card-foreground": "#f3f6fa", "--popover": "#151a20", "--popover-foreground": "#f3f6fa", "--primary": "#1892ff", "--primary-foreground": "#ffffff", "--secondary": "#1b212a", "--secondary-foreground": "#f3f6fa", "--muted": "#1b212a", "--muted-foreground": "#8b96a5", "--accent": "#1b2a3d", "--accent-foreground": "#6db8ff", "--border": "#232a33", "--input": "#1b212a", "--ring": "#1892ff", "--sidebar": "#151a20", "--sidebar-foreground": "#f3f6fa", "--sidebar-primary": "#1892ff", "--sidebar-primary-foreground": "#ffffff", "--sidebar-accent": "#1b212a", "--sidebar-accent-foreground": "#f3f6fa" },
+};
+
+/** Estilo isolado para visualizar o perfil público no tema do dono. */
+export function getProfileThemeStyle(themeColor?: string | null, themeMode?: "light" | "dark" | null): CSSProperties {
+  const mode = themeMode === "dark" ? "dark" : "light";
+  const palette = (themeColor && THEME_PALETTES[themeColor.toLowerCase()]) ?? DEFAULT_PALETTES;
+  return { ...palette[mode], colorScheme: mode } as CSSProperties;
+}
+
+function applyThemePalette(themeColor: string | null | undefined) {
+  const root = document.documentElement;
+  const palette = themeColor ? THEME_PALETTES[themeColor.toLowerCase()] : undefined;
+  const variables = Object.values(THEME_PALETTES).flatMap((item) => Object.keys(item.light));
+  variables.forEach((variable) => root.style.removeProperty(variable));
+  if (!palette) return;
+  const colors = root.classList.contains("dark") ? palette.dark : palette.light;
+  Object.entries(colors).forEach(([variable, color]) => root.style.setProperty(variable, color));
 }
 
 interface LicaoTrack {
@@ -96,7 +138,7 @@ interface PerfilState {
   cursosConcluidos: CursoProgresso[];
   retry: () => void;
   /** Salva dados do perfil em PUT /user e atualiza a tela e o cache. */
-  salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string }) => Promise<ResultadoSalvar>;
+  salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark" }) => Promise<ResultadoSalvar>;
 }
 
 /** A API do Nest devolve o motivo em `message`, às vezes como lista (quando
@@ -166,19 +208,25 @@ function usePerfilData(): PerfilState {
         return res.json();
       }),
       buscarCursos(token),
+      fetchComTimeout(`${API_BASE_URL}/user/lives`, { headers: authHeaders(token) })
+        .then((res) => (res.ok ? res.json() : null))
+        .catch(() => null),
     ])
-      .then(([usuario, cursosData]) => {
+      .then(([usuario, cursosData, vidasState]) => {
         // nivel/nivelLabel/xpProximoNivel vêm prontos da API — só a barra de
         // progresso dentro do nível é calculada aqui (ver lib/leveling.ts).
         const progresso = calcularProgressoNivel(usuario.xp, usuario.nivel);
         const perfilCarregado: PerfilUsuario = {
           role: usuario.role,
+          isPro: usuario.isPro,
           id: usuario.id,
           publicCode: usuario.publicCode,
           nome: usuario.name,
           email: usuario.email,
           avatarId: usuario.avatarId,
           bannerColor: usuario.bannerColor,
+          themeColor: usuario.themeColor,
+          themeMode: usuario.themeMode,
           iniciais: gerarIniciais(usuario.name),
           xp: usuario.xp,
           nivel: usuario.nivel,
@@ -188,7 +236,9 @@ function usePerfilData(): PerfilState {
           xpProximoNivel: usuario.xpProximoNivel,
           streakAtual: usuario.currentStreak,
           streakRecorde: usuario.longestStreak,
-          vidas: numeroOuNulo(usuario.hearts, usuario.vidas),
+          streakFreezes: usuario.streakFreezes,
+          doubleXpUntil: usuario.doubleXpUntil,
+          vidas: numeroOuNulo(vidasState?.lives, usuario.hearts, usuario.vidas),
           moedas: numeroOuNulo(usuario.coins, usuario.moedas),
           xpHoje: numeroOuNulo(usuario.xpHoje, usuario.xpToday),
           licoesHoje: numeroOuNulo(usuario.licoesHoje, usuario.lessonsToday),
@@ -225,8 +275,20 @@ function usePerfilData(): PerfilState {
     return () => window.removeEventListener("zulcode:moedas", atualizarMoedas);
   }, []);
 
+  // O tema comprado aplica uma paleta inteira e reaplica as cores quando o
+  // usuário alterna entre claro e escuro.
+  useEffect(() => {
+    applyThemePalette(perfil?.themeColor);
+    const observer = new MutationObserver(() => applyThemePalette(perfil?.themeColor));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => {
+      observer.disconnect();
+      applyThemePalette(null);
+    };
+  }, [perfil?.themeColor]);
+
   const salvarDados = useCallback(
-    async (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string }): Promise<ResultadoSalvar> => {
+    async (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark" }): Promise<ResultadoSalvar> => {
       const token = getToken();
       if (!token) return { ok: false, mensagem: "Sua sessão expirou. Entre de novo." };
 
@@ -239,6 +301,7 @@ function usePerfilData(): PerfilState {
             ...(dados.email !== undefined ? { email: dados.email } : {}),
             ...(dados.avatarId !== undefined ? { avatarId: dados.avatarId } : {}),
             ...(dados.bannerColor !== undefined ? { bannerColor: dados.bannerColor } : {}),
+            ...(dados.themeMode !== undefined ? { themeMode: dados.themeMode } : {}),
           }),
         });
 
@@ -258,6 +321,7 @@ function usePerfilData(): PerfilState {
             email: email ?? atual.email,
             avatarId: corpo?.avatarId ?? dados.avatarId ?? atual.avatarId,
             bannerColor: corpo?.bannerColor ?? dados.bannerColor ?? atual.bannerColor,
+            themeMode: corpo?.themeMode ?? dados.themeMode ?? atual.themeMode,
             iniciais: gerarIniciais(nome ?? atual.nome),
           };
           // O cache em memória é o que outras telas leem ao montar — sem

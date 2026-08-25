@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Minus, X, Zap } from "lucide-react";
+import { Check, Crown, Infinity, Minus, X, Zap } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { ChamasRoxas } from "@/components/pro/chamas-roxas";
 
@@ -32,7 +32,9 @@ export default function ProPage() {
   return (
     <div className="min-h-dvh bg-[#0b0414]">
       {/* ---------- Topo escuro: a ave saindo das chamas ---------- */}
-      <div className="relative overflow-hidden">
+      <div className="relative min-h-[440px] overflow-hidden border-b border-violet-500/20 sm:min-h-[480px]">
+        <div className="pointer-events-none absolute left-1/2 top-16 size-80 -translate-x-1/2 rounded-full bg-violet-600/15 blur-[110px]" />
+        <div className="pointer-events-none absolute -left-20 top-28 size-48 rounded-full bg-fuchsia-600/10 blur-[80px]" />
         <button
           type="button"
           onClick={() => router.back()}
@@ -55,6 +57,11 @@ export default function ProPage() {
             Vidas ilimitadas pra errar quantas vezes precisar, XP em dobro e
             nenhum anúncio no meio do caminho.
           </p>
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-300/20 bg-white/5 px-3 py-1.5 text-xs font-bold text-violet-100"><Infinity className="size-3.5 text-violet-300" />Vidas ilimitadas</span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-300/20 bg-white/5 px-3 py-1.5 text-xs font-bold text-violet-100"><Zap className="size-3.5 text-amber-300" />XP em dobro</span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-300/20 bg-white/5 px-3 py-1.5 text-xs font-bold text-violet-100"><Crown className="size-3.5 text-fuchsia-300" />Sem anúncios</span>
+          </div>
 
           {/* Faíscas soltas, como as estrelinhas da referência. */}
           <span className="pointer-events-none absolute left-[12%] top-[42%] size-2 rotate-45 bg-violet-300/80" aria-hidden />
@@ -64,9 +71,9 @@ export default function ProPage() {
           {/* A ave fica atrás das chamas (que são desenhadas depois, fora
               desta coluna): o fogo cobre a base dela e ela parece sair de
               dentro. */}
-          <div className="relative mt-8 h-[250px] w-full sm:h-[280px]">
+          <div className="relative mt-3 h-[165px] w-full sm:h-[190px]">
             <div
-              className="zc-brasa absolute bottom-16 left-1/2 size-56 -translate-x-1/2 rounded-full bg-violet-600/55 blur-3xl"
+              className="zc-brasa absolute bottom-2 left-1/2 size-44 -translate-x-1/2 rounded-full bg-violet-600/45 blur-3xl"
               aria-hidden
             />
             <Image
@@ -75,23 +82,25 @@ export default function ProPage() {
               width={160}
               height={160}
               priority
-              className="absolute bottom-[112px] left-1/2 z-10 w-[152px] -translate-x-1/2 sm:bottom-[124px] sm:w-[176px]"
+              className="absolute bottom-[48px] left-1/2 z-10 w-[124px] -translate-x-1/2 sm:bottom-[55px] sm:w-[145px]"
             />
           </div>
         </div>
 
-        {/* Fora da coluna de texto pra pegar a largura inteira da tela — dentro
-            dela, o fogo ficava numa faixa central com o fundo escuro sobrando
-            dos dois lados. */}
-        <ChamasRoxas className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[180px] w-full sm:h-[205px]" />
+        <ChamasRoxas className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[112px] w-full sm:h-[132px] lg:h-[156px]" />
       </div>
 
       {/* ---------- Comparação, sobre fundo claro ---------- */}
-      <div className="bg-background px-6 pb-16 pt-10">
+      <div className="bg-[#0f1115] px-6 pb-16 pt-10">
         <div className="mx-auto max-w-lg">
+          <div className="mb-6 text-center">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-violet-400">Compare os planos</p>
+            <h2 className="mt-2 text-2xl font-black text-white">Mais liberdade para aprender</h2>
+          </div>
+          <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
           <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-6 gap-y-1 sm:gap-x-10">
             <span />
-            <span className="pb-3 text-center text-[0.7rem] font-black uppercase tracking-[0.1em] text-muted-foreground">
+              <span className="pb-3 text-center text-[0.7rem] font-black uppercase tracking-[0.1em] text-white/45">
               Grátis
             </span>
             <span className="pb-3 text-center">
@@ -102,33 +111,33 @@ export default function ProPage() {
 
             {COMPARACAO.map((linha) => (
               <div key={linha.recurso} className="contents">
-                <span className="border-t border-border py-4 text-[0.95rem] text-foreground">
+                  <span className="border-t border-white/10 py-4 text-[0.95rem] text-white">
                   {linha.recurso}
                 </span>
-                <span className="flex justify-center border-t border-border py-4">
+                  <span className="flex justify-center border-t border-white/10 py-4">
                   {linha.gratis ? (
-                    <Check className="size-5 text-foreground" strokeWidth={3} />
+                    <Check className="size-5 text-white" strokeWidth={3} />
                   ) : (
-                    <Minus className="size-5 text-muted-foreground/50" />
+                    <Minus className="size-5 text-white/30" />
                   )}
                 </span>
-                <span className="flex justify-center border-t border-border bg-violet-500/10 py-4">
+                  <span className="flex justify-center border-t border-violet-400/20 bg-violet-500/10 py-4">
                   <Check className="size-5 text-violet-500" strokeWidth={3} />
                 </span>
               </div>
             ))}
-          </div>
+          </div></div>
 
           {/* ---------- Planos ---------- */}
-          <div className="mt-10 rounded-[20px] border-2 border-dashed border-violet-500/40 bg-violet-500/5 px-6 py-7 text-center">
+          <div className="mt-7 rounded-[20px] border border-violet-500/40 bg-violet-500/10 px-6 py-7 text-center">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-600/15 px-3 py-1 text-[0.7rem] font-black uppercase tracking-[0.1em] text-violet-500">
               <Zap className="size-3.5" />
               Chegando
             </span>
-            <h2 className="mt-3 text-lg font-black text-foreground">
+            <h2 className="mt-3 text-lg font-black text-white">
               Os planos ainda estão sendo fechados
             </h2>
-            <p className="mx-auto mt-2 max-w-sm text-[0.9rem] leading-relaxed text-muted-foreground">
+            <p className="mx-auto mt-2 max-w-sm text-[0.9rem] leading-relaxed text-white/60">
               Preferimos abrir com preço certo e cobrança funcionando do que
               com uma tela bonita que não cobra nada. Quando abrir, o aviso
               aparece aqui e na Loja.
@@ -145,7 +154,7 @@ export default function ProPage() {
 
           <Link
             href="/loja"
-            className="mt-3 block py-2 text-center text-[0.8rem] font-black uppercase tracking-[0.06em] text-muted-foreground transition-colors duration-150 hover:text-foreground"
+            className="mt-3 block py-2 text-center text-[0.8rem] font-black uppercase tracking-[0.06em] text-white/45 transition-colors duration-150 hover:text-white"
           >
             Agora não
           </Link>

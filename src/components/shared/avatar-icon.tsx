@@ -1,4 +1,4 @@
-import { Atom, Bot, Code2, Crown, Ghost, Rocket, ShieldCheck, Sparkles } from "lucide-react";
+import { Atom, BadgeCheck, Bot, Code2, Crown, Ghost, Rocket, ShieldCheck, Sparkles, Orbit } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const AVATARES = [
@@ -10,6 +10,8 @@ export const AVATARES = [
   { id: "spark", label: "Faísca", Icon: Sparkles },
   { id: "crown", label: "Coroa", Icon: Crown },
   { id: "ghost", label: "Fantasma", Icon: Ghost },
+  { id: "comet", label: "Cometa", Icon: Orbit },
+  { id: "pro", label: "Emblema PRO", Icon: BadgeCheck },
 ] as const;
 
 export type AvatarId = (typeof AVATARES)[number]["id"];

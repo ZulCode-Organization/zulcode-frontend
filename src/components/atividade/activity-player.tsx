@@ -2,9 +2,9 @@
 
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, X } from "lucide-react";
+import { Check, Feather, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Atividade, Pergunta } from "@/data/atividades";
+import { Atividade } from "@/data/atividades";
 import { LicaoTrilha } from "@/lib/types/trilha";
 import { ResultadoExecucao } from "@/hooks/use-executar-js";
 import { CodeBlock } from "./code-block";
@@ -26,12 +26,18 @@ interface ActivityPlayerProps {
    * gancho pra marcar progresso local (localStorage) nas lições que não
    * existem no backend, sem misturar isso com XP/rede. */
   onConcluirLocal?: () => void;
+  /** Consome uma pena ao errar. Se a última pena acabar, a aula é encerrada. */
+  aoErrar?: () => Promise<{ lives: number; isUnlimited?: boolean } | null>;
+  vidas: number;
+  vidasIlimitadas?: boolean;
 }
 
-type Fase = "introducao" | "quiz" | "concluida";
+type Fase = "introducao" | "quiz" | "concluida" | "sem-penas";
 
 interface MoldeAtividadeProps {
   progresso: number;
+  vidas: number;
+  vidasIlimitadas?: boolean;
   onSair: () => void;
   children: ReactNode;
   rodape: ReactNode;
@@ -44,7 +50,7 @@ interface MoldeAtividadeProps {
  * remonta ao trocar de pergunta), então o código digitado não se perde
  * enquanto a pessoa avança na lição.
  */
-function MoldeAtividade({ progresso, onSair, children, rodape }: MoldeAtividadeProps) {
+function MoldeAtividade({ progresso, vidas, vidasIlimitadas, onSair, children, rodape }: MoldeAtividadeProps) {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <div className="flex items-center gap-4 px-4 py-4 lg:px-8">
@@ -62,6 +68,7 @@ function MoldeAtividade({ progresso, onSair, children, rodape }: MoldeAtividadeP
             style={{ width: `${progresso}%` }}
           />
         </div>
+        <span className="flex shrink-0 items-center gap-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm font-black text-rose-500" title={vidasIlimitadas ? "Penas ilimitadas" : `${vidas} penas restantes`}><Feather className="size-4" />{vidasIlimitadas ? "∞" : vidas}</span>
       </div>
 
       <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 pb-4 lg:px-8">
@@ -85,21 +92,6 @@ function MoldeAtividade({ progresso, onSair, children, rodape }: MoldeAtividadeP
   );
 }
 
-function textoRespostaCerta(pergunta: Pergunta): string {
-  // switch (em vez de if/else) porque o discriminante "tipo" da
-  // PerguntaAlternativa é ele mesmo uma união ("alternativa" | "logica") —
-  // o TypeScript só estreita esse caso de forma confiável com switch/case.
-  switch (pergunta.tipo) {
-    case "alternativa":
-    case "logica":
-      return pergunta.alternativas.find((a) => a.id === pergunta.respostaCorretaId)?.texto ?? "";
-    case "completar":
-      return pergunta.respostaCorreta;
-    case "codigo":
-      return pergunta.resultadoEsperado;
-  }
-}
-
 /**
  * Tela de fazer a lição: primeiro ensina o conteúdo (telas de introdução),
  * só depois pergunta — cada pergunta dá pra responder com o que apareceu na
@@ -111,7 +103,7 @@ function textoRespostaCerta(pergunta: Pergunta): string {
  * /lessons/:id/complete — nas outras, continua sendo só uma celebração
  * visual com o xp mockado da lição.
  */
-export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }: ActivityPlayerProps) {
+export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, aoErrar, vidas: vidasIniciais, vidasIlimitadas = false }: ActivityPlayerProps) {
   const router = useRouter();
   const { introducao, perguntas } = atividade;
   const totalPassos = introducao.length + perguntas.length;
@@ -130,9 +122,11 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }
   const [xpConfirmado, setXpConfirmado] = useState(licao.xp);
   const [salvandoXp, setSalvandoXp] = useState(false);
   const [erroSalvarXp, setErroSalvarXp] = useState(false);
+  const [vidas, setVidas] = useState(vidasIniciais);
   const acertos = perguntas.length - errouAlguma.length;
   const jaEnviouRef = useRef(false);
   const jaMarcouLocalRef = useRef(false);
+  const penalizouQuestaoRef = useRef(false);
 
   const sair = () => router.push("/home");
 
@@ -175,7 +169,19 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }
     setResposta(null);
     setVerificado(false);
     setCorreto(false);
+    penalizouQuestaoRef.current = false;
   };
+
+  if (fase === "sem-penas") {
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center">
+        <span className="flex size-20 items-center justify-center rounded-[28px] bg-rose-500/10 text-rose-500"><Feather className="size-10" /></span>
+        <h1 className="mt-6 text-3xl font-black">Suas penas acabaram</h1>
+        <p className="mt-3 max-w-md text-muted-foreground">Infelizmente não foi dessa vez. Recupere suas penas e tente novamente mais tarde — cada uma volta em uma hora.</p>
+        <button type="button" onClick={sair} className="mt-7 rounded-2xl bg-primary px-7 py-3.5 text-sm font-black text-primary-foreground">Voltar para a jornada</button>
+      </div>
+    );
+  }
 
   if (fase === "concluida") {
     return (
@@ -210,6 +216,8 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }
     return (
       <MoldeAtividade
         progresso={progresso}
+        vidas={vidas}
+        vidasIlimitadas={vidasIlimitadas}
         onSair={sair}
         rodape={
           <div className="py-5">
@@ -242,6 +250,13 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }
   const aplicarResultado = (ok: boolean) => {
     setVerificado(true);
     setCorreto(ok);
+    if (!ok && !penalizouQuestaoRef.current) {
+      penalizouQuestaoRef.current = true;
+      aoErrar?.().then((estado) => {
+        if (!estado || estado.lives <= 0) setFase("sem-penas");
+        else if (!estado.isUnlimited) setVidas(estado.lives);
+      });
+    }
   };
 
   const verificarSelecao = () => {
@@ -279,6 +294,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }
     setResposta(null);
     setVerificado(false);
     setCorreto(false);
+    penalizouQuestaoRef.current = false;
   };
 
   const podeVerificar = pergunta.tipo !== "codigo" && !!resposta;
@@ -286,6 +302,8 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }
   return (
     <MoldeAtividade
       progresso={progresso}
+      vidas={vidas}
+      vidasIlimitadas={vidasIlimitadas}
       onSair={sair}
       rodape={
         verificado ? (
@@ -309,9 +327,6 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal }
                   <p className={cn("font-black", correto ? "text-emerald-600" : "text-red-600")}>
                     {correto ? "Boa!" : "Não foi dessa vez"}
                   </p>
-                  {!correto && (
-                    <p className="text-sm text-muted-foreground">Resposta certa: {textoRespostaCerta(pergunta)}</p>
-                  )}
                 </div>
               </div>
               <button

@@ -2,11 +2,14 @@ export interface PerfilUsuario {
   id: string;
   publicCode?: string;
   role: "USER" | "ADMIN";
+  isPro?: boolean;
   nome: string;
   email: string;
   iniciais: string;
   avatarId?: string;
   bannerColor?: string | null;
+  themeColor?: string | null;
+  themeMode?: "light" | "dark" | null;
   xp: number;
   nivel: number;
   nivelLabel: string;
@@ -18,6 +21,8 @@ export interface PerfilUsuario {
   xpProximoNivel: number | null;
   streakAtual: number;
   streakRecorde: number;
+  streakFreezes?: number;
+  doubleXpUntil?: string | null;
   /** Vidas restantes (as "penas"). null enquanto a API não devolver o campo. */
   vidas: number | null;
   /** Moedas. null enquanto a API não devolver o campo. */

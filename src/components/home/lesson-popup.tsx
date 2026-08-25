@@ -3,8 +3,9 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { CodeXml } from "lucide-react";
+import { CodeXml, Feather } from "lucide-react";
 import { LicaoTrilha } from "@/lib/types/trilha";
+import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 
 interface LessonPopupProps {
   licao: LicaoTrilha;
@@ -34,6 +35,8 @@ const ALTURA_CABECALHO_FIXO = 200;
 export function LessonPopup({ licao, anchor, onClose }: LessonPopupProps) {
   const router = useRouter();
   const [visivel, setVisivel] = useState(false);
+  const [iniciando, setIniciando] = useState(false);
+  const [semPenas, setSemPenas] = useState(false);
 
   // Liga a transição de entrada só depois do primeiro paint, senão o
   // navegador junta o estado inicial e o final num frame só e não anima nada.
@@ -45,6 +48,18 @@ export function LessonPopup({ licao, anchor, onClose }: LessonPopupProps) {
   const fechar = () => {
     setVisivel(false);
     window.setTimeout(onClose, DURACAO_MS);
+  };
+
+  const iniciar = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return router.push("/login");
+    setIniciando(true);
+    try {
+      const res = await fetchComTimeout(`${API_BASE_URL}/lessons/${licao.id}/start`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      const estado: { lives?: number } | null = res.ok ? await res.json() : null;
+      if (!estado || typeof estado.lives !== "number" || estado.lives <= 0) { setSemPenas(true); return; }
+      router.push(`/atividade/${licao.id}`);
+    } finally { setIniciando(false); }
   };
 
   useEffect(() => {
@@ -107,13 +122,15 @@ export function LessonPopup({ licao, anchor, onClose }: LessonPopupProps) {
           )}
           <p className="mt-1.5 text-[0.82rem] font-extrabold text-primary">+{licao.xp} XP</p>
 
+          {semPenas && <p className="mt-3 flex items-center justify-center gap-1.5 text-xs font-bold text-rose-500"><Feather className="size-4" />Sem penas. A próxima volta em até 1 hora.</p>}
           <button
             type="button"
-            onClick={() => router.push(`/atividade/${licao.id}`)}
-            className="zc-press zc-press-shadow mt-4 block w-full rounded-[14px] bg-primary py-3 text-center text-[0.78rem] font-black uppercase tracking-[0.06em] text-primary-foreground"
+            disabled={iniciando}
+            onClick={iniciar}
+            className="zc-press zc-press-shadow mt-4 block w-full rounded-[14px] bg-primary py-3 text-center text-[0.78rem] font-black uppercase tracking-[0.06em] text-primary-foreground disabled:opacity-60"
             style={{ ["--zc-press-color" as string]: "color-mix(in srgb, var(--primary) 70%, black)" }}
           >
-            Começar
+            {iniciando ? "Verificando…" : "Começar"}
           </button>
 
           <button

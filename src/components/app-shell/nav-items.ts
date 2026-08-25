@@ -14,12 +14,14 @@ export const sidebarNavItems: NavItem[] = [
   { id: "lideres", label: "Líderes", href: "/tabela-lideres", icon: Trophy },
   { id: "loja", label: "Loja", href: "/loja", icon: ShoppingBag },
   { id: "perfil", label: "Perfil", href: "/perfil", icon: User },
+  { id: "configuracoes", label: "Configurações", href: "/configuracoes", icon: Settings },
 ];
 
 export const adminNavItems: NavItem[] = [
   { id: "admin-home", label: "Home", href: "/admin/home", icon: LayoutDashboard },
   { id: "admin-cursos", label: "Cursos", href: "/admin/cursos", icon: FolderPlus },
   { id: "admin-metas", label: "Metas", href: "/admin/metas", icon: Zap },
+  { id: "admin-loja", label: "Loja", href: "/admin/loja", icon: ShoppingBag },
   { id: "admin-usuarios", label: "Usuários", href: "/admin/usuarios", icon: Users },
   { id: "admin-notificacoes", label: "Notificações", href: "/admin/notificacoes", icon: Bell },
 ];
@@ -37,8 +39,8 @@ export const bottomNavItems: NavItem[] = [
   { id: "perfil", label: "Perfil", href: "/perfil", icon: User },
 ];
 
-/** Só aparecem no celular, dentro do menu "Mais" (…) da barra inferior —
- * no desktop todos os itens já vivem na sidebar. */
+/** Também aparecem no menu "Mais" do celular, para complementar a barra
+ * inferior sem aumentar a quantidade de atalhos fixos. */
 export const moreNavItems: NavItem[] = [
   { id: "configuracoes", label: "Configurações", href: "/configuracoes", icon: Settings },
 ];

@@ -1,4 +1,4 @@
-import { Flame, Zap, TrendingUp, Star } from "lucide-react";
+import { Flame, Zap, TrendingUp, Star, ShieldCheck } from "lucide-react";
 import { PerfilUsuario } from "@/lib/types/perfil";
 
 interface StatsGridProps {
@@ -14,6 +14,7 @@ export function StatsGrid({ perfil }: StatsGridProps) {
       label: "Dias seguidos",
       chip: "bg-orange-500/15 text-orange-500",
     },
+    ...(perfil.streakFreezes ? [{ id: "protecoes", icon: ShieldCheck, valor: perfil.streakFreezes, label: "Proteções de sequência", chip: "bg-sky-500/15 text-sky-500" }] : []),
     {
       id: "xp",
       icon: Zap,

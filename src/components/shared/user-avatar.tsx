@@ -4,6 +4,7 @@ import { AvatarIcon } from "./avatar-icon";
 interface UserAvatarProps {
   iniciais: string;
   avatarId?: string | null;
+  bannerColor?: string | null;
   nivel?: number;
   size?: "sm" | "md" | "lg";
   className?: string;
@@ -15,14 +16,12 @@ const SIZE_CLASSES: Record<NonNullable<UserAvatarProps["size"]>, string> = {
   lg: "size-24 rounded-3xl text-3xl",
 };
 
-export function UserAvatar({ iniciais, avatarId, nivel, size = "md", className }: UserAvatarProps) {
+export function UserAvatar({ iniciais, avatarId, bannerColor, nivel, size = "md", className }: UserAvatarProps) {
   return (
     <div className={cn("relative inline-flex", className)}>
       <div
-        className={cn(
-          "flex items-center justify-center bg-primary font-extrabold text-primary-foreground ring-4 ring-primary/15",
-          SIZE_CLASSES[size]
-        )}
+        className={cn("flex items-center justify-center bg-primary font-extrabold text-primary-foreground ring-4 ring-primary/15", SIZE_CLASSES[size])}
+        style={bannerColor ? { background: bannerColor } : undefined}
       >
         {avatarId ? <AvatarIcon id={avatarId} /> : iniciais}
       </div>

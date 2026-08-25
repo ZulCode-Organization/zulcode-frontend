@@ -1,6 +1,7 @@
 "use client";
 
-import { Coins, Feather, Flame, Zap } from "lucide-react";
+import { Coins, Feather, Flame, ShieldCheck, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import { usePerfil } from "@/hooks/use-perfil";
 
 /**
@@ -15,6 +16,8 @@ import { usePerfil } from "@/hooks/use-perfil";
  */
 export function AppTopBar() {
   const { perfil, loading } = usePerfil();
+  const [agora, setAgora] = useState(Date.now());
+  useEffect(() => { const id = window.setInterval(() => setAgora(Date.now()), 1000); return () => window.clearInterval(id); }, []);
 
   const chip =
     "flex h-11 items-center gap-2 rounded-2xl border border-border bg-card px-4 text-[0.95rem] font-extrabold";
@@ -29,13 +32,14 @@ export function AppTopBar() {
       <span className={`${chip} text-sky-500`} title="XP acumulado">
         <Zap className="size-5" />
         {valor(perfil?.xp)}
+        {perfil?.doubleXpUntil && new Date(perfil.doubleXpUntil).getTime() > agora && <b className="rounded-md bg-sky-500/15 px-1 text-xs">x2 · {Math.ceil((new Date(perfil.doubleXpUntil).getTime() - agora) / 60000)}m</b>}
       </span>
 
       {/* Pena no lugar do coração: a marca é uma ave, então a vida do app é
           uma pena dela. */}
       <span className={`${chip} text-rose-500`} title="Vidas">
         <Feather className="size-5" />
-        {valor(perfil?.vidas)}
+        {perfil?.isPro ? "∞" : valor(perfil?.vidas)}
       </span>
 
       <span className={`${chip} text-yellow-500`} title="Moedas">
@@ -46,6 +50,7 @@ export function AppTopBar() {
       <span className={`${chip} text-orange-500`} title="Dias seguidos">
         <Flame className="size-5 fill-current" />
         {valor(perfil?.streakAtual)}
+        {(perfil?.streakFreezes ?? 0) > 0 && <span className="flex items-center gap-0.5 text-sky-500" title="Proteções de sequência"><ShieldCheck className="size-4" />{perfil?.streakFreezes}</span>}
       </span>
     </div>
   );

@@ -240,15 +240,16 @@ function Store() {
             </div>
           )}
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {visibleItems.map((item) => (
-              <PowerCard
-                key={item.id}
-                item={item}
-                working={working}
-                disabled={item.effect === "DOUBLE_XP" && xpActive}
-                onBuy={buyPower}
-              />
-            ))}
+            {ownership !== "OWNED" &&
+              visibleItems.map((item) => (
+                <PowerCard
+                  key={item.id}
+                  item={item}
+                  working={working}
+                  disabled={item.effect === "DOUBLE_XP" && xpActive}
+                  onBuy={buyPower}
+                />
+              ))}
             {visibleCosmetics.map((item) => (
               <CosmeticCard
                 key={item.id}

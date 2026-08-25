@@ -106,7 +106,12 @@ function Store() {
       ),
     [category, cosmetics, ownership]
   );
-  const visibleItems = category === "ALL" || category === "POWER" ? items : [];
+  // Poderes são consumíveis, não entram em "Comprados" (que representa o
+  // inventário permanente: temas, avatares e banners adquiridos).
+  const visibleItems =
+    ownership === "OWNED" || (category !== "ALL" && category !== "POWER")
+      ? []
+      : items;
   const count = (categoryValue: Category) =>
     categoryValue === "ALL"
       ? items.length + cosmetics.length

@@ -84,7 +84,10 @@ function Store() {
       fetchComTimeout(`${API_BASE_URL}/user/zulcoins/history`, { headers }),
     ]);
     if (a.ok) setItems(await a.json());
-    if (b.ok) setCosmetics(await b.json());
+    if (b.ok) {
+      const dados = await b.json();
+      setCosmetics(dados.map((item: Cosmetic) => ({ ...item, kind: String(item.kind).toUpperCase() as Kind })));
+    }
     if (c.ok) setTransactions((await c.json()).transactions ?? []);
   };
   useEffect(() => {
@@ -98,9 +101,8 @@ function Store() {
       cosmetics.filter(
         (item) =>
           (category === "ALL" || category === item.kind) &&
-          (ownership === "ALL" || ownership === "OWNED"
-            ? item.owned
-            : !item.owned)
+          (ownership === "ALL" ||
+            (ownership === "OWNED" ? item.owned : !item.owned))
       ),
     [category, cosmetics, ownership]
   );

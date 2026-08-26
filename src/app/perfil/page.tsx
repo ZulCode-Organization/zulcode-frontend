@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ProfileHeader } from "@/components/perfil/profile-header";
 import { StatsGrid } from "@/components/perfil/stats-grid";
 import { CoursesSection } from "@/components/perfil/courses-section";
+import { AchievementsSection } from "@/components/perfil/achievements-section";
 
 function PerfilContent() {
   const { perfil, loading, error, cursosEmAndamento, cursosConcluidos, retry } = usePerfil();
@@ -32,6 +33,7 @@ function PerfilContent() {
     <div className="flex max-w-none flex-col gap-7 pt-3">
       <ProfileHeader perfil={perfil} />
       <StatsGrid perfil={perfil} />
+      <AchievementsSection conquistas={perfil.conquistas} />
       <CoursesSection emAndamento={cursosEmAndamento} concluidos={cursosConcluidos} />
     </div>
   );

@@ -1,9 +1,10 @@
-import { Home, BookOpen, Zap, Trophy, ShoppingBag, User, Settings, ShieldCheck, LayoutDashboard, FolderPlus, Bell, Users, Code2, type LucideIcon } from "lucide-react";
+import { Home, BookOpen, Zap, Trophy, ShoppingBag, User, Settings, ShieldCheck, LayoutDashboard, FolderPlus, Bell, Users, Code2, Bug, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   id: string;
   label: string;
   href?: string;
+  external?: boolean;
   icon: LucideIcon;
 }
 
@@ -16,6 +17,7 @@ export const sidebarNavItems: NavItem[] = [
   { id: "loja", label: "Loja", href: "/loja", icon: ShoppingBag },
   { id: "perfil", label: "Perfil", href: "/perfil", icon: User },
   { id: "configuracoes", label: "Configurações", href: "/configuracoes", icon: Settings },
+  { id: "reportar-bug", label: "Reportar bug", href: "https://forms.cloud.microsoft/r/FD8MLw693j", external: true, icon: Bug },
 ];
 
 export const adminNavItems: NavItem[] = [
@@ -45,4 +47,5 @@ export const moreNavItems: NavItem[] = [
   { id: "lideres", label: "Líderes", href: "/tabela-lideres", icon: Trophy },
   { id: "playground", label: "Playground", href: "/playground", icon: Code2 },
   { id: "configuracoes", label: "Configurações", href: "/configuracoes", icon: Settings },
+  { id: "reportar-bug", label: "Reportar bug", href: "https://forms.cloud.microsoft/r/FD8MLw693j", external: true, icon: Bug },
 ];

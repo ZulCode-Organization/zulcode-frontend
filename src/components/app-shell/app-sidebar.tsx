@@ -26,18 +26,25 @@ export function AppSidebar() {
   const renderNavLink = (item: (typeof sidebarNavItems)[number], nested = false) => {
     const Icon = item.icon;
     const active = pathname === item.href;
+    const className = cn(
+      "group flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-black uppercase tracking-[0.05em] transition-colors duration-150",
+      nested && "ml-5 rounded-xl py-2.5 text-[0.78rem]",
+      active
+        ? "border-primary/30 bg-primary/10 text-primary"
+        : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+    );
+    if (item.external) return (
+      <a key={item.id} href={item.href} className={className}>
+        <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-[10px] transition-colors duration-150", nested && "size-8 rounded-lg", "bg-muted text-muted-foreground group-hover:text-foreground")}><Icon className={nested ? "size-4" : "size-5"} /></span>
+        {item.label}
+      </a>
+    );
     return (
       <Link
         key={item.id}
         href={item.href!}
         aria-current={active ? "page" : undefined}
-        className={cn(
-          "group flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-black uppercase tracking-[0.05em] transition-colors duration-150",
-          nested && "ml-5 rounded-xl py-2.5 text-[0.78rem]",
-          active
-            ? "border-primary/30 bg-primary/10 text-primary"
-            : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-        )}
+        className={className}
       >
         <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-[10px] transition-colors duration-150", nested && "size-8 rounded-lg", active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:text-foreground")}>
           <Icon className={nested ? "size-4" : "size-5"} />

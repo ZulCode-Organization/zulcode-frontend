@@ -32,3 +32,13 @@ export async function submitOnboarding( payload: OnboardingSubmission ): Promise
   if (!res.ok) throw new Error("Falha ao enviar respostas do nivelamento");
   return res.json();
 }
+
+export async function submitPlacement(languageId: string, level: string, score: number, total: number) {
+  const token = localStorage.getItem("accessToken");
+  const res = await fetchComTimeout(`${API_BASE_URL}/onboarding/placement`, {
+    method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ languageId, level, score, total }),
+  });
+  if (!res.ok) throw new Error("Não foi possível salvar seu nivelamento");
+  return res.json() as Promise<{ success: boolean; startLessonOrder: number; xpEarned: number; coinsEarned: number }>;
+}

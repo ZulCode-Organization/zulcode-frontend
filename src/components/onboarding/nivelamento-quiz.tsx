@@ -13,6 +13,7 @@ interface NivelamentoQuizProps {
   languageSlug: string;
   languageName: string;
   onFinish: (resultado: ResultadoNivelamento) => void;
+  level: "some_experience" | "confident" | "expert";
 }
 
 /**
@@ -24,8 +25,11 @@ interface NivelamentoQuizProps {
  * POST /onboarding/submit (não existe model pra isso no backend ainda) —
  * o resultado é só salvo local (ver lib/nivelamento-local.ts).
  */
-export function NivelamentoQuiz({ languageSlug, languageName, onFinish }: NivelamentoQuizProps) {
-  const perguntas = obterPerguntasNivelamento(languageSlug);
+export function NivelamentoQuiz({ languageSlug, languageName, onFinish, level }: NivelamentoQuizProps) {
+  const todasPerguntas = obterPerguntasNivelamento(languageSlug);
+  // Quem disse que sabe um pouco começa por diagnóstico básico; os níveis
+  // maiores respondem itens que cobrem mais da jornada.
+  const perguntas = level === "some_experience" ? todasPerguntas.slice(0, 3) : todasPerguntas;
   const [indice, setIndice] = useState(0);
   const [respostas, setRespostas] = useState<RespostaNivelamento[]>([]);
 

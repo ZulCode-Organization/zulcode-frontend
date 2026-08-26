@@ -3,6 +3,8 @@ export interface PerfilUsuario {
   publicCode?: string;
   role: "USER" | "ADMIN";
   isPro?: boolean;
+  isDeveloper?: boolean;
+  isEarlyTester?: boolean;
   nome: string;
   email: string;
   iniciais: string;
@@ -31,6 +33,7 @@ export interface PerfilUsuario {
   xpHoje: number | null;
   /** Lições concluídas hoje. null enquanto a API não recortar por dia. */
   licoesHoje: number | null;
+  conquistas?: { id: string; title: string; description: string; iconSvg: string; bannerSvg: string; unlockedAt: string }[];
 }
 
 export interface CursoProgresso {

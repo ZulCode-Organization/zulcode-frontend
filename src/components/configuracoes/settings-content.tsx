@@ -26,7 +26,7 @@ export function SettingsContent() {
   const [temas, setTemas] = useState<TemaComprado[]>([]);
   const [aplicandoTema, setAplicandoTema] = useState<string | null>(null);
   const { perfil, retry } = usePerfil();
-  const temasDisponiveis = perfil?.isPro ? [...temas, { id: "pro-theme", name: "Tema PRO", description: "Tema exclusivo dos assinantes PRO.", owned: true, value: { primary: "#a855f7", accent: "#f0abfc" } }] : temas;
+  const temasDisponiveis = [...temas, ...(perfil?.isPro ? [{ id: "pro-theme", name: "Tema PRO", description: "Tema exclusivo dos assinantes PRO.", owned: true, value: { primary: "#a855f7", accent: "#f0abfc" } }] : []), ...(perfil?.isDeveloper ? [{ id: "developer-theme", name: "Tema Desenvolvedor", description: "Tema exclusivo da equipe ZulCode.", owned: true, value: { primary: "#0f766e", accent: "#2dd4bf" } }] : []), ...(perfil?.isEarlyTester ? [{ id: "early-tester-theme", name: "Tema Pioneiro", description: "Tema exclusivo da fase de testes.", owned: true, value: { primary: "#2563eb", accent: "#60a5fa" } }] : [])];
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");

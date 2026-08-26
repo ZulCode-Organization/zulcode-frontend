@@ -11,7 +11,8 @@ import { QuestionStep } from "@/components/onboarding/question-step";
 import { LanguageStep } from "@/components/onboarding/language-step";
 import { OnboardingSummary } from "@/components/onboarding/onboarding-summary";
 import { NivelamentoQuiz } from "@/components/onboarding/nivelamento-quiz";
-import { salvarNivelamentoLocal, ResultadoNivelamento } from "@/lib/nivelamento-local";
+import { ResultadoNivelamento } from "@/lib/nivelamento-local";
+import { submitPlacement } from "@/lib/onboarding/service";
 
 export default function IntroducaoPage() {
   useRequireAuth();
@@ -65,23 +66,24 @@ export default function IntroducaoPage() {
     );
   }
 
-  if (result && !nivelamentoConcluido) {
+  const nivelSelecionado = answers.language_level;
+  if (result && nivelSelecionado !== "beginner" && !nivelamentoConcluido) {
     const linguagemEscolhida = languages.find((l) => l.id === result.payload.languageId);
 
     return (
       <NivelamentoQuiz
         languageSlug={result.payload.languageId}
         languageName={linguagemEscolhida?.name ?? "programação"}
-        onFinish={(resultadoNivelamento: ResultadoNivelamento) => {
-          const token = localStorage.getItem("accessToken");
-          if (token) salvarNivelamentoLocal(token, resultadoNivelamento);
+        level={nivelSelecionado as "some_experience" | "confident" | "expert"}
+        onFinish={async (resultadoNivelamento: ResultadoNivelamento) => {
+          await submitPlacement(resultadoNivelamento.languageSlug, nivelSelecionado!, resultadoNivelamento.acertos, resultadoNivelamento.total);
           setNivelamentoConcluido(true);
         }}
       />
     );
   }
 
-  if (result && nivelamentoConcluido) {
+  if (result && (nivelSelecionado === "beginner" || nivelamentoConcluido)) {
     return (
       <div className="flex min-h-dvh flex-col bg-background lg:flex-row">
         <div className="hidden items-center justify-center bg-secondary/40 px-16 lg:flex lg:w-2/5">

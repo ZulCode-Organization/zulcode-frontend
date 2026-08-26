@@ -123,9 +123,13 @@
   }
   body {
     @apply bg-background text-foreground;
+    min-width: 0;
+    overflow-x: hidden;
   }
   html {
     @apply font-sans;
+    min-width: 0;
+    overflow-x: hidden;
   }
 }
 

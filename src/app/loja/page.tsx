@@ -189,7 +189,7 @@ function Store() {
       });
   };
   return (
-    <div className="mx-auto max-w-[1240px] py-7">
+    <div className="mx-auto max-w-[1240px] py-5 sm:py-7">
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_270px]">
         <main className="min-w-0">
           <header className="mb-5">
@@ -199,13 +199,13 @@ function Store() {
             </p>
           </header>
           {!perfil?.isPro && <ProBanner />}
-          <div className="mt-5 flex gap-2 overflow-x-auto pb-1 xl:hidden">
+          <div className="mt-5 flex flex-wrap gap-2 pb-1 xl:hidden">
             {categories.map(({ value, label, Icon }) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => setCategory(value)}
-                className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-black ${
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-black sm:px-4 sm:text-sm ${
                   category === value
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border bg-card text-muted-foreground hover:text-foreground"
@@ -217,8 +217,9 @@ function Store() {
             ))}
           </div>
           {category !== "POWER" && (
-            <div className="mt-4 flex gap-2 text-xs font-bold text-muted-foreground">
-              <span className="py-1.5">Mostrar:</span>
+            <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-muted-foreground">
+              <span className="w-full py-1 sm:w-auto">Mostrar:</span>
+              <div className="grid flex-1 grid-cols-3 gap-1.5 sm:flex sm:flex-none sm:gap-2">
               {[
                 ["ALL", "todos"],
                 ["AVAILABLE", "não comprados"],
@@ -228,7 +229,7 @@ function Store() {
                   key={value}
                   type="button"
                   onClick={() => setOwnership(value as Ownership)}
-                  className={`rounded-lg px-2.5 py-1.5 ${
+                  className={`rounded-lg px-2 py-1.5 text-center ${
                     ownership === value
                       ? "bg-primary/15 text-primary"
                       : "hover:bg-muted"
@@ -237,6 +238,7 @@ function Store() {
                   {label}
                 </button>
               ))}
+              </div>
             </div>
           )}
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

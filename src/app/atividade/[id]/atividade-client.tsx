@@ -81,9 +81,14 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
     Promise.all([
-      fetchComTimeout(`${API_BASE_URL}/lessons/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetchComTimeout(`${API_BASE_URL}/lessons/${id}/start`, { method: "POST", headers: { Authorization: `Bearer ${token}` } }),
+      fetchComTimeout(`${API_BASE_URL}/lessons/${id}`, { headers }),
+      // Starting a lesson only validates its current lives. Offline we use the
+      // last cached lives state and never pretend the server confirmed a start.
+      navigator.onLine
+        ? fetchComTimeout(`${API_BASE_URL}/lessons/${id}/start`, { method: "POST", headers }).catch(() => fetchComTimeout(`${API_BASE_URL}/user/lives`, { headers }))
+        : fetchComTimeout(`${API_BASE_URL}/user/lives`, { headers }),
     ])
       .then(async ([lessonRes, livesRes]) => {
         if (!livesRes.ok) {
@@ -119,7 +124,7 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
 
   return <ActivityPlayer atividade={atividade} licao={licao} aoConcluir={(acertos, total) => etapaAtual < totalEtapas
     ? (totalEtapas === 2 ? completarEtapaTeorica(id) : completarEtapa(id, etapaAtual))
-    : completarLicaoReal(id, Math.round((acertos / total) * 100))} aoErrar={consumirPena} vidas={livesState.lives} vidasIlimitadas={livesState.isUnlimited} />;
+    : completarLicaoReal(id, Math.round((acertos / total) * 100))} aoErrar={() => consumirPena(livesState)} vidas={livesState.lives} vidasIlimitadas={livesState.isUnlimited} />;
 }
 
 function SemPenas() {
@@ -127,12 +132,15 @@ function SemPenas() {
   return <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center"><span className="flex size-20 items-center justify-center rounded-[28px] bg-rose-500/10 text-rose-500"><Feather className="size-10" /></span><h1 className="mt-6 text-3xl font-black">Sem penas para começar</h1><p className="mt-3 max-w-md text-muted-foreground">Você precisa ter ao menos uma pena para iniciar uma aula. A próxima pena será recuperada em até uma hora.</p><button type="button" onClick={() => router.push("/home")} className="mt-7 rounded-2xl bg-primary px-7 py-3.5 text-sm font-black text-primary-foreground">Voltar para a jornada</button></div>;
 }
 
-async function consumirPena(): Promise<{ lives: number; isUnlimited?: boolean } | null> {
+async function consumirPena(atual: { lives: number; isUnlimited?: boolean }): Promise<{ lives: number; isUnlimited?: boolean } | null> {
   const token = localStorage.getItem("accessToken");
   if (!token) return null;
   try {
     const res = await fetchComTimeout(`${API_BASE_URL}/user/lives/use`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
     if (!res.ok) return { lives: 0 };
+    // The request is persisted by the offline queue; retain the local count so
+    // the lesson cannot grant a free retry while the device is disconnected.
+    if (res.headers.get("X-Zulcode-Offline") === "queued") return { lives: Math.max(0, atual.lives - 1), isUnlimited: atual.isUnlimited };
     const estado: { lives: number; isUnlimited?: boolean } = await res.json();
     limparPerfilCache();
     return estado;

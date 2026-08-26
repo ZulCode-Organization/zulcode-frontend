@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "next-themes";
+import { OfflineSyncProvider } from "@/components/offline/offline-sync-provider";
+import { DeviceSessionProvider } from "@/components/auth/device-session-provider";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -34,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <OfflineSyncProvider><DeviceSessionProvider>{children}</DeviceSessionProvider></OfflineSyncProvider>
         </ThemeProvider>
       </body>
     </html>

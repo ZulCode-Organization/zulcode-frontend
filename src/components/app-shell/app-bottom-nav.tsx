@@ -20,7 +20,7 @@ export function AppBottomNav() {
   const maisAtivo = moreNavItems.some((item) => item.href === pathname) || (perfil?.role === "ADMIN" && pathname.startsWith("/admin"));
 
   return (
-    <nav className="sticky bottom-0 z-20 flex items-center justify-around border-t border-border bg-background/95 px-2 py-2 backdrop-blur-md lg:hidden">
+    <nav className="sticky bottom-0 z-20 flex items-center justify-around border-t border-border bg-background/95 px-1 py-2 backdrop-blur-md lg:hidden">
       {bottomNavItems.map((item) => {
         const Icon = item.icon;
         const active = item.href ? pathname === item.href : false;
@@ -34,7 +34,7 @@ export function AppBottomNav() {
             >
               <Icon className="size-5" />
             </span>
-            <span className="text-[0.62rem] font-black uppercase tracking-[0.05em]">
+            <span className="max-w-full truncate px-0.5 text-[0.62rem] font-black uppercase tracking-[0.02em]">
               {item.label}
             </span>
           </>
@@ -44,7 +44,7 @@ export function AppBottomNav() {
           return (
             <div
               key={item.id}
-              className="flex flex-1 cursor-default flex-col items-center gap-0.5 py-1 text-muted-foreground/40"
+              className="flex min-w-0 flex-1 cursor-default flex-col items-center gap-0.5 py-1 text-muted-foreground/40"
             >
               {content}
             </div>
@@ -56,7 +56,7 @@ export function AppBottomNav() {
             key={item.id}
             href={item.href}
             className={cn(
-              "flex flex-1 flex-col items-center gap-0.5 py-1 transition-colors duration-150",
+              "flex min-w-0 flex-1 flex-col items-center gap-0.5 py-1 transition-colors duration-150",
               active ? "text-primary" : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -71,7 +71,7 @@ export function AppBottomNav() {
         aria-haspopup="dialog"
         aria-expanded={maisAberto}
         className={cn(
-          "flex flex-1 flex-col items-center gap-0.5 py-1 transition-colors duration-150",
+          "flex min-w-0 flex-1 flex-col items-center gap-0.5 py-1 transition-colors duration-150",
           maisAtivo ? "text-primary" : "text-muted-foreground hover:text-foreground"
         )}
       >
@@ -83,7 +83,7 @@ export function AppBottomNav() {
         >
           <MoreHorizontal className="size-5" />
         </span>
-        <span className="text-[0.62rem] font-black uppercase tracking-[0.05em]">Mais</span>
+        <span className="truncate px-0.5 text-[0.62rem] font-black uppercase tracking-[0.02em]">Mais</span>
       </button>
 
       {maisAberto && <MaisMenu onClose={() => setMaisAberto(false)} />}

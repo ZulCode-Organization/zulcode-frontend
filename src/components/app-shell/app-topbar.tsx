@@ -20,7 +20,7 @@ export function AppTopBar() {
   useEffect(() => { const id = window.setInterval(() => setAgora(Date.now()), 1000); return () => window.clearInterval(id); }, []);
 
   const chip =
-    "flex h-11 items-center gap-2 rounded-2xl border border-border bg-card px-4 text-[0.95rem] font-extrabold";
+      "flex h-10 min-w-0 items-center justify-center gap-1 rounded-2xl border border-border bg-card px-1 text-[0.8rem] font-extrabold sm:h-11 sm:w-auto sm:gap-2 sm:px-4 sm:text-[0.95rem]";
 
   const valor = (numero: number | null | undefined) => {
     if (loading || !perfil) return "…";
@@ -28,7 +28,7 @@ export function AppTopBar() {
   };
 
   return (
-    <div className="sticky top-0 z-20 flex items-center justify-end gap-3 bg-background px-4 pb-3 pt-4 lg:px-8">
+    <div className="sticky top-0 z-20 grid grid-cols-4 gap-1 bg-background px-3 pb-3 pt-3 sm:flex sm:items-center sm:justify-end sm:gap-3 sm:px-4 sm:pt-4 lg:px-8">
       <span className={`${chip} text-sky-500`} title="XP acumulado">
         <Zap className="size-5" />
         {valor(perfil?.xp)}

@@ -4,6 +4,7 @@ import { AppSidebar } from "./app-sidebar";
 import { AppBottomNav } from "./app-bottom-nav";
 import { AppTopBar } from "./app-topbar";
 import { StickyBottomPanel } from "./sticky-bottom-panel";
+import { cn } from "@/lib/utils";
 
 interface AppShellProps {
   children: ReactNode;
@@ -18,9 +19,12 @@ interface AppShellProps {
    * longa que o painel; nas outras páginas isso travava o painel lá embaixo
    * quase de imediato, porque o conteúdo delas já é curto. */
   rightPanelVariant?: "sticky-top" | "sticky-bottom";
+  /** Para ferramentas como o Playground: a rolagem acontece apenas dentro
+   * dos próprios painéis, nunca no viewport da aplicação. */
+  fixedContent?: boolean;
 }
 
-function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl", rightPanelVariant = "sticky-top" }: AppShellProps) {
+function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl", rightPanelVariant = "sticky-top", fixedContent = false }: AppShellProps) {
   return (
     // h-dvh + overflow-hidden trava o viewport inteiro: nada rola aqui fora,
     // cada coluna (sidebar, conteúdo, painel direito) cuida do próprio scroll.
@@ -35,7 +39,7 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
             com duas barras de rolagem lado a lado. A barra de status e os
             cabeçalhos sticky grudam no topo dela, e essa é a única barra de
             rolagem da tela, escondida visualmente (zc-scroll-hidden). */}
-        <div className="zc-scroll-hidden flex-1 overflow-y-auto overflow-x-hidden">
+        <div className={cn("zc-scroll-hidden flex-1 overflow-y-auto overflow-x-hidden", fixedContent && "overflow-y-hidden")}>
           <AppTopBar />
 
           {/* Sem justify-center: main ocupa todo o espaço que sobra (o
@@ -44,8 +48,8 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
               de verdade, em vez de ficar centralizado com um vão depois
               dele em telas grandes. */}
           <div className="flex">
-            <main className="w-full min-w-0 flex-1 px-4 pb-10 lg:px-8">
-              <div className={`mx-auto ${contentClassName}`}>{children}</div>
+            <main className={cn("w-full min-w-0 flex-1 px-4 pb-10 lg:px-8", fixedContent && "h-[calc(100dvh-136px)] overflow-hidden pb-0 lg:h-[calc(100dvh-72px)]")}>
+              <div className={cn("mx-auto", contentClassName, fixedContent && "h-full min-h-0")}>{children}</div>
             </main>
 
             {rightPanel &&

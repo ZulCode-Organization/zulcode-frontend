@@ -26,7 +26,7 @@ function TrilhaEsqueleto() {
 
 export default function HomePage() {
   useRequireAuth();
-  const { unidades, loading, cursos, cursoAtual, selecionarCurso } = useJornada();
+  const { unidades, loading } = useJornada();
 
   return (
     <AppShell
@@ -45,8 +45,9 @@ export default function HomePage() {
           estado de cada lição (atual/bloqueada/concluída) é sempre
           calculado a partir de progresso de verdade — da única lição
           semeada no backend, ou do progresso local nas outras — nunca
-          hardcoded, então a 2ª lição só libera depois que a 1ª é concluída. */}
-      {loading ? <TrilhaEsqueleto /> : <LessonTrail unidades={unidades} cursos={cursos} cursoAtual={cursoAtual} onCursoChange={selecionarCurso} />}
+          hardcoded, então a 2ª lição só libera depois que a 1ª é concluída.
+          A troca de curso agora fica na barra de status, no topo do app. */}
+      {loading ? <TrilhaEsqueleto /> : <LessonTrail unidades={unidades} />}
     </AppShell>
   );
 }

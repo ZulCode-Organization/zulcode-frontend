@@ -8,6 +8,7 @@ import { X, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { limparPerfilCache } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
+import { limparCursosCache } from "@/hooks/use-cursos";
 import { adminEntry, moreNavItems } from "./nav-items";
 import { usePerfil } from "@/hooks/use-perfil";
 
@@ -57,6 +58,7 @@ export function MaisMenu({ onClose }: MaisMenuProps) {
     // perfil/trilha da conta anterior.
     limparPerfilCache();
     limparTrilhaCache();
+    limparCursosCache();
     router.replace("/welcome");
   };
 

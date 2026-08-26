@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { limparPerfilCache } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
+import { limparCursosCache } from "@/hooks/use-cursos";
 import { ativarNotificacoesNativas } from "@/lib/push-notifications";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { usePerfil } from "@/hooks/use-perfil";
@@ -83,6 +84,7 @@ export function SettingsContent() {
     localStorage.removeItem("accessToken");
     limparPerfilCache();
     limparTrilhaCache();
+    limparCursosCache();
     router.replace("/welcome");
   };
 

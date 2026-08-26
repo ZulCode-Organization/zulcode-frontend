@@ -187,6 +187,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
     return (
       <TelaConclusao
         xp={xpConfirmado}
+        xpBase={licao.xp}
         acertos={acertos}
         total={perguntas.length}
         onRevisar={reiniciar}

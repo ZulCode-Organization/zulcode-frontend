@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { UnidadeTrilha } from "@/lib/types/trilha";
-import { limparTrilhaCache, useTrilha } from "./use-trilha";
-import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
+import { useTrilha } from "./use-trilha";
+import { useCursos } from "./use-cursos";
 
-export interface CursoDaJornada { id: string; name: string; icon: string; }
+export type { CursoDaJornada } from "./use-cursos";
 
 /**
  * Monta a Jornada completa (80 lições) combinando duas fontes de verdade:
@@ -14,37 +14,16 @@ export interface CursoDaJornada { id: string; name: string; icon: string; }
  * bloqueada / concluida) é sempre calculado, nunca lido de um campo
  * hardcoded — é isso que garante que a lição 2 só libera depois que a 1ª
  * é concluída de verdade, em toda a trilha, não só na lição conectada.
+ *
+ * O catálogo de cursos e o curso atual vêm do useCursos, compartilhado com a
+ * barra de status (onde agora fica o seletor de curso) — trocar de curso lá
+ * em cima recarrega a trilha aqui sozinho.
  */
 export function useJornada() {
-  // Não assume JavaScript: em um reload isso iniciava uma requisição e
-  // renderizava a trilha errada antes de a API responder o curso do usuário.
-  const [cursoAtual, setCursoAtual] = useState<string | null>(null);
-  const [cursos, setCursos] = useState<CursoDaJornada[]>([]);
-  const [carregandoCurso, setCarregandoCurso] = useState(true);
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) { setCarregandoCurso(false); return; }
-    Promise.all([
-      fetchComTimeout(`${API_BASE_URL}/languages`).then(r => r.json()),
-      fetchComTimeout(`${API_BASE_URL}/languages/current`, { headers: { Authorization: `Bearer ${token}` } }).then(async r => {
-        if (!r.ok || r.status === 204) return null;
-        const body = await r.text();
-        return body ? JSON.parse(body) : null;
-      }),
-    ]).then(([available, current]) => {
-      setCursos(available);
-      setCursoAtual(current?.id ?? available[0]?.id ?? null);
-    }).catch(() => setCursoAtual(null)).finally(() => setCarregandoCurso(false));
-  }, []);
+  const { cursos, cursoAtual, loading: carregandoCurso, selecionarCurso } = useCursos();
   const trilhaReal = useTrilha(cursoAtual ?? "", !!cursoAtual);
 
   const marcarConcluidaLocal = useCallback((_licaoId: string) => undefined, []);
-  const selecionarCurso = useCallback(async (slug: string) => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
-    const res = await fetchComTimeout(`${API_BASE_URL}/languages/${slug}/current`, { method: "PATCH", headers: { Authorization: `Bearer ${token}` } });
-    if (res.ok) { limparTrilhaCache(); setCursoAtual(slug); }
-  }, []);
 
   return {
     unidades: trilhaReal.unidades as UnidadeTrilha[],

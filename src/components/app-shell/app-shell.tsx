@@ -52,13 +52,23 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
               <div className={cn("mx-auto", contentClassName, fixedContent && "h-full min-h-0")}>{children}</div>
             </main>
 
+            {/* As duas colunas laterais nascem no mesmo ponto (lg): é de lá pra
+                cima que a sidebar esquerda aparece, e o layout do app é as
+                três colunas juntas — a direita nunca fica de fora enquanto a
+                esquerda estiver na tela. Entre lg e xl ela vem mais estreita,
+                do mesmo jeito que a esquerda vira trilho de ícones. */}
+            {/* O pt-5 é só deste painel: os chips da barra de status ficam
+                alinhados à direita, ou seja, logo em cima dele — sem esse
+                respiro o primeiro card encosta neles. O cabeçalho da Jornada,
+                na coluna do meio, não tem chip nenhum em cima e por isso sobe
+                colado na barra. */}
             {rightPanel &&
               (rightPanelVariant === "sticky-bottom" ? (
-                <StickyBottomPanel className="hidden w-[360px] shrink-0 self-start xl:block">
-                  <div className="flex flex-col gap-4 px-7 pb-10">{rightPanel}</div>
+                <StickyBottomPanel className="hidden w-[300px] shrink-0 self-start lg:block xl:w-[360px]">
+                  <div className="flex flex-col gap-4 px-5 pb-10 pt-5 xl:px-7">{rightPanel}</div>
                 </StickyBottomPanel>
               ) : (
-                <aside className="sticky top-6 hidden w-[360px] shrink-0 flex-col gap-4 self-start px-7 pb-10 xl:flex">
+                <aside className="sticky hidden w-[300px] shrink-0 flex-col gap-4 self-start px-5 pb-10 pt-5 lg:flex xl:w-[360px] xl:px-7" style={{ top: "var(--zc-topbar-h, 72px)" }}>
                   {rightPanel}
                 </aside>
               ))}

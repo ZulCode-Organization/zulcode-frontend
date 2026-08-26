@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { IconType } from "react-icons";
 import {
   SiAngular,
@@ -17,7 +18,6 @@ import {
   SiMariadb,
   SiMysql,
   SiNodedotjs,
-  SiOpenjdk,
   SiPerl,
   SiPhp,
   SiPostgresql,
@@ -33,6 +33,7 @@ import {
   SiTypescript,
   SiVuedotjs,
 } from "react-icons/si";
+import { FaJava } from "react-icons/fa";
 import { Code2 } from "lucide-react";
 
 const ICONS: Record<string, IconType> = {
@@ -41,7 +42,8 @@ const ICONS: Record<string, IconType> = {
   js: SiJavascript,
   typescript: SiTypescript,
   ts: SiTypescript,
-  java: SiOpenjdk,
+  // Xícara de café clássica do Java, em vez do mascote do OpenJDK.
+  java: FaJava,
   csharp: SiSharp,
   "c#": SiSharp,
   cplusplus: SiCplusplus,
@@ -131,17 +133,28 @@ function normalize(value: string) {
   return value.trim().toLowerCase().replace(/[\s._-]+/g, "");
 }
 
+/** Cor de marca da linguagem, pra quem precisa dela como fundo (os ladrilhos
+ * arredondados do seletor de curso) em vez de como cor do traço. Devolve
+ * undefined quando a linguagem não tem cor conhecida. */
+export function languageColor(id: string, name?: string): string | undefined {
+  const key = ICONS[normalize(id)] ? normalize(id) : name ? normalize(name) : normalize(id);
+  return COLORS[key];
+}
+
 interface LanguageIconProps {
   id: string;
   name?: string;
   className?: string;
   /** Útil em fundos coloridos, onde o ícone precisa herdar o contraste do layout. */
   monochrome?: boolean;
+  /** Para quem dimensiona o ícone em px (os ladrilhos do seletor de curso, que
+   * derivam tudo do lado do quadrado) em vez de por classe. */
+  style?: CSSProperties;
 }
 
-export function LanguageIcon({ id, name, className, monochrome = false }: LanguageIconProps) {
+export function LanguageIcon({ id, name, className, monochrome = false, style }: LanguageIconProps) {
   const key = ICONS[normalize(id)] ? normalize(id) : name ? normalize(name) : normalize(id);
   const Icon = ICONS[key] ?? Code2;
   const color = COLORS[key];
-  return <Icon className={className} style={!monochrome && color ? { color } : undefined} />;
+  return <Icon className={className} style={{ ...(!monochrome && color ? { color } : {}), ...style }} />;
 }

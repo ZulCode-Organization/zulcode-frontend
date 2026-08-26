@@ -189,7 +189,7 @@ function Store() {
       });
   };
   return (
-    <div className="mx-auto max-w-[1240px] py-5 sm:py-7">
+    <div className="mx-auto max-w-[1240px] pb-5 pt-1 sm:pb-7 sm:pt-2">
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_270px]">
         <main className="min-w-0">
           <header className="mb-5">

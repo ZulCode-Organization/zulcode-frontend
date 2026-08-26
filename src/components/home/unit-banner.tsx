@@ -3,8 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { UnidadeTrilha } from "@/lib/types/trilha";
 import { CorUnidade } from "@/data/trilha";
 import { cn } from "@/lib/utils";
-import { CursoDaJornada } from "@/hooks/use-jornada";
-import { LanguageIcon } from "@/components/onboarding/language-icon";
 
 interface UnitBannerProps {
   unidade: UnidadeTrilha;
@@ -12,13 +10,10 @@ interface UnitBannerProps {
    * conforme a trilha rola e entra em cada unidade nova. */
   cor: CorUnidade;
   unidades: UnidadeTrilha[];
-  cursos: CursoDaJornada[];
-  cursoAtual: string;
-  onCursoChange: (slug: string) => void;
   onUnidadeClick: (index: number) => void;
 }
 
-export function UnitBanner({ unidade, cor, unidades, cursos, cursoAtual, onCursoChange, onUnidadeClick }: UnitBannerProps) {
+export function UnitBanner({ unidade, cor, unidades, onUnidadeClick }: UnitBannerProps) {
   const [aberto, setAberto] = useState(false);
   const bannerRef = useRef<HTMLDivElement>(null);
 
@@ -35,17 +30,20 @@ export function UnitBanner({ unidade, cor, unidades, cursos, cursoAtual, onCurso
   const concluidas = unidade?.licoes?.filter((l) => l.estado === "concluida").length ?? 0;
 
   return (
-    // top-[72px] deixa o banner logo abaixo da barra de status, que é sticky em
-    // top-0 — assim os dois empilham em vez de um passar por cima do outro.
+    // --zc-topbar-h é a altura medida da barra de status (a AppTopBar publica
+    // ela), que é sticky em top-0 — o banner encosta exatamente embaixo dela
+    // em vez de depender de um 72px fixo, que errava sempre que a barra mudava
+    // de altura entre breakpoints. O 72px continua só como valor de partida,
+    // até a primeira medição.
     // A transição de cor/texto é suave (duration-300) pra não trocar num piscar.
     <div ref={bannerRef}
       className={cn(
-        "animate-fade-in-up relative sticky top-[72px] z-10 px-7 py-5 text-white shadow-lg transition-colors duration-300",
+        "animate-fade-in-up relative sticky z-10 px-7 py-5 text-white shadow-lg transition-colors duration-300",
         aberto ? "rounded-t-3xl" : "rounded-3xl",
         cor.bg,
         cor.sombra
       )}
-      style={{ ["--zc-press-color" as string]: "rgba(0,0,0,0.18)" }}
+      style={{ top: "var(--zc-topbar-h, 72px)", ["--zc-press-color" as string]: "rgba(0,0,0,0.18)" }}
     >
       <div className="flex flex-wrap items-center gap-4">
         <div className="min-w-0 flex-1 basis-50">
@@ -66,20 +64,9 @@ export function UnitBanner({ unidade, cor, unidades, cursos, cursoAtual, onCurso
 
       {aberto && <>
         <div className={cn("absolute left-0 right-0 top-full z-20 rounded-b-3xl px-7 pb-5 pt-4 text-white shadow-lg", cor.bg)}>
-        <div className="grid grid-cols-3 gap-3 pb-4 sm:grid-cols-6">
-          {cursos.map(curso => <button key={curso.id} type="button" onClick={() => { onCursoChange(curso.id); setAberto(false); }} title={`Trocar para ${curso.name}`} className={cn(
-            "group flex min-w-0 flex-col items-center gap-1.5 rounded-xl border border-transparent px-1 py-1.5 text-white transition-all duration-150",
-            curso.id === cursoAtual
-              ? "border-white/90"
-              : "opacity-70 hover:border-white/45 hover:opacity-100"
-          )}>
-            <span className="flex size-11 items-center justify-center text-white">
-              <LanguageIcon id={curso.id} name={curso.name} className="size-[26px]" monochrome />
-            </span>
-            <span className="w-full text-center text-[0.6rem] font-black uppercase leading-tight tracking-[0.02em]">{curso.name}</span>
-          </button>)}
-        </div>
-        <p className="mb-2 text-[0.7rem] font-black uppercase tracking-[0.08em] opacity-80">Seções de {cursos.find(c => c.id === cursoAtual)?.name}</p>
+        {/* A troca de curso saiu daqui: agora ela mora na barra de status, ao
+            lado da ofensiva. Este botão voltou a ser só o guia do curso. */}
+        <p className="mb-2 text-[0.7rem] font-black uppercase tracking-[0.08em] opacity-80">Seções do curso</p>
         <div className="grid gap-2">
           {unidades.map((item, index) => <button key={item.id} type="button" onClick={() => { onUnidadeClick(index); setAberto(false); }} className="rounded-xl bg-black/15 px-3 py-2 text-left text-sm font-bold hover:bg-black/25">Unidade {index + 1}: {item.titulo}</button>)}
         </div>

@@ -323,6 +323,22 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Chips da barra de status. No celular eles são só ícone + número (sem
+   moldura), então a sombra sólida do zc-press só aparece do lg pra cima, onde
+   o chip tem o corpo do card pra apoiar. Fora de @layer pelo mesmo motivo do
+   bloco abaixo — e o :active precisa estar aqui junto, senão essa regra
+   venceria o .zc-press:active e a peça nunca afundaria.
+   --------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+  .zc-chip-sombra {
+    box-shadow: 0 4px 0 var(--zc-press-color, rgba(0, 0, 0, 0.18));
+  }
+  .zc-chip-sombra:active {
+    box-shadow: 0 0 0 var(--zc-press-color, rgba(0, 0, 0, 0.18));
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Chamas do PRO. Fora de @layer utilities de propósito: regra dentro da camada
    é tratada como utilitário candidato pelo Tailwind v4 e pode ser podada se a
    classe não for encontrada no scan.

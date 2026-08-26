@@ -30,7 +30,7 @@ function MetasContent() {
   const concluidas = metas.filter((meta) => meta.completed).length;
 
   return (
-    <div className="pt-3">
+    <div className="pt-1">
       <div className="animate-fade-in-up flex flex-wrap items-center gap-4 rounded-3xl bg-primary p-5 text-primary-foreground shadow-lg shadow-primary/20 sm:gap-6 sm:p-7">
         <div className="min-w-[200px] flex-1 basis-65">
           <h1 className="text-xl font-black text-pretty sm:text-2xl">Ganhe recompensas com as metas!</h1>

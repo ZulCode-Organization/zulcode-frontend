@@ -30,7 +30,7 @@ export function MaisMenu({ onClose }: MaisMenuProps) {
   const pathname = usePathname();
   const [visivel, setVisivel] = useState(false);
   const { perfil } = usePerfil();
-  const itens = perfil?.role === "ADMIN" ? [...moreNavItems, adminEntry] : moreNavItems;
+  const itens = perfil?.role === "ADMIN" || perfil?.role === "PROFESSOR" ? [...moreNavItems, adminEntry] : moreNavItems;
 
   useLayoutEffect(() => {
     const id = requestAnimationFrame(() => setVisivel(true));

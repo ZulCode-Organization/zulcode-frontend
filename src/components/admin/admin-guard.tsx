@@ -9,9 +9,9 @@ function Guard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { perfil, loading } = usePerfil();
   useEffect(() => {
-    if (!loading && perfil?.role !== "ADMIN") router.replace("/home");
+    if (!loading && perfil?.role !== "ADMIN" && perfil?.role !== "PROFESSOR") router.replace("/home");
   }, [loading, perfil?.role, router]);
-  if (loading || perfil?.role !== "ADMIN") return <div className="p-10 text-muted-foreground">Verificando acesso…</div>;
+  if (loading || (perfil?.role !== "ADMIN" && perfil?.role !== "PROFESSOR")) return <div className="p-10 text-muted-foreground">Verificando acesso…</div>;
   return <>{children}</>;
 }
 

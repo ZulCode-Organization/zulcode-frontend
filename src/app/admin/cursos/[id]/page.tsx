@@ -1,6 +1,6 @@
-import { CourseContentManager } from "@/components/admin/course-content-manager";
+import { CourseSections } from "@/components/admin/course-flow";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <CourseContentManager courseId={id} />;
+  return <CourseSections courseId={id} />;
 }

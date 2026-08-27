@@ -156,7 +156,8 @@ export function AppSidebar() {
 
   const logo = resolvedTheme !== "dark" ? "/icon-only.svg" : "/icon-only-dark.svg";
   const isAdminArea = pathname.startsWith("/admin");
-  const navItems = perfil?.role === "ADMIN" ? [...sidebarNavItems, adminEntry] : sidebarNavItems;
+  const navItems = perfil?.role === "ADMIN" || perfil?.role === "PROFESSOR" ? [...sidebarNavItems, adminEntry] : sidebarNavItems;
+  const adminItems = perfil?.role === "PROFESSOR" ? [adminNavItems[1]] : adminNavItems;
 
   /**
    * Abaixo de xl a barra vira um trilho só de ícones: o rótulo some, o item
@@ -225,7 +226,7 @@ export function AppSidebar() {
 
       <nav className="mt-6 flex flex-col gap-1">
         {isAdminArea ? <>
-          {renderNavLink(adminNavItems[0])}
+          {perfil?.role === "ADMIN" && renderNavLink(adminItems[0])}
           <button
             type="button"
             onClick={() => setCadastrosAberto((aberto) => !aberto)}
@@ -236,8 +237,8 @@ export function AppSidebar() {
             <span className="hidden flex-1 xl:inline">Cadastros</span>
             <ChevronDown className={cn("hidden size-4 transition-transform xl:block", cadastrosAberto && "rotate-180")} />
           </button>
-          {cadastrosAberto && adminNavItems.slice(1, 3).map((item) => renderNavLink(item, true))}
-          {adminNavItems.slice(3).map((item) => renderNavLink(item))}
+          {cadastrosAberto && (perfil?.role === "ADMIN" ? adminItems.slice(1, 3) : adminItems).map((item) => renderNavLink(item, true))}
+          {perfil?.role === "ADMIN" && adminItems.slice(3).map((item) => renderNavLink(item))}
         </> : <>
           {navItems.map((item) => renderNavLink(item))}
           <MenuMais />

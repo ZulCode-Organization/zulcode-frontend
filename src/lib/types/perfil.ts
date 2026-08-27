@@ -1,7 +1,7 @@
 export interface PerfilUsuario {
   id: string;
   publicCode?: string;
-  role: "USER" | "ADMIN";
+  role: "USER" | "ADMIN" | "PROFESSOR";
   isPro?: boolean;
   isDeveloper?: boolean;
   isEarlyTester?: boolean;

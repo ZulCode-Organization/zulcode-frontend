@@ -17,7 +17,7 @@ export function AppBottomNav() {
   // Metas e Líderes só existem dentro do menu "Mais" no celular — sem
   // checar isso aqui, nenhum ícone da barra ficaria "ativo" quando a
   // pessoa estivesse numa dessas duas telas.
-  const maisAtivo = moreNavItems.some((item) => item.href === pathname) || (perfil?.role === "ADMIN" && pathname.startsWith("/admin"));
+  const maisAtivo = moreNavItems.some((item) => item.href === pathname) || ((perfil?.role === "ADMIN" || perfil?.role === "PROFESSOR") && pathname.startsWith("/admin"));
 
   return (
     <nav className="sticky bottom-0 z-20 flex items-center justify-around border-t border-border bg-background/95 px-1 py-2 backdrop-blur-md lg:hidden">

@@ -12,24 +12,22 @@ const MESES = [
 ];
 
 function chaveDoDia(data: Date) {
-  return `${data.getFullYear()}-${data.getMonth()}-${data.getDate()}`;
+  return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}-${String(data.getDate()).padStart(2, "0")}`;
 }
 
 interface OfensivaProps {
   streakAtual: number | null;
   streakRecorde: number | null;
   protecoes: number;
+  diasProtegidos: string[];
   onNavegar?: () => void;
 }
 
 /**
- * Calendário da ofensiva. O backend ainda não devolve o histórico dia a dia —
- * só o tamanho da sequência atual — então os dias acesos são exatamente os
- * `streakAtual` dias contados a partir de hoje, que é o que esse número
- * significa. Nada aqui inventa um dia que o usuário não tenha estudado: se a
- * sequência é 0, o calendário fica todo apagado.
+ * O backend informa os dias que foram protegidos; eles aparecem em azul.
+ * Os demais dias da sequência continuam sendo inferidos a partir do total.
  */
-export function PainelOfensiva({ streakAtual, streakRecorde, protecoes, onNavegar }: OfensivaProps) {
+export function PainelOfensiva({ streakAtual, streakRecorde, protecoes, diasProtegidos, onNavegar }: OfensivaProps) {
   const sequencia = streakAtual ?? 0;
   const hoje = useMemo(() => {
     const data = new Date();
@@ -47,6 +45,7 @@ export function PainelOfensiva({ streakAtual, streakRecorde, protecoes, onNavega
     }
     return dias;
   }, [sequencia, hoje]);
+  const diasComProtecao = useMemo(() => new Set(diasProtegidos), [diasProtegidos]);
 
   const ano = mesVisivel.getFullYear();
   const mes = mesVisivel.getMonth();
@@ -142,7 +141,9 @@ export function PainelOfensiva({ streakAtual, streakRecorde, protecoes, onNavega
 
             const coluna = indice % 7;
             const marcado = aceso(dia);
-            const ehHoje = chaveDoDia(new Date(ano, mes, dia)) === chaveDoDia(hoje);
+            const chave = chaveDoDia(new Date(ano, mes, dia));
+            const protegido = diasComProtecao.has(chave);
+            const ehHoje = chave === chaveDoDia(hoje);
             // A trilha contínua liga dias acesos seguidos dentro da mesma
             // semana, do jeito que a referência mostra.
             const ligaAntes = marcado && coluna > 0 && aceso(dia - 1);
@@ -163,7 +164,7 @@ export function PainelOfensiva({ streakAtual, streakRecorde, protecoes, onNavega
                 <span
                   className={cn(
                     "relative flex size-8 items-center justify-center rounded-full text-[0.82rem] font-black",
-                    marcado ? "bg-orange-500 text-white" : "text-muted-foreground",
+                    protegido ? "bg-sky-500 text-white" : marcado ? "bg-orange-500 text-white" : "text-muted-foreground",
                     ehHoje && !marcado && "ring-2 ring-inset ring-primary text-primary",
                     ehHoje && marcado && "ring-2 ring-offset-2 ring-orange-500 ring-offset-card"
                   )}

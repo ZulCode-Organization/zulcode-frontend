@@ -259,7 +259,7 @@ export function AppTopBar() {
       {!ehMobile && painel === "ofensiva" && (
         <TopbarPopover ancora={ancoraOfensiva} rotulo="Ofensiva" largura={380} onClose={fechar}>
           <div className="p-4">
-            <PainelOfensiva streakAtual={perfil?.streakAtual ?? 0} streakRecorde={perfil?.streakRecorde ?? 0} protecoes={protecoes} onNavegar={fechar} />
+            <PainelOfensiva streakAtual={perfil?.streakAtual ?? 0} streakRecorde={perfil?.streakRecorde ?? 0} protecoes={protecoes} diasProtegidos={perfil?.protectedStreakDays ?? []} onNavegar={fechar} />
           </div>
         </TopbarPopover>
       )}
@@ -283,7 +283,7 @@ export function AppTopBar() {
       {/* Telas cheias do celular */}
       {ehMobile && painel === "ofensiva" && (
         <TopbarSheet titulo="Ofensiva" onClose={fechar}>
-          <PainelOfensiva streakAtual={perfil?.streakAtual ?? 0} streakRecorde={perfil?.streakRecorde ?? 0} protecoes={protecoes} onNavegar={fechar} />
+          <PainelOfensiva streakAtual={perfil?.streakAtual ?? 0} streakRecorde={perfil?.streakRecorde ?? 0} protecoes={protecoes} diasProtegidos={perfil?.protectedStreakDays ?? []} onNavegar={fechar} />
         </TopbarSheet>
       )}
 

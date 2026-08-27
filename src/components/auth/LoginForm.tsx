@@ -42,10 +42,6 @@ export function LoginForm() {
         </Button>
       </div>
 
-      <div className="mt-3 text-right">
-        <Link href="/esqueci-a-senha" className="text-sm font-semibold text-primary hover:underline">Esqueci minha senha</Link>
-      </div>
-
       <p className="mt-8 text-center text-sm text-muted-foreground">
         <Link href="/welcome" className="font-semibold text-primary hover:underline">
           Voltar para a tela inicial

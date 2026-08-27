@@ -93,7 +93,7 @@ function MenuMais() {
         >
           <MoreHorizontal className="size-5" />
         </span>
-        <span className="hidden xl:inline">Mais…</span>
+        <span className="hidden xl:inline">Mais</span>
       </button>
 
       {aberto && caixa && createPortal(

@@ -26,6 +26,8 @@ export interface PerfilUsuario {
   streakAtual: number;
   streakRecorde: number;
   streakFreezes?: number;
+  /** Dias em que uma proteção impediu a quebra da sequência (YYYY-MM-DD). */
+  protectedStreakDays?: string[];
   doubleXpUntil?: string | null;
   /** Vidas restantes (as "penas"). null enquanto a API não devolver o campo. */
   vidas: number | null;

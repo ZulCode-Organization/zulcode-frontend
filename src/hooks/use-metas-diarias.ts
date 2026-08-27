@@ -20,8 +20,40 @@ export interface MissaoEspecial { id:string; title:string; description:string; i
  */
 export function useMetasDiarias(): { metas: MetaDoDia[]; especiais: MissaoEspecial[]; conectada: boolean; resgatar: (id: string) => Promise<number> } {
   const [metas, setMetas] = useState<MetaDoDia[]>([]); const [especiais, setEspeciais] = useState<MissaoEspecial[]>([]); const [conectada, setConectada] = useState(false);
-  const carregar = useCallback(() => { const token=localStorage.getItem("accessToken"); if (!token) return; const headers={ Authorization:`Bearer ${token}` }; Promise.all([fetchComTimeout(`${API_BASE_URL}/goals`, { headers }),fetchComTimeout(`${API_BASE_URL}/goals/special`, { headers })]).then(async ([normal,special])=>[normal.ok?await normal.json():[],special.ok?await special.json():[]]).then(([data,missions])=>{setMetas(data);setEspeciais(missions);setConectada(true)}).catch(()=>setConectada(false)); }, []);
-  useEffect(carregar, [carregar]);
-  const resgatar = useCallback(async (id:string) => { const token=localStorage.getItem("accessToken"); if (!token) return 0; const res=await fetchComTimeout(`${API_BASE_URL}/goals/${id}/claim`,{method:"POST",headers:{Authorization:`Bearer ${token}`}}); if(!res.ok)return 0; const data=await res.json(); const ganho=data.coinsEarned ?? 0; if (ganho > 0) window.dispatchEvent(new CustomEvent("zulcode:moedas", { detail: ganho })); carregar(); return ganho; },[carregar]);
+  const carregar = useCallback(async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const [normal, special] = await Promise.all([
+        fetchComTimeout(`${API_BASE_URL}/goals`, { headers }),
+        fetchComTimeout(`${API_BASE_URL}/goals/special`, { headers }),
+      ]);
+      if (!normal.ok || !special.ok) throw new Error("Falha ao carregar metas");
+      const [data, missions] = await Promise.all([normal.json(), special.json()]);
+      setMetas(data);
+      setEspeciais(missions);
+      setConectada(true);
+    } catch {
+      setConectada(false);
+    }
+  }, []);
+  useEffect(() => { void carregar(); }, [carregar]);
+  const resgatar = useCallback(async (id: string) => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return 0;
+    try {
+      const res = await fetchComTimeout(`${API_BASE_URL}/goals/${id}/claim`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return 0;
+      const data = await res.json();
+      const ganho = data.coinsEarned ?? 0;
+      setMetas((atuais) => atuais.map((meta) => meta.id === id ? { ...meta, completed: true, claimable: false } : meta));
+      if (ganho > 0) window.dispatchEvent(new CustomEvent("zulcode:moedas", { detail: ganho }));
+      void carregar();
+      return ganho;
+    } catch {
+      return 0;
+    }
+  }, [carregar]);
   return { metas, especiais, conectada, resgatar };
 }

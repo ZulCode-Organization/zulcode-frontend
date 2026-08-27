@@ -13,6 +13,8 @@ import {
   Sparkles,
   UserRound,
   Zap,
+  HeartPulse,
+  CircleDollarSign,
 } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { usePerfil } from "@/hooks/use-perfil";
@@ -27,7 +29,7 @@ type Item = {
   title: string;
   description: string;
   price: number;
-  effect: "RECOVER_LIVES" | "FREEZE_STREAK" | "DOUBLE_XP";
+  effect: "RECOVER_LIVES" | "FREEZE_STREAK" | "DOUBLE_XP" | "FEATHER_SHIELD" | "DOUBLE_COINS" | "HEAL_ONE_LIFE";
 };
 type Kind = "THEME" | "AVATAR" | "BANNER";
 type Cosmetic = {
@@ -42,6 +44,7 @@ type Cosmetic = {
     primary?: string;
     accent?: string;
     gradient?: string;
+    imageUrl?: string;
     avatarId?: string;
   };
 };
@@ -61,6 +64,12 @@ const powerIcon = (effect: Item["effect"]) =>
     ? Feather
     : effect === "FREEZE_STREAK"
     ? ShieldCheck
+    : effect === "FEATHER_SHIELD"
+    ? ShieldCheck
+    : effect === "DOUBLE_COINS"
+    ? CircleDollarSign
+    : effect === "HEAL_ONE_LIFE"
+    ? HeartPulse
     : Zap;
 
 function Store() {
@@ -465,7 +474,7 @@ function CosmeticCard({
         ) : item.kind === "BANNER" ? (
           <div
             className="h-full w-full"
-            style={{ background: item.value.gradient ?? "linear-gradient(135deg,#0284c7,#8b5cf6)" }}
+            style={{ background: item.value.imageUrl ? `url(${item.value.imageUrl}) center / cover` : item.value.gradient ?? "linear-gradient(135deg,#0284c7,#8b5cf6)" }}
           />
         ) : (
           <div className="grid h-full w-full place-items-center bg-violet-500/10">

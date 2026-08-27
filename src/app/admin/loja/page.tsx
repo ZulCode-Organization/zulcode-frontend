@@ -3,13 +3,16 @@
 import { FormEvent, useEffect, useState } from "react";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 
-type ShopEffect = "RECOVER_LIVES" | "FREEZE_STREAK" | "DOUBLE_XP";
+type ShopEffect = "RECOVER_LIVES" | "FREEZE_STREAK" | "DOUBLE_XP" | "FEATHER_SHIELD" | "DOUBLE_COINS" | "HEAL_ONE_LIFE";
 type ShopItem = { id: string; title: string; description: string; price: number; effect: ShopEffect; active: boolean; order: number };
 
 const effectOptions: Array<{ value: ShopEffect; label: string }> = [
   { value: "RECOVER_LIVES", label: "Recuperar vidas" },
   { value: "FREEZE_STREAK", label: "Congelar streak" },
   { value: "DOUBLE_XP", label: "XP em dobro" },
+  { value: "FEATHER_SHIELD", label: "Escudo de pena" },
+  { value: "DOUBLE_COINS", label: "Moedas em dobro" },
+  { value: "HEAL_ONE_LIFE", label: "Recuperar uma pena" },
 ];
 const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("accessToken")}` });
 const messageOf = (body: unknown, fallback: string) => {

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 
 export interface MetaDoDia { id:string; title:string; period:"DAILY"|"WEEKLY"|"MONTHLY"; type:"PERFECT_LESSONS"|"XP_EARNED"|"LESSONS_COMPLETED"|"DAILY_MINUTES"; target:number; coinReward:number; current:number; completed:boolean; claimable:boolean; isRankJourney?: boolean; }
-export interface MissaoEspecial { id:string; title:string; description:string; icon:"rank"|"unit"|"secret"; current:number; target:number; completed:boolean; secret?:boolean; unavailable?:boolean; }
+export interface MissaoEspecial { id:string; title:string; description:string; icon:"rank"|"unit"|"secret"|"achievement"; current:number; target:number; completed:boolean; secret?:boolean; unavailable?:boolean; rewardLabel?:string; }
 
 /**
  * Casa cada meta do dia com o dado real do perfil.

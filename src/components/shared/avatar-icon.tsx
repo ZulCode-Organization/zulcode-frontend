@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useTheme } from "next-themes";
-import { Atom, BadgeCheck, Bot, Code2, Crown, Ghost, Rocket, ShieldCheck, Sparkles, Orbit, Terminal, FlaskConical } from "lucide-react";
+import { Atom, BadgeCheck, Bot, Code2, Crown, Ghost, Rocket, ShieldCheck, Sparkles, Orbit, Terminal, FlaskConical, Cat, Cpu, Gem, Flame, Gamepad2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /** O único avatar que não é ícone de traço: é o logo da marca, em imagem. */
@@ -36,6 +36,11 @@ export const AVATARES = [
   { id: "pro", label: "Emblema PRO", Icon: BadgeCheck },
   { id: "developer", label: "Desenvolvedor", Icon: Terminal },
   { id: "early-tester", label: "Pioneiro", Icon: FlaskConical },
+  { id: "neon-cat", label: "Gato Neon", Icon: Cat },
+  { id: "processor", label: "Processador", Icon: Cpu },
+  { id: "crystal", label: "Cristal", Icon: Gem },
+  { id: "flame", label: "Chama", Icon: Flame },
+  { id: "arcade", label: "Arcade", Icon: Gamepad2 },
   // O Icon aqui nunca é usado: o ZulCode cai no ramo da imagem logo abaixo.
   { id: AVATAR_MARCA, label: "ZulCode", Icon: Atom },
 ] as const;

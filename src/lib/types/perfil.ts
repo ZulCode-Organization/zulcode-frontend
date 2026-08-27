@@ -21,6 +21,8 @@ export interface PerfilUsuario {
   xpNecessarioNivel: number | null;
   /** XP que falta pro próximo nível; null quando já está no nível máximo. */
   xpProximoNivel: number | null;
+  /** Quando a conta foi criada (createdAt da API), pro "por aqui desde". */
+  membroDesde?: string | null;
   streakAtual: number;
   streakRecorde: number;
   streakFreezes?: number;

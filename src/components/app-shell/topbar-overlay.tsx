@@ -1,11 +1,12 @@
 "use client";
 
-import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ReactNode, RefObject, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const DURACAO_MS = 220;
+/** Folga do popover pra borda da janela e pro chip que o abriu. */
+const MARGEM = 12;
 
 /**
  * Mesmo corte que separa sidebar (desktop) de barra inferior (mobile) no
@@ -34,36 +35,77 @@ function useEscape(fechar: () => void) {
 }
 
 interface PopoverProps {
-  /** De que lado do chip o painel se alinha — os chips da direita abrem pra
-   * dentro, senão o painel sairia da tela. */
+  /** O chip que abriu o painel — é dele que saem as coordenadas. */
+  ancora: RefObject<HTMLElement | null>;
+  /** De que lado do chip o painel se alinha. Serve como preferência: se não
+   * couber na tela, ele é puxado pra dentro. */
   alinhamento?: "inicio" | "centro" | "fim";
-  largura?: string;
+  largura?: number;
   rotulo: string;
   onClose: () => void;
   children: ReactNode;
 }
 
 /**
- * Painel ancorado no chip (só desktop), com a setinha apontando pro ícone que
- * abriu — é o formato da referência. Sem portal de propósito: ele precisa
- * acompanhar o chip, que é sticky junto com a barra.
+ * Painel ancorado no chip (só desktop), com a setinha apontando pro ícone.
+ *
+ * Vai num portal no body, e não dentro da barra, por dois motivos que
+ * quebravam ele antes: a barra é `sticky z-20` e por isso cria um contexto de
+ * empilhamento — qualquer z-index aqui dentro ficava preso abaixo dela, e o
+ * cabeçalho da Jornada (z-30) passava por cima do painel; e o container de
+ * rolagem tem `overflow-x: hidden`, que cortava o painel na lateral. Em
+ * posição `fixed` no body ele não depende de nenhum dos dois.
  */
-export function TopbarPopover({ alinhamento = "centro", largura = "w-[340px]", rotulo, onClose, children }: PopoverProps) {
-  const ref = useRef<HTMLDivElement>(null);
+export function TopbarPopover({ ancora, alinhamento = "centro", largura = 320, rotulo, onClose, children }: PopoverProps) {
+  const painelRef = useRef<HTMLDivElement>(null);
   const [visivel, setVisivel] = useState(false);
+  const [caixa, setCaixa] = useState<{ left: number; top: number; seta: number; alturaMax: number } | null>(null);
   useEscape(onClose);
 
   useLayoutEffect(() => {
+    const medir = () => {
+      const alvo = ancora.current;
+      if (!alvo) return;
+      const retangulo = alvo.getBoundingClientRect();
+
+      const preferido =
+        alinhamento === "inicio" ? retangulo.left
+        : alinhamento === "fim" ? retangulo.right - largura
+        : retangulo.left + retangulo.width / 2 - largura / 2;
+
+      // Puxa pra dentro da janela: é isso que impede o painel de ser cortado
+      // quando o chip está colado numa das bordas.
+      const left = Math.min(Math.max(MARGEM, preferido), window.innerWidth - largura - MARGEM);
+      const top = retangulo.bottom + MARGEM;
+
+      // A setinha acompanha o centro do chip, não o do painel — se o painel
+      // foi puxado pra dentro, ela continua apontando pro ícone certo.
+      const centroDoChip = retangulo.left + retangulo.width / 2;
+      const seta = Math.min(Math.max(18, centroDoChip - left), largura - 18);
+
+      setCaixa({ left, top, seta, alturaMax: window.innerHeight - top - MARGEM });
+    };
+
+    medir();
     const id = requestAnimationFrame(() => setVisivel(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
+    window.addEventListener("resize", medir);
+    // `true` pra pegar a rolagem de qualquer container, não só a da janela.
+    document.addEventListener("scroll", medir, true);
+    return () => {
+      cancelAnimationFrame(id);
+      window.removeEventListener("resize", medir);
+      document.removeEventListener("scroll", medir, true);
+    };
+  }, [ancora, alinhamento, largura]);
 
   useEffect(() => {
     const fecharFora = (evento: MouseEvent | TouchEvent) => {
       const alvo = evento.target as Node;
-      // O próprio chip fica fora do painel: sem essa checagem, clicar nele
-      // fecharia aqui e reabriria no onClick, dando a impressão de travado.
-      if (ref.current && !ref.current.contains(alvo) && !ref.current.parentElement?.contains(alvo)) onClose();
+      if (painelRef.current?.contains(alvo)) return;
+      // O próprio chip cuida de abrir e fechar; fechar aqui também faria ele
+      // reabrir no clique seguinte e dar impressão de travado.
+      if (ancora.current?.contains(alvo)) return;
+      onClose();
     };
     document.addEventListener("mousedown", fecharFora);
     document.addEventListener("touchstart", fecharFora);
@@ -71,39 +113,42 @@ export function TopbarPopover({ alinhamento = "centro", largura = "w-[340px]", r
       document.removeEventListener("mousedown", fecharFora);
       document.removeEventListener("touchstart", fecharFora);
     };
-  }, [onClose]);
+  }, [ancora, onClose]);
 
-  // O deslocamento do "centro" vai no transform inline (junto com a animação),
-  // então aqui só entra a âncora horizontal.
-  const posicao = alinhamento === "inicio" ? "left-0" : alinhamento === "fim" ? "right-0" : "left-1/2";
-  const seta =
-    alinhamento === "inicio" ? "left-6" : alinhamento === "fim" ? "right-6" : "left-1/2 -translate-x-1/2";
+  if (!caixa) return null;
 
-  return (
+  return createPortal(
     <div
-      ref={ref}
+      ref={painelRef}
       role="dialog"
-      aria-modal="false"
       aria-label={rotulo}
-      className={cn(
-        "absolute top-full z-40 mt-3 origin-top rounded-[20px] border border-border bg-popover text-popover-foreground shadow-2xl transition-all ease-out",
-        posicao,
-        largura
-      )}
+      className="fixed z-[60] rounded-[20px] border border-border bg-popover text-popover-foreground shadow-2xl transition-all"
       style={{
+        left: caixa.left,
+        top: caixa.top,
+        width: largura,
+        transformOrigin: `${caixa.seta}px 0`,
         transitionDuration: `${DURACAO_MS}ms`,
+        transitionTimingFunction: "cubic-bezier(0.34, 1.4, 0.64, 1)",
         opacity: visivel ? 1 : 0,
-        transform: `${alinhamento === "centro" ? "translateX(-50%) " : ""}translateY(${visivel ? "0" : "-8px"}) scale(${visivel ? 1 : 0.97})`,
+        transform: `translateY(${visivel ? "0" : "-8px"}) scale(${visivel ? 1 : 0.96})`,
       }}
     >
       {/* Setinha: um quadrado girado, com as mesmas borda e cor do painel — as
           duas faces de baixo ficam escondidas atrás do corpo dele. */}
       <span
-        className={cn("absolute -top-[7px] size-3 rotate-45 border-l border-t border-border bg-popover", seta)}
+        className="absolute -top-[7px] size-3 rotate-45 border-l border-t border-border bg-popover"
+        style={{ left: caixa.seta - 6 }}
         aria-hidden
       />
-      <div className="relative">{children}</div>
-    </div>
+      {/* A rolagem fica aqui dentro, e não no painel, pra setinha não rolar
+          junto. O teto de altura é o que impede o painel de passar do pé da
+          tela quando a lista é longa. */}
+      <div className="zc-scroll-hidden relative overflow-y-auto" style={{ maxHeight: caixa.alturaMax }}>
+        {children}
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -143,8 +188,10 @@ export function TopbarSheet({ titulo, direita, onClose, children }: SheetProps) 
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-background transition-transform ease-out"
+      className="fixed inset-0 z-[60] flex flex-col bg-background transition-transform ease-out"
       style={{
+        // Sem passar do ponto aqui: um overshoot subiria além do topo e
+        // abriria um vão embaixo da tela.
         transitionDuration: `${DURACAO_MS}ms`,
         transform: visivel ? "translateY(0)" : "translateY(100%)",
       }}

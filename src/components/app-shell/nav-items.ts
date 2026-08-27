@@ -8,14 +8,21 @@ export interface NavItem {
   icon: LucideIcon;
 }
 
+/** Os destinos fixos da barra lateral. O que é usado com menos frequência
+ * saiu daqui e foi pro botão "Mais…", pra a lista não virar um paredão. */
 export const sidebarNavItems: NavItem[] = [
   { id: "jornada", label: "Jornada", href: "/home", icon: Home },
   { id: "elementos", label: "Elementos", href: "/elementos", icon: BookOpen },
-  { id: "playground", label: "Playground", href: "/playground", icon: Code2 },
   { id: "metas", label: "Metas", href: "/metas", icon: Zap },
   { id: "lideres", label: "Líderes", href: "/tabela-lideres", icon: Trophy },
   { id: "loja", label: "Loja", href: "/loja", icon: ShoppingBag },
   { id: "perfil", label: "Perfil", href: "/perfil", icon: User },
+];
+
+/** O que abre no menu lateral do botão "Mais…" (só no desktop — no celular
+ * esse papel é do `moreNavItems`, na barra de baixo). */
+export const sidebarMoreItems: NavItem[] = [
+  { id: "playground", label: "Playground", href: "/playground", icon: Code2 },
   { id: "configuracoes", label: "Configurações", href: "/configuracoes", icon: Settings },
   { id: "reportar-bug", label: "Reportar bug", href: "https://forms.cloud.microsoft/r/FD8MLw693j", external: true, icon: Bug },
 ];

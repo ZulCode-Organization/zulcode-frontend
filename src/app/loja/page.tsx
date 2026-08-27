@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Coins,
   Feather,
+  Check,
   Gift,
   History,
   LockKeyhole,
@@ -18,6 +19,7 @@ import { usePerfil } from "@/hooks/use-perfil";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
+import { cn } from "@/lib/utils";
 import { ProBanner } from "@/components/loja/pro-banner";
 
 type Item = {
@@ -192,11 +194,22 @@ function Store() {
     <div className="mx-auto max-w-[1240px] pb-5 pt-1 sm:pb-7 sm:pt-2">
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_270px]">
         <main className="min-w-0">
-          <header className="mb-5">
-            <h1 className="text-2xl font-black tracking-tight">LOJA</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Gaste suas moedas em itens exclusivos
-            </p>
+          {/* Cabeçalho com o saldo em destaque: numa loja, quanto se tem é a
+              primeira informação que importa — antes ela só existia na barra
+              de status lá em cima. */}
+          <header className="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-border bg-card px-5 py-4">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-black tracking-tight">Loja</h1>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Troque suas moedas por power-ups e personalizações
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2 rounded-2xl bg-amber-400/10 px-4 py-2.5">
+              <Coins className="size-6 text-amber-400" />
+              <span className="text-xl font-black text-amber-400">
+                {perfil?.moedas?.toLocaleString("pt-BR") ?? "—"}
+              </span>
+            </div>
           </header>
           {!perfil?.isPro && <ProBanner />}
           <div className="mt-5 flex flex-wrap gap-2 pb-1 xl:hidden">
@@ -205,14 +218,23 @@ function Store() {
                 key={value}
                 type="button"
                 onClick={() => setCategory(value)}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-black sm:px-4 sm:text-sm ${
+                className={cn(
+                  "zc-press inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-black transition-colors duration-150 sm:px-4 sm:text-sm",
                   category === value
                     ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card text-muted-foreground hover:text-foreground"
-                }`}
+                    : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                )}
               >
                 <Icon className="size-3.5" />
                 {label}
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 text-[0.65rem]",
+                    category === value ? "bg-black/20" : "bg-muted"
+                  )}
+                >
+                  {count(value)}
+                </span>
               </button>
             ))}
           </div>
@@ -261,9 +283,17 @@ function Store() {
               />
             ))}
             {!visibleItems.length && !visibleCosmetics.length && (
-              <p className="col-span-full rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-                Nenhum item encontrado nesse filtro.
-              </p>
+              <div className="col-span-full flex flex-col items-center gap-3 rounded-[20px] border border-dashed border-border px-6 py-12 text-center">
+                <Sparkles className="size-8 text-muted-foreground/50" />
+                <p className="text-sm font-black text-foreground">Nada por aqui com esse filtro</p>
+                <button
+                  type="button"
+                  onClick={() => { setCategory("ALL"); setOwnership("ALL"); }}
+                  className="text-[0.78rem] font-black uppercase tracking-[0.06em] text-primary transition-opacity duration-150 hover:opacity-70"
+                >
+                  Ver a loja inteira
+                </button>
+              </div>
             )}
           </div>
         </main>
@@ -331,21 +361,24 @@ function Store() {
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-sm rounded-3xl border border-border bg-card p-6 text-center shadow-2xl">
-            <h2
-              className={`text-xl font-black ${
-                notice.error ? "text-rose-500" : "text-primary"
-              }`}
+          <div className="animate-pop-in w-full max-w-sm rounded-3xl border border-border bg-card p-6 text-center shadow-2xl">
+            <span
+              className={cn(
+                "mx-auto grid size-14 place-items-center rounded-2xl",
+                notice.error ? "bg-destructive/10 text-destructive" : "bg-emerald-500/10 text-emerald-500"
+              )}
             >
+              {notice.error ? <LockKeyhole className="size-7" /> : <Check className="size-8" strokeWidth={3} />}
+            </span>
+            <h2 className={cn("mt-4 text-xl font-black", notice.error ? "text-destructive" : "text-foreground")}>
               {notice.title}
             </h2>
-            <p className="mt-3 text-sm text-muted-foreground">
-              {notice.message}
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">{notice.message}</p>
             <button
               type="button"
               onClick={() => setNotice(null)}
-              className="mt-6 w-full rounded-xl bg-primary py-3 font-black text-primary-foreground"
+              className="zc-press zc-press-shadow mt-6 w-full rounded-2xl bg-primary py-3.5 text-[0.8rem] font-black uppercase tracking-[0.06em] text-primary-foreground"
+              style={{ ["--zc-press-color" as string]: "rgba(0,0,0,0.32)" }}
             >
               Entendi
             </button>
@@ -368,30 +401,39 @@ function PowerCard({
 }) {
   const Icon = powerIcon(item.effect);
   return (
-    <article className="flex min-h-48 flex-col rounded-2xl border border-border bg-card p-4 transition hover:-translate-y-0.5 hover:border-primary/50">
-      <span className="grid size-12 place-items-center rounded-xl bg-amber-400/15 text-amber-400">
-        <Icon className="size-6" />
-      </span>
-      <span className="mt-4 text-[0.65rem] font-black uppercase tracking-wider text-muted-foreground">
-        Power-up
-      </span>
-      <h2 className="mt-1 font-black">{item.title}</h2>
-      <p className="mt-1 flex-1 text-xs leading-relaxed text-muted-foreground">
-        {item.description}
-      </p>
-      <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-        <b className="flex items-center gap-1.5 text-sm text-amber-400">
-          <Coins className="size-3.5" />
-          {item.price}
-        </b>
-        <button
-          type="button"
-          disabled={working !== null || disabled}
-          onClick={() => onBuy(item)}
-          className="rounded-lg bg-primary px-3 py-2 text-xs font-black text-primary-foreground disabled:opacity-50"
-        >
-          {disabled ? "Ativo" : working === item.id ? "…" : "Comprar"}
-        </button>
+    <article className="animate-fade-in-up group flex min-h-56 flex-col overflow-hidden rounded-[20px] border border-border bg-card transition-colors duration-200 hover:border-primary/50">
+      {/* Vitrine: o ícone grande sobre o âmbar da moeda, que é a cor do
+          power-up no app inteiro. */}
+      <div className="relative grid h-24 place-items-center bg-amber-400/10">
+        <Icon className="size-10 text-amber-400 transition-transform duration-200 group-hover:scale-110" />
+        {disabled && (
+          <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-[0.6rem] font-black uppercase tracking-[0.06em] text-white">
+            <Check className="size-3" strokeWidth={3} />
+            Ativo
+          </span>
+        )}
+      </div>
+
+      <div className="flex flex-1 flex-col p-4">
+        <span className="text-[0.62rem] font-black uppercase tracking-[0.1em] text-amber-400">Power-up</span>
+        <h2 className="mt-1 font-black leading-snug">{item.title}</h2>
+        <p className="mt-1.5 flex-1 text-xs leading-relaxed text-muted-foreground">{item.description}</p>
+
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <b className="flex items-center gap-1.5 text-[0.95rem] font-black text-amber-400">
+            <Coins className="size-4" />
+            {item.price}
+          </b>
+          <button
+            type="button"
+            disabled={working !== null || disabled}
+            onClick={() => onBuy(item)}
+            className="zc-press zc-press-shadow rounded-xl bg-primary px-4 py-2.5 text-[0.72rem] font-black uppercase tracking-[0.06em] text-primary-foreground disabled:opacity-50 disabled:shadow-none"
+            style={{ ["--zc-press-color" as string]: "rgba(0,0,0,0.32)" }}
+          >
+            {disabled ? "Ativo" : working === item.id ? "…" : "Comprar"}
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -405,64 +447,74 @@ function CosmeticCard({
   working: string | null;
   onAction: (item: Cosmetic) => void;
 }) {
+  const rotulo = item.kind === "THEME" ? "Tema" : item.kind === "AVATAR" ? "Avatar" : "Banner";
+  const corDoTipo =
+    item.kind === "THEME" ? "text-sky-400" : item.kind === "AVATAR" ? "text-violet-400" : "text-pink-400";
+
   return (
-    <article className="flex min-h-48 flex-col rounded-2xl border border-border bg-card p-4 transition hover:-translate-y-0.5 hover:border-primary/50">
-      <div className="flex h-12 items-center justify-center overflow-hidden rounded-xl">
+    <article className="animate-fade-in-up group flex min-h-56 flex-col overflow-hidden rounded-[20px] border border-border bg-card transition-colors duration-200 hover:border-primary/50">
+      {/* Vitrine alta: o tema e o banner aparecem no tamanho de verdade, em vez
+          da faixa de 48px de antes, onde não dava pra julgar a cor. */}
+      <div className="relative h-24 overflow-hidden">
         {item.kind === "THEME" ? (
           <div className="flex h-full w-full">
             {[item.value.primary, item.value.accent].map((color) => (
-              <span
-                key={color}
-                className="flex-1"
-                style={{ background: color }}
-              />
+              <span key={color} className="flex-1" style={{ background: color }} />
             ))}
           </div>
         ) : item.kind === "BANNER" ? (
           <div
             className="h-full w-full"
-            style={{
-              background:
-                item.value.gradient ??
-                "linear-gradient(135deg,#0284c7,#8b5cf6)",
-            }}
+            style={{ background: item.value.gradient ?? "linear-gradient(135deg,#0284c7,#8b5cf6)" }}
           />
         ) : (
-          <span className="grid size-12 place-items-center rounded-xl bg-violet-500/15 text-violet-400">
-            <AvatarIcon id={item.value.avatarId} className="size-6" />
+          <div className="grid h-full w-full place-items-center bg-violet-500/10">
+            <AvatarIcon
+              id={item.value.avatarId}
+              className="size-10 text-violet-400 transition-transform duration-200 group-hover:scale-110"
+            />
+          </div>
+        )}
+
+        {(item.equipped || item.owned) && (
+          <span
+            className={cn(
+              "absolute right-3 top-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-[0.6rem] font-black uppercase tracking-[0.06em] text-white",
+              item.equipped ? "bg-emerald-500" : "bg-black/55"
+            )}
+          >
+            <Check className="size-3" strokeWidth={3} />
+            {item.equipped ? "Em uso" : "Seu"}
           </span>
         )}
       </div>
-      <span className="mt-4 text-[0.65rem] font-black uppercase tracking-wider text-muted-foreground">
-        {item.kind === "THEME"
-          ? "Tema"
-          : item.kind === "AVATAR"
-          ? "Avatar"
-          : "Banner"}
-      </span>
-      <h2 className="mt-1 font-black">{item.name}</h2>
-      <p className="mt-1 flex-1 text-xs leading-relaxed text-muted-foreground">
-        {item.description}
-      </p>
-      <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-        <b className="flex items-center gap-1.5 text-sm text-amber-400">
-          <Coins className="size-3.5" />
-          {item.price}
-        </b>
-        <button
-          type="button"
-          disabled={working !== null || item.equipped}
-          onClick={() => onAction(item)}
-          className="rounded-lg bg-primary px-3 py-2 text-xs font-black text-primary-foreground disabled:opacity-50"
-        >
-          {item.equipped
-            ? "Comprado"
-            : working === item.id
-            ? "…"
-            : item.owned
-            ? "Usar"
-            : "Comprar"}
-        </button>
+
+      <div className="flex flex-1 flex-col p-4">
+        <span className={cn("text-[0.62rem] font-black uppercase tracking-[0.1em]", corDoTipo)}>{rotulo}</span>
+        <h2 className="mt-1 font-black leading-snug">{item.name}</h2>
+        <p className="mt-1.5 flex-1 text-xs leading-relaxed text-muted-foreground">{item.description}</p>
+
+        <div className="mt-4 flex items-center justify-between gap-3">
+          {/* Já comprado: o preço deixa de ser cobrança e vira histórico. */}
+          <b
+            className={cn(
+              "flex items-center gap-1.5 text-[0.95rem] font-black",
+              item.owned ? "text-muted-foreground line-through" : "text-amber-400"
+            )}
+          >
+            <Coins className="size-4" />
+            {item.price}
+          </b>
+          <button
+            type="button"
+            disabled={working !== null || item.equipped}
+            onClick={() => onAction(item)}
+            className="zc-press zc-press-shadow rounded-xl bg-primary px-4 py-2.5 text-[0.72rem] font-black uppercase tracking-[0.06em] text-primary-foreground disabled:opacity-50 disabled:shadow-none"
+            style={{ ["--zc-press-color" as string]: "rgba(0,0,0,0.32)" }}
+          >
+            {item.equipped ? "Em uso" : working === item.id ? "…" : item.owned ? "Usar" : "Comprar"}
+          </button>
+        </div>
       </div>
     </article>
   );

@@ -251,6 +251,7 @@ function usePerfilData(): PerfilState {
           xpNivelAtual: progresso.xpNivelAtual,
           xpNecessarioNivel: progresso.xpNecessarioNivel,
           xpProximoNivel: usuario.xpProximoNivel,
+          membroDesde: usuario.createdAt ?? null,
           streakAtual: usuario.currentStreak,
           streakRecorde: usuario.longestStreak,
           streakFreezes: usuario.streakFreezes,

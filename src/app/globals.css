@@ -323,6 +323,55 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Cabeçalho da Jornada.
+
+   No celular os chips da barra ocupam a largura toda, então o cabeçalho tem
+   mesmo que ficar abaixo dela. Do lg pra cima os chips vivem só na coluna da
+   direita, e a faixa da barra em cima da trilha fica vazia — então o cabeçalho
+   sobe pra dentro dela (margem negativa) e passa a ficar por cima (z-index),
+   ganhando a altura quase inteira da barra. Nenhuma outra tela é afetada: a
+   barra continua ocupando espaço normal no fluxo.
+   --------------------------------------------------------------------------- */
+:root {
+  --zc-banner-top: var(--zc-topbar-h, 72px);
+}
+
+/* O guia de unidades desenrola de dentro do cabeçalho, em vez de aparecer
+   pronto. Anima altura e opacidade juntas: o `grid-template-rows` seria mais
+   correto, mas aqui o painel é `absolute` e altura automática não anima, então
+   o efeito vem do scaleY com origem no topo. */
+@keyframes zc-guia-abre {
+  from {
+    opacity: 0;
+    transform: scaleY(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+.zc-guia-abre {
+  animation: zc-guia-abre 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zc-guia-abre {
+    animation: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --zc-banner-top: 20px;
+  }
+  .zc-banner-topo {
+    margin-top: calc((var(--zc-topbar-h, 72px) - var(--zc-banner-top)) * -1);
+    z-index: 30;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Chips da barra de status. No celular eles são só ícone + número (sem
    moldura), então a sombra sólida do zc-press só aparece do lg pra cima, onde
    o chip tem o corpo do card pra apoiar. Fora de @layer pelo mesmo motivo do

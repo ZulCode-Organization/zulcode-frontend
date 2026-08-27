@@ -3,12 +3,147 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTheme } from "next-themes";
-import { ChevronDown, FolderPlus, LogOut } from "lucide-react";
+import { ChevronDown, FolderPlus, LogOut, MoreHorizontal } from "lucide-react";
 import { usePerfil } from "@/hooks/use-perfil";
 import { cn } from "@/lib/utils";
-import { adminEntry, adminNavItems, sidebarNavItems } from "./nav-items";
+import { adminEntry, adminNavItems, sidebarMoreItems, sidebarNavItems } from "./nav-items";
+
+/**
+ * Botão "Mais…" e o menu que ele abre ao lado.
+ *
+ * O menu vai num portal com posição fixa, medida a partir do botão, e não
+ * dentro da barra: a barra é `overflow-y-auto`, e qualquer coisa posicionada
+ * aqui dentro seria cortada ao passar da largura dela.
+ */
+function MenuMais() {
+  const pathname = usePathname();
+  const [aberto, setAberto] = useState(false);
+  const [caixa, setCaixa] = useState<{ left: number; top: number } | null>(null);
+  const botaoRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const ativo = sidebarMoreItems.some((item) => item.href === pathname);
+
+  useLayoutEffect(() => {
+    if (!aberto) return;
+    const medir = () => {
+      const alvo = botaoRef.current;
+      if (!alvo) return;
+      const retangulo = alvo.getBoundingClientRect();
+      // Ancora no topo do botão e encosta na direita dele; se não couber até o
+      // pé da janela, sobe o suficiente pra caber.
+      const altura = sidebarMoreItems.length * 52 + 24;
+      setCaixa({
+        left: retangulo.right + 10,
+        top: Math.min(retangulo.top, Math.max(12, window.innerHeight - altura - 12)),
+      });
+    };
+    medir();
+    window.addEventListener("resize", medir);
+    document.addEventListener("scroll", medir, true);
+    return () => {
+      window.removeEventListener("resize", medir);
+      document.removeEventListener("scroll", medir, true);
+    };
+  }, [aberto]);
+
+  useEffect(() => {
+    if (!aberto) return;
+    const fecharFora = (evento: MouseEvent) => {
+      const alvo = evento.target as Node;
+      if (menuRef.current?.contains(alvo) || botaoRef.current?.contains(alvo)) return;
+      setAberto(false);
+    };
+    const aoTeclar = (evento: KeyboardEvent) => { if (evento.key === "Escape") setAberto(false); };
+    document.addEventListener("mousedown", fecharFora);
+    document.addEventListener("keydown", aoTeclar);
+    return () => {
+      document.removeEventListener("mousedown", fecharFora);
+      document.removeEventListener("keydown", aoTeclar);
+    };
+  }, [aberto]);
+
+  const fechar = () => setAberto(false);
+
+  return (
+    <>
+      <button
+        ref={botaoRef}
+        type="button"
+        onClick={() => setAberto((v) => !v)}
+        title="Mais"
+        aria-haspopup="menu"
+        aria-expanded={aberto}
+        className={cn(
+          "group flex items-center justify-center rounded-2xl border py-2 text-sm font-black uppercase tracking-[0.05em] transition-colors duration-150",
+          "xl:justify-start xl:gap-3 xl:px-4 xl:py-3",
+          ativo || aberto
+            ? "border-primary/30 bg-primary/10 text-primary"
+            : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+        )}
+      >
+        <span
+          className={cn(
+            "flex size-9 shrink-0 items-center justify-center rounded-[10px] transition-colors duration-150",
+            ativo ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:text-foreground"
+          )}
+        >
+          <MoreHorizontal className="size-5" />
+        </span>
+        <span className="hidden xl:inline">Mais…</span>
+      </button>
+
+      {aberto && caixa && createPortal(
+        <div
+          ref={menuRef}
+          role="menu"
+          aria-label="Mais opções"
+          className="animate-pop-in fixed z-[60] w-[248px] origin-left rounded-[18px] border border-border bg-popover p-2 shadow-2xl"
+          style={{ left: caixa.left, top: caixa.top }}
+        >
+          {sidebarMoreItems.map((item) => {
+            const Icon = item.icon;
+            const selecionado = item.href === pathname;
+            const classe = cn(
+              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-black uppercase tracking-[0.05em] transition-colors duration-150",
+              selecionado ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+            );
+            const conteudo = (
+              <>
+                <span
+                  className={cn(
+                    "flex size-8 shrink-0 items-center justify-center rounded-lg",
+                    selecionado ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  <Icon className="size-4.5" />
+                </span>
+                {item.label}
+              </>
+            );
+
+            if (item.external) {
+              return (
+                <a key={item.id} href={item.href} target="_blank" rel="noreferrer" role="menuitem" onClick={fechar} className={classe}>
+                  {conteudo}
+                </a>
+              );
+            }
+            return (
+              <Link key={item.id} href={item.href!} role="menuitem" onClick={fechar} className={classe}>
+                {conteudo}
+              </Link>
+            );
+          })}
+        </div>,
+        document.body
+      )}
+    </>
+  );
+}
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -103,7 +238,10 @@ export function AppSidebar() {
           </button>
           {cadastrosAberto && adminNavItems.slice(1, 3).map((item) => renderNavLink(item, true))}
           {adminNavItems.slice(3).map((item) => renderNavLink(item))}
-        </> : navItems.map((item) => renderNavLink(item))}
+        </> : <>
+          {navItems.map((item) => renderNavLink(item))}
+          <MenuMais />
+        </>}
       </nav>
 
     </aside>

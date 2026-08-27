@@ -21,8 +21,6 @@ const FAMA = [
  * recém-criado aparece. */
 const NOVOS_PREFERIDOS = ["sqlite", "arduino"];
 
-const QUANTIDADE_PRINCIPAIS = 3;
-
 function normalizar(valor: string) {
   return valor.trim().toLowerCase().replace(/[\s._+#-]+/g, "");
 }
@@ -60,48 +58,109 @@ function corDoTraco(fundo: string) {
 const SIGLAS: Record<string, string> = {
   javascript: "JS",
   js: "JS",
+  typescript: "TS",
+  ts: "TS",
 };
+
+/**
+ * Fundo do ladrilho quando a cor de marca da linguagem não é a escolhida pra
+ * cá. O traço continua branco por cima, como em todos os outros.
+ */
+const FUNDO_ESPECIAL: Record<string, string> = {
+  python: "#015869",
+};
+
+/**
+ * Cursos anunciados que ainda não existem no catálogo da API. Aparecem só na
+ * tela de todos os cursos, apagados e sem clique — é vitrine, não curso: nada
+ * aqui é enviado ao backend nem pode ser selecionado.
+ */
+export const CURSOS_EM_BREVE = [
+  { id: "arduino", name: "Arduino" },
+  { id: "sql", name: "SQL" },
+  { id: "cplusplus", name: "C++" },
+  { id: "c", name: "C" },
+  { id: "php", name: "PHP" },
+  { id: "git", name: "Git" },
+  { id: "shell", name: "Shell" },
+];
 
 /** Proporção do desenho dentro do ladrilho. */
 const OCUPACAO_ICONE = 0.64;
 const OCUPACAO_SIGLA = 0.46;
 
+/** Quantos cursos cabem na barra antes do botão que abre o catálogo inteiro. */
+const LIMITE_NA_BARRA = 4;
+
 interface LadrilhoProps {
   curso: CursoDaJornada;
   ativo?: boolean;
-  /** Lado do quadrado em px — o ícone e a sigla saem daqui, então os quatro
+  /** Altura em px — o ícone, a sigla e o arredondamento saem daqui, então os
    * tamanhos usados no app ficam proporcionais entre si sozinhos. */
   px: number;
+  /** Largura, quando o ladrilho não é quadrado: o botão de curso da barra de
+   * status é um retângulo deitado no celular. Padrão: igual à altura. */
+  largura?: number;
   className?: string;
 }
 
 /**
- * Ladrilho do curso: quadrado de cantos bem arredondados (entre o quadrado e
- * o círculo) pintado com a cor de marca da linguagem, com o ícone em branco
- * por cima. É o que deixa todos os cursos com o mesmo peso visual, em vez de
- * cada ícone aparecer numa cor solta sobre o fundo do card.
+ * Ladrilho do curso: bloco de cantos bem arredondados (entre o quadrado e o
+ * círculo) pintado com a cor de marca da linguagem, com o ícone em branco por
+ * cima. É o que deixa todos os cursos com o mesmo peso visual, em vez de cada
+ * ícone aparecer numa cor solta sobre o fundo do card.
  */
-export function LadrilhoCurso({ curso, ativo = false, px, className }: LadrilhoProps) {
-  const sigla = SIGLAS[normalizar(curso.id)] ?? (curso.name ? SIGLAS[normalizar(curso.name)] : undefined);
-  const fundo = languageColor(curso.id, curso.name);
+function daTabela<T>(mapa: Record<string, T>, curso: CursoDaJornada): T | undefined {
+  return mapa[normalizar(curso.id)] ?? (curso.name ? mapa[normalizar(curso.name)] : undefined);
+}
+
+/** Cor de fundo do ladrilho do curso. Exportada porque quem monta a base
+ * sólida do botão (a peça mais escura atrás) precisa da mesma cor. */
+export function fundoDoCurso(curso: CursoDaJornada): string | undefined {
+  return daTabela(FUNDO_ESPECIAL, curso) ?? languageColor(curso.id, curso.name);
+}
+
+/** Raio do ladrilho pra uma dada altura — a base sólida usa o mesmo. */
+export function raioDoLadrilho(px: number) {
+  return Math.round(px * 0.28);
+}
+
+export function LadrilhoCurso({ curso, ativo = false, px, largura, className }: LadrilhoProps) {
+  const sigla = daTabela(SIGLAS, curso);
+  const fundo = fundoDoCurso(curso);
   const lado = px * OCUPACAO_ICONE;
 
   return (
     <span
       className={cn(
-        "relative flex shrink-0 items-center justify-center rounded-[28%]",
+        "relative flex shrink-0 items-center justify-center",
         ativo && "ring-2 ring-primary ring-offset-2 ring-offset-background",
         !fundo && "bg-muted text-foreground",
         className
       )}
       style={{
-        width: px,
+        width: largura ?? px,
         height: px,
+        // Raio em px, e não em %: num retângulo a porcentagem arredonda cada
+        // eixo pela sua própria medida e os cantos saem ovalados.
+        borderRadius: raioDoLadrilho(px),
         ...(fundo ? { backgroundColor: fundo, color: corDoTraco(fundo) } : {}),
       }}
     >
       {sigla ? (
-        <span className="font-black leading-none tracking-tight" style={{ fontSize: px * OCUPACAO_SIGLA }}>
+        // Encostada no canto inferior direito, que é onde as letras ficam nos
+        // logos de verdade do JavaScript e do TypeScript — não centralizadas.
+        // O recuo de baixo é menor que o da direita de propósito: com
+        // line-height 1 sobra o espaço do descendente embaixo da maiúscula, e
+        // sem compensar isso a sigla parece flutuar longe da borda.
+        <span
+          className="absolute inset-0 flex items-end justify-end font-black leading-none"
+          style={{
+            paddingRight: px * 0.12,
+            paddingBottom: px * 0.04,
+            fontSize: px * OCUPACAO_SIGLA,
+          }}
+        >
           {sigla}
         </span>
       ) : (
@@ -164,24 +223,28 @@ interface ListaProps {
   onAbrirTodos: () => void;
 }
 
-/** Regra da referência: até 3 cursos, mostra os principais (os mais famosos,
- * com o atual sempre entre eles). Passando disso, mostra todos os que a
- * pessoa faz — e é aí que a faixa do celular passa a arrastar. */
-function useVitrine({ cursos, cursoAtual, meusCursos }: Pick<ListaProps, "cursos" | "cursoAtual" | "meusCursos">) {
+/**
+ * A barra mostra no máximo LIMITE_NA_BARRA cursos: primeiro os que a pessoa
+ * faz (o atual na frente, porque é o mais recente), e o que sobrar de espaço
+ * é completado com os mais famosos. O resto do catálogo fica atrás do botão
+ * que abre a tela de todos os cursos.
+ */
+function useVitrine({ cursos, meusCursos }: Pick<ListaProps, "cursos" | "meusCursos">) {
   return useMemo(() => {
     const porId = new Map(cursos.map((curso) => [curso.id, curso]));
     const meus = meusCursos.map((id) => porId.get(id)).filter((curso): curso is CursoDaJornada => !!curso);
+    const porFama = [...cursos].sort((a, b) => posicaoNaFama(a) - posicaoNaFama(b));
 
-    const principais: CursoDaJornada[] = [];
-    const atual = cursoAtual ? porId.get(cursoAtual) : undefined;
-    if (atual) principais.push(atual);
-    for (const curso of [...cursos].sort((a, b) => posicaoNaFama(a) - posicaoNaFama(b))) {
-      if (principais.length >= QUANTIDADE_PRINCIPAIS) break;
-      if (!principais.some((item) => item.id === curso.id)) principais.push(curso);
-    }
-    principais.sort((a, b) => posicaoNaFama(a) - posicaoNaFama(b));
+    const exibidos: CursoDaJornada[] = [];
+    const juntar = (lista: CursoDaJornada[]) => {
+      for (const curso of lista) {
+        if (exibidos.length >= LIMITE_NA_BARRA) return;
+        if (!exibidos.some((item) => item.id === curso.id)) exibidos.push(curso);
+      }
+    };
+    juntar(meus);
+    juntar(porFama);
 
-    const exibidos = meus.length > QUANTIDADE_PRINCIPAIS ? meus : principais;
     const jaExibido = new Set(exibidos.map((curso) => curso.id));
 
     const preferidos = NOVOS_PREFERIDOS
@@ -192,7 +255,7 @@ function useVitrine({ cursos, cursoAtual, meusCursos }: Pick<ListaProps, "cursos
       .filter((curso) => !jaExibido.has(curso.id) && !preferidos.some((item) => item.id === curso.id));
 
     return { exibidos, novos: [...preferidos, ...recentes].slice(0, 2) };
-  }, [cursos, cursoAtual, meusCursos]);
+  }, [cursos, meusCursos]);
 }
 
 const TITULO = "text-[0.7rem] font-black uppercase tracking-[0.1em] text-muted-foreground";
@@ -202,13 +265,13 @@ const TITULO = "text-[0.7rem] font-black uppercase tracking-[0.1em] text-muted-f
 /* Sem a vitrine de novos cursos aqui — ela só faz sentido no celular.    */
 /* --------------------------------------------------------------------- */
 export function ListaCursosDesktop({ cursos, cursoAtual, meusCursos, onSelecionar, onAbrirTodos }: ListaProps) {
-  const { exibidos } = useVitrine({ cursos, cursoAtual, meusCursos });
+  const { exibidos } = useVitrine({ cursos, meusCursos });
 
   return (
     <div className="p-3">
       <p className={cn(TITULO, "px-3 pb-2 pt-1")}>Meus cursos</p>
       <div className="flex flex-col gap-0.5">
-        {exibidos.map((curso) => {
+        {exibidos.map((curso, indice) => {
           const ativo = curso.id === cursoAtual;
           return (
             <button
@@ -216,12 +279,15 @@ export function ListaCursosDesktop({ cursos, cursoAtual, meusCursos, onSeleciona
               type="button"
               onClick={() => onSelecionar(curso.id)}
               title={ativo ? `${curso.name} — curso atual` : `Trocar para ${curso.name}`}
+              // Entrada escalonada: os itens sobem em cascata em vez de o
+              // painel inteiro aparecer de uma vez.
+              style={{ animationDelay: `${indice * 45}ms` }}
               className={cn(
-                "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors duration-150",
+                "animate-fade-in-up flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors duration-150",
                 ativo ? "bg-primary/10" : "hover:bg-muted/70"
               )}
             >
-              <LadrilhoCurso curso={curso} px={46} />
+              <LadrilhoCurso curso={curso} px={44} largura={62} />
               <span className={cn("min-w-0 flex-1 truncate text-[0.95rem] font-black", ativo ? "text-primary" : "text-foreground")}>
                 {curso.name}
               </span>
@@ -236,7 +302,7 @@ export function ListaCursosDesktop({ cursos, cursoAtual, meusCursos, onSeleciona
         onClick={onAbrirTodos}
         className="mt-2 flex w-full items-center gap-3 border-t border-border px-3 pb-1 pt-3 text-left transition-colors duration-150 hover:text-primary"
       >
-        <span className="flex size-[46px] shrink-0 items-center justify-center rounded-[28%] border-2 border-dashed border-border text-muted-foreground">
+        <span className="flex h-[44px] w-[62px] shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-border text-muted-foreground">
           <Plus className="size-5" strokeWidth={2.6} />
         </span>
         <span className="text-[0.95rem] font-black">Adicionar curso</span>
@@ -289,15 +355,31 @@ function useArrastarFaixa() {
   };
 }
 
-/** Um curso dentro da faixa/grade: ladrilho + nome embaixo. */
-function BotaoCurso({ curso, ativo, onSelecionar }: { curso: CursoDaJornada; ativo: boolean; onSelecionar: (slug: string) => void }) {
+/** Medidas do ladrilho deitado usado na faixa e no catálogo do celular. */
+const LARGURA_LADRILHO = 82;
+const ALTURA_LADRILHO = 60;
+
+/** Um curso dentro da faixa/grade: ladrilho deitado + nome embaixo. */
+function BotaoCurso({
+  curso,
+  ativo,
+  onSelecionar,
+  indice = 0,
+}: {
+  curso: CursoDaJornada;
+  ativo: boolean;
+  onSelecionar: (slug: string) => void;
+  /** Posição na faixa, só pra escalonar a entrada. */
+  indice?: number;
+}) {
   return (
     <button
       type="button"
       onClick={() => onSelecionar(curso.id)}
-      className="flex w-[92px] shrink-0 flex-col items-center gap-2 pt-1"
+      className="animate-fade-in-up flex shrink-0 flex-col items-center gap-2 pt-1"
+      style={{ width: LARGURA_LADRILHO, animationDelay: `${indice * 45}ms` }}
     >
-      <LadrilhoCurso curso={curso} ativo={ativo} px={74} className="zc-press" />
+      <LadrilhoCurso curso={curso} ativo={ativo} px={ALTURA_LADRILHO} largura={LARGURA_LADRILHO} className="zc-press" />
       <span
         className={cn(
           "w-full truncate text-center text-[0.68rem] font-black uppercase tracking-[0.02em]",
@@ -314,11 +396,11 @@ function BotaoCurso({ curso, ativo, onSelecionar }: { curso: CursoDaJornada; ati
 /* Mobile: faixa arrastável que abre logo abaixo da barra de status.      */
 /* --------------------------------------------------------------------- */
 export function FaixaCursosMobile({ cursos, cursoAtual, meusCursos, onSelecionar, onAbrirTodos }: ListaProps) {
-  const { exibidos, novos } = useVitrine({ cursos, cursoAtual, meusCursos });
+  const { exibidos, novos } = useVitrine({ cursos, meusCursos });
   const { ref, manipuladores } = useArrastarFaixa();
 
   return (
-    <div className="animate-fade-in-up border-b border-border bg-background pb-3">
+    <div>
       {/* touch-pan-x deixa o dedo arrastar na horizontal sem roubar a rolagem
           vertical da página; o mouse é tratado pelo useArrastarFaixa. */}
       <div className="relative">
@@ -327,23 +409,31 @@ export function FaixaCursosMobile({ cursos, cursoAtual, meusCursos, onSelecionar
           {...manipuladores}
           className="zc-scroll-hidden -mx-3 flex touch-pan-x select-none gap-3 overflow-x-auto overscroll-x-contain px-3 pb-1"
         >
-          {exibidos.map((curso) => (
-            <BotaoCurso key={curso.id} curso={curso} ativo={curso.id === cursoAtual} onSelecionar={onSelecionar} />
+          {exibidos.map((curso, indice) => (
+            <BotaoCurso key={curso.id} curso={curso} ativo={curso.id === cursoAtual} onSelecionar={onSelecionar} indice={indice} />
           ))}
 
-          <button type="button" onClick={onAbrirTodos} className="flex w-[92px] shrink-0 flex-col items-center gap-2 pt-1">
-            <span className="zc-press flex size-[74px] shrink-0 items-center justify-center rounded-[28%] border-2 border-dashed border-border text-muted-foreground">
+          <button
+            type="button"
+            onClick={onAbrirTodos}
+            className="flex shrink-0 flex-col items-center gap-2 pt-1"
+            style={{ width: LARGURA_LADRILHO }}
+          >
+            <span
+              className="zc-press flex shrink-0 items-center justify-center rounded-2xl border-2 border-dashed border-border text-muted-foreground"
+              style={{ width: LARGURA_LADRILHO, height: ALTURA_LADRILHO }}
+            >
               <Plus className="size-7" strokeWidth={2.6} />
             </span>
             <span className="w-full truncate text-center text-[0.68rem] font-black uppercase tracking-[0.02em] text-muted-foreground">
-              Curso
+              Ver mais
             </span>
           </button>
         </div>
 
         {/* Sombra na borda direita: sinaliza que a faixa continua. */}
         <span
-          className="pointer-events-none absolute -right-3 bottom-1 top-0 w-8 bg-gradient-to-l from-background to-transparent"
+          className="pointer-events-none absolute -right-3 bottom-1 top-0 w-8 bg-gradient-to-l from-popover to-transparent"
           aria-hidden
         />
       </div>
@@ -371,13 +461,20 @@ export function TelaTodosCursos({ cursos, cursoAtual, meusCursos, onSelecionar }
   const disponiveis = cursos.filter((curso) => !feitos.has(curso.id));
 
   const grade = (lista: CursoDaJornada[]) => (
-    <div className="grid grid-cols-3 gap-4 sm:grid-cols-4">
+    <div className="grid grid-cols-3 justify-items-center gap-4 sm:grid-cols-4">
       {lista.map((curso) => (
-        <button key={curso.id} type="button" onClick={() => onSelecionar(curso.id)} className="flex flex-col items-center gap-2">
+        <button
+          key={curso.id}
+          type="button"
+          onClick={() => onSelecionar(curso.id)}
+          className="flex flex-col items-center gap-2"
+          style={{ width: LARGURA_LADRILHO + 12 }}
+        >
           <LadrilhoCurso
             curso={curso}
             ativo={curso.id === cursoAtual}
-            px={82}
+            px={ALTURA_LADRILHO + 6}
+            largura={LARGURA_LADRILHO + 12}
             className="zc-press"
           />
           <span
@@ -409,6 +506,32 @@ export function TelaTodosCursos({ cursos, cursoAtual, meusCursos, onSelecionar }
         ) : (
           <p className="text-sm text-muted-foreground">Você já está em todos os cursos disponíveis.</p>
         )}
+      </section>
+
+      {/* Vitrine do que ainda vai existir: apagada e sem clique, pra ninguém
+          tentar entrar num curso que o backend não tem. */}
+      <section className="mt-7">
+        <p className={cn(TITULO, "pb-3")}>Em breve</p>
+        <div className="grid grid-cols-3 justify-items-center gap-4 sm:grid-cols-4">
+          {CURSOS_EM_BREVE.map((curso) => (
+            <div
+              key={curso.id}
+              className="flex flex-col items-center gap-2 opacity-45"
+              style={{ width: LARGURA_LADRILHO + 12 }}
+              aria-disabled
+            >
+              <span className="relative">
+                <LadrilhoCurso curso={{ ...curso, icon: "" }} px={ALTURA_LADRILHO + 6} largura={LARGURA_LADRILHO + 12} />
+                <span className="absolute inset-x-1 bottom-1 rounded-md bg-black/55 py-0.5 text-center text-[0.55rem] font-black uppercase tracking-[0.06em] text-white">
+                  Em breve
+                </span>
+              </span>
+              <span className="w-full truncate text-center text-[0.7rem] font-black uppercase tracking-[0.02em] text-muted-foreground">
+                {curso.name}
+              </span>
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   );

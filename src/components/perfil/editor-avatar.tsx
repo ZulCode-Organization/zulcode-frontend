@@ -107,9 +107,12 @@ export function EditorAvatar({ perfil, onFechar }: EditorAvatarProps) {
       </header>
 
       <div className="overflow-hidden rounded-[20px] border border-border bg-card lg:grid lg:grid-cols-[1fr_360px]">
-        {/* Prévia: a capa de verdade com o ícone escolhido por cima. */}
+        {/* Prévia: a capa de verdade com o ícone escolhido por cima.
+            O tamanho vale pros dois tipos: os avatares comuns são ícones de
+            traço (svg) e o da marca é o logo em imagem (img). Com regra só
+            pra svg, o logo ficava do tamanho do texto, quase invisível. */}
         <div className="flex min-h-[240px] items-center justify-center p-6" style={{ background: fundo }}>
-          <span className="flex size-28 items-center justify-center rounded-[32px] bg-black/15 text-white [&>svg]:size-16">
+          <span className="flex size-28 items-center justify-center rounded-[32px] bg-black/15 text-white [&>svg]:size-16 [&>img]:size-16">
             <AvatarIcon id={avatar} />
           </span>
         </div>

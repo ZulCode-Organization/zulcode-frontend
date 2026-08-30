@@ -130,14 +130,7 @@ export function ProfileHeader({ perfil, editavel = true, onEditar }: ProfileHead
             onEditar?.();
           }}
           className={cn(
-            "relative overflow-hidden rounded-3xl border border-border",
-            // O Banner Richard é uma foto 2:1 de verdade, e não um SVG
-            // desenhado pra faixa larga como os outros. Numa altura fixa a
-            // capa vira quase 8:1 no computador e a arte aparece cortada em
-            // cima e embaixo. Da faixa larga pra cima ela passa a seguir a
-            // proporção da própria imagem, então a arte aparece inteira. No
-            // celular a altura fixa continua: lá a capa já é quase 2:1.
-            mostraArteRichard ? "h-[150px] sm:h-auto sm:aspect-[2/1]" : "h-[150px]",
+            "relative h-[150px] overflow-hidden rounded-3xl border border-border",
             editavel && "group cursor-pointer"
           )}
           style={capaStyle}

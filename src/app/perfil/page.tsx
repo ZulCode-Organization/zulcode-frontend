@@ -38,7 +38,7 @@ function PerfilContent({ editando, setEditando }: { editando: boolean; setEditan
   if (editando) return <EditorAvatar perfil={perfil} onFechar={() => setEditando(false)} />;
 
   return (
-    <div className="flex max-w-none flex-col gap-7 pt-3">
+    <div className="flex max-w-none flex-col gap-7">
       <ProfileHeader perfil={perfil} onEditar={() => setEditando(true)} />
       <StatsGrid perfil={perfil} />
       <SugestoesAmigos />

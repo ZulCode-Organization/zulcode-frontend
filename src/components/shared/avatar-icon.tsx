@@ -62,7 +62,10 @@ export function AvatarIcon({ id, className }: { id?: string | null; className?: 
         alt={avatar.label}
         width={64}
         height={64}
-        className={cn("size-[0.9em] object-contain", className)}
+        // Maior que os icones de traco de proposito: o logo tem margem
+        // interna na propria arte, entao no mesmo tamanho deles ele parecia
+        // menor que todos os outros da grade.
+        className={cn("size-[1.3em] object-contain", className)}
       />
     );
   }

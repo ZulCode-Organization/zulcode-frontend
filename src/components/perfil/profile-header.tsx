@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { PerfilUsuario } from "@/lib/types/perfil";
@@ -42,38 +42,66 @@ function ContadoresSociais() {
   );
 }
 
-/** Onde a arte do Banner Richard deve estar. */
-const ARTE_RICHARD = "/banner/banner-richard.png";
+/**
+ * Onde ficam as artes de capa. Cada uma e uma imagem em public/banner; o
+ * desenho vetorial de antes fica como reserva, pra capa nao ficar vazia
+ * enquanto o arquivo nao existe.
+ *
+ * O Richard tem duas: a larga so cabe inteira no computador, e no celular
+ * aparecia cortada demais.
+ */
+const ARTE = {
+  richard: { desktop: "/banner/banner-richard.png", mobile: "/banner/banner-richard-mobile.png" },
+  pioneiro: { desktop: "/banner/banner-pioneiro.png" },
+  dev: { desktop: "/banner/banner-desenvolvedor.png" },
+  pro: { desktop: "/banner/banner-pro.png" },
+};
 
 /**
- * Arte do Banner Richard.
+ * Arte da capa.
  *
- * Usa a ilustração de `/public` quando ela existe; se o arquivo não estiver
- * lá, cai no desenho vetorial antigo em vez de deixar a capa vazia. O
- * gradiente por trás não muda: o backend valida a cor exata em
- * `users.service.ts`, e alterá-la quebraria o desbloqueio da conquista.
+ * Cada imagem cai no reserva sozinha: se a do celular faltar, o computador
+ * continua com a dele em todas as larguras; se a larga faltar, ai sim entra o
+ * vetor. Assim da pra ir colocando os arquivos um a um sem quebrar nada.
+ *
+ * O gradiente por tras nao muda: o backend valida a cor exata em
+ * users.service.ts, e alterar isso quebraria o desbloqueio das conquistas.
  */
-function ArteRichard() {
-  const [semArquivo, setSemArquivo] = useState(false);
+function ArteDaCapa({ desktop, mobile, vetor }: { desktop: string; mobile?: string; vetor: ReactNode }) {
+  const [semDesktop, setSemDesktop] = useState(false);
+  const [semMobile, setSemMobile] = useState(false);
 
-  if (!semArquivo) {
-    return (
+  if (semDesktop) return <>{vetor}</>;
+
+  const temMobile = !!mobile && !semMobile;
+
+  return (
+    <>
+      {temMobile && (
+        <Image
+          src={mobile!}
+          alt=""
+          fill
+          sizes="100vw"
+          onError={() => setSemMobile(true)}
+          className="pointer-events-none select-none object-cover sm:hidden"
+        />
+      )}
       <Image
-        src={ARTE_RICHARD}
+        src={desktop}
         alt=""
         fill
         sizes="(min-width: 768px) 768px, 100vw"
-        onError={() => setSemArquivo(true)}
-        className="pointer-events-none select-none object-cover"
-        priority={false}
+        onError={() => setSemDesktop(true)}
+        className={cn("pointer-events-none select-none object-cover", temMobile && "hidden sm:block")}
       />
-    );
-  }
-
-  return (
-    <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><rect width="800" height="180" fill="#111827"/><g stroke="#38bdf8" strokeOpacity=".23" strokeWidth="1"><path d="M0 30h800M0 60h800M0 90h800M0 120h800M0 150h800M80 0v180M160 0v180M240 0v180M320 0v180M400 0v180M480 0v180M560 0v180M640 0v180M720 0v180"/></g><g fill="none" stroke="#7dd3fc" strokeWidth="3" strokeLinecap="round"><path d="m66 124 42-43 35 28 61-69"/><path d="M522 24h188M522 38h138M522 52h164"/></g><g fill="#38bdf8"><circle cx="108" cy="81" r="6"/><circle cx="143" cy="109" r="6"/><circle cx="204" cy="40" r="6"/></g><g transform="translate(528 98)"><rect width="202" height="48" rx="24" fill="#e0f2fe"/><text x="23" y="31" fill="#0c4a6e" fontFamily="Arial, sans-serif" fontSize="18" fontWeight="700" letterSpacing="2">RICHARD</text><path d="m163 15 17 9-17 9z" fill="#0284c7"/></g></svg>
+    </>
   );
 }
+
+const VETOR_RICHARD = (
+  <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><rect width="800" height="180" fill="#111827"/><g stroke="#38bdf8" strokeOpacity=".23" strokeWidth="1"><path d="M0 30h800M0 60h800M0 90h800M0 120h800M0 150h800M80 0v180M160 0v180M240 0v180M320 0v180M400 0v180M480 0v180M560 0v180M640 0v180M720 0v180"/></g><g fill="none" stroke="#7dd3fc" strokeWidth="3" strokeLinecap="round"><path d="m66 124 42-43 35 28 61-69"/><path d="M522 24h188M522 38h138M522 52h164"/></g><g fill="#38bdf8"><circle cx="108" cy="81" r="6"/><circle cx="143" cy="109" r="6"/><circle cx="204" cy="40" r="6"/></g><g transform="translate(528 98)"><rect width="202" height="48" rx="24" fill="#e0f2fe"/><text x="23" y="31" fill="#0c4a6e" fontFamily="Arial, sans-serif" fontSize="18" fontWeight="700" letterSpacing="2">RICHARD</text><path d="m163 15 17 9-17 9z" fill="#0284c7"/></g></svg>
+);
 
 const BANNER_DEV = "linear-gradient(135deg, #042f2e, #0f766e, #2dd4bf)";
 const BANNER_TESTER = "linear-gradient(135deg, #172554, #2563eb, #60a5fa)";
@@ -135,10 +163,10 @@ export function ProfileHeader({ perfil, editavel = true, onEditar }: ProfileHead
           )}
           style={capaStyle}
         >
-          {mostraArtePioneiro && <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><rect width="800" height="180" fill="#101b4b"/><g stroke="#3b82f6" strokeOpacity=".28" strokeWidth="1"><path d="M0 30h800M0 60h800M0 90h800M0 120h800M0 150h800M80 0v180M160 0v180M240 0v180M320 0v180M400 0v180M480 0v180M560 0v180M640 0v180M720 0v180"/></g><path d="M-20 142C85 75 136 148 226 94S367 35 455 91 600 156 702 55 795 34 830 58" fill="none" stroke="#60a5fa" strokeWidth="4" strokeLinecap="round"/><g fill="#dbeafe"><circle cx="90" cy="103" r="7"/><circle cx="226" cy="94" r="7"/><circle cx="455" cy="91" r="7"/><circle cx="702" cy="55" r="7"/></g><g transform="translate(553 24)"><rect width="186" height="55" rx="27" fill="#dbeafe"/><text x="25" y="35" fill="#172554" fontFamily="Arial, sans-serif" fontSize="21" fontWeight="700" letterSpacing="3">BETA</text><path d="M136 16h28v6h-28zm0 12h28v6h-28zm0 12h18v6h-18z" fill="#2563eb"/></g></svg>}
-          {mostraArteRichard && <ArteRichard />}
-          {mostraArteDev && <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="#99f6e4" strokeOpacity=".48" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"><path d="m87 55-42 35 42 35m57-70 42 35-42 35m-23-82-20 124"/><path d="M476 145 596 22l65 69 58-91 66 145"/></g><g fill="#5eead4" fillOpacity=".28"><circle cx="596" cy="22" r="12"/><circle cx="661" cy="91" r="12"/><circle cx="719" cy="0" r="12"/></g><g transform="translate(595 110)"><rect width="153" height="42" rx="21" fill="#ccfbf1" fillOpacity=".94"/><text x="22" y="28" fill="#115e59" fontFamily="Arial, sans-serif" fontSize="16" fontWeight="700" letterSpacing="2">BUILD</text><path d="m118 14 13 7-13 7z" fill="#0f766e"/></g></svg>}
-          {mostraArtePro && <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><g fill="#fdf4ff" fillOpacity=".28"><circle cx="600" cy="32" r="4"/><circle cx="670" cy="72" r="7"/><circle cx="745" cy="28" r="4"/><circle cx="540" cy="115" r="5"/></g><path d="m627 37 16 34 37 5-27 26 7 37-33-18-33 18 7-37-27-26 37-5z" fill="#fef3c7" fillOpacity=".88"/><path d="M88 137 169 51l65 76 63-96 96 106" fill="none" stroke="#f5d0fe" strokeOpacity=".5" strokeWidth="5"/><g transform="translate(64 32)"><rect width="154" height="44" rx="22" fill="#fdf4ff" fillOpacity=".92"/><text x="25" y="29" fill="#86198f" fontFamily="Arial, sans-serif" fontSize="18" fontWeight="700" letterSpacing="2">PRO</text></g></svg>}
+          {mostraArtePioneiro && <ArteDaCapa desktop={ARTE.pioneiro.desktop} vetor={<svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><rect width="800" height="180" fill="#101b4b"/><g stroke="#3b82f6" strokeOpacity=".28" strokeWidth="1"><path d="M0 30h800M0 60h800M0 90h800M0 120h800M0 150h800M80 0v180M160 0v180M240 0v180M320 0v180M400 0v180M480 0v180M560 0v180M640 0v180M720 0v180"/></g><path d="M-20 142C85 75 136 148 226 94S367 35 455 91 600 156 702 55 795 34 830 58" fill="none" stroke="#60a5fa" strokeWidth="4" strokeLinecap="round"/><g fill="#dbeafe"><circle cx="90" cy="103" r="7"/><circle cx="226" cy="94" r="7"/><circle cx="455" cy="91" r="7"/><circle cx="702" cy="55" r="7"/></g><g transform="translate(553 24)"><rect width="186" height="55" rx="27" fill="#dbeafe"/><text x="25" y="35" fill="#172554" fontFamily="Arial, sans-serif" fontSize="21" fontWeight="700" letterSpacing="3">BETA</text><path d="M136 16h28v6h-28zm0 12h28v6h-28zm0 12h18v6h-18z" fill="#2563eb"/></g></svg>} />}
+          {mostraArteRichard && <ArteDaCapa desktop={ARTE.richard.desktop} mobile={ARTE.richard.mobile} vetor={VETOR_RICHARD} />}
+          {mostraArteDev && <ArteDaCapa desktop={ARTE.dev.desktop} vetor={<svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="#99f6e4" strokeOpacity=".48" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"><path d="m87 55-42 35 42 35m57-70 42 35-42 35m-23-82-20 124"/><path d="M476 145 596 22l65 69 58-91 66 145"/></g><g fill="#5eead4" fillOpacity=".28"><circle cx="596" cy="22" r="12"/><circle cx="661" cy="91" r="12"/><circle cx="719" cy="0" r="12"/></g><g transform="translate(595 110)"><rect width="153" height="42" rx="21" fill="#ccfbf1" fillOpacity=".94"/><text x="22" y="28" fill="#115e59" fontFamily="Arial, sans-serif" fontSize="16" fontWeight="700" letterSpacing="2">BUILD</text><path d="m118 14 13 7-13 7z" fill="#0f766e"/></g></svg>} />}
+          {mostraArtePro && <ArteDaCapa desktop={ARTE.pro.desktop} vetor={<svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><g fill="#fdf4ff" fillOpacity=".28"><circle cx="600" cy="32" r="4"/><circle cx="670" cy="72" r="7"/><circle cx="745" cy="28" r="4"/><circle cx="540" cy="115" r="5"/></g><path d="m627 37 16 34 37 5-27 26 7 37-33-18-33 18 7-37-27-26 37-5z" fill="#fef3c7" fillOpacity=".88"/><path d="M88 137 169 51l65 76 63-96 96 106" fill="none" stroke="#f5d0fe" strokeOpacity=".5" strokeWidth="5"/><g transform="translate(64 32)"><rect width="154" height="44" rx="22" fill="#fdf4ff" fillOpacity=".92"/><text x="25" y="29" fill="#86198f" fontFamily="Arial, sans-serif" fontSize="18" fontWeight="700" letterSpacing="2">PRO</text></g></svg>} />}
           {/* Véu com o lápis cobrindo a capa inteira no hover. */}
           {editavel && (
             <span className="pointer-events-none absolute inset-0 grid place-items-center bg-black/25 opacity-0 transition-opacity duration-150 group-hover:opacity-100">

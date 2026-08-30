@@ -43,7 +43,7 @@ function ContadoresSociais() {
 }
 
 /** Onde a arte do Banner Richard deve estar. */
-const ARTE_RICHARD = "/banner-richard.png";
+const ARTE_RICHARD = "/banner/banner-richard.png";
 
 /**
  * Arte do Banner Richard.

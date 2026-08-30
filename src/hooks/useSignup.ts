@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
-import { obterDeviceId, obterDeviceLabel } from "@/lib/device-id";
+import { entrarNaConta, mensagemDoErro } from "@/lib/signin-request";
 
 export function useSignup() {
   const router = useRouter();
@@ -36,25 +36,21 @@ export function useSignup() {
         return;
       }
 
-      const signinRes = await fetchComTimeout(`${API_BASE_URL}/auth/signin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password: senha, deviceId: obterDeviceId(), deviceLabel: obterDeviceLabel() }),
-      });
-
-      const signinData = await signinRes.json();
+      const { res: signinRes, data: signinData } = await entrarNaConta(email, senha);
 
       // A conta foi criada, mas a entrada automática falhou. Antes isso
       // mandava a pessoa pro /login sem dizer nada — e era o que fazia o
       // cadastro "não ir pro nivelamento", sem pista nenhuma do motivo.
       // Agora o motivo aparece na tela e ela decide o que fazer.
       if (!signinRes.ok) {
-        const detalhe = Array.isArray(signinData?.message)
-          ? signinData.message.join(". ")
-          : signinData?.message;
         setError(
-          `Sua conta foi criada, mas não deu pra entrar automaticamente${detalhe ? `: ${detalhe}` : "."} Tente entrar pela tela de login.`
+          `Sua conta foi criada, mas não deu pra entrar automaticamente: ${mensagemDoErro(signinData, "erro desconhecido")}. Tente entrar pela tela de login.`
         );
+        return;
+      }
+
+      if (!signinData.accessToken) {
+        setError("Sua conta foi criada, mas o servidor não devolveu o token. Tente entrar pela tela de login.");
         return;
       }
 

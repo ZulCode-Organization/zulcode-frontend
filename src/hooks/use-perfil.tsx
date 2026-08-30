@@ -153,7 +153,7 @@ interface PerfilState {
   cursosConcluidos: CursoProgresso[];
   retry: () => void;
   /** Salva dados do perfil em PUT /user e atualiza a tela e o cache. */
-  salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark" }) => Promise<ResultadoSalvar>;
+  salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null }) => Promise<ResultadoSalvar>;
 }
 
 /** A API do Nest devolve o motivo em `message`, às vezes como lista (quando
@@ -242,6 +242,7 @@ function usePerfilData(): PerfilState {
           email: usuario.email,
           avatarId: usuario.avatarId,
           bannerColor: usuario.bannerColor,
+          statusId: usuario.statusId ?? null,
           themeColor: usuario.themeColor,
           themeMode: usuario.themeMode,
           iniciais: gerarIniciais(usuario.name),
@@ -308,7 +309,7 @@ function usePerfilData(): PerfilState {
   }, [perfil?.themeColor]);
 
   const salvarDados = useCallback(
-    async (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark" }): Promise<ResultadoSalvar> => {
+    async (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null }): Promise<ResultadoSalvar> => {
       const token = getToken();
       if (!token) return { ok: false, mensagem: "Sua sessão expirou. Entre de novo." };
 
@@ -322,6 +323,7 @@ function usePerfilData(): PerfilState {
             ...(dados.avatarId !== undefined ? { avatarId: dados.avatarId } : {}),
             ...(dados.bannerColor !== undefined ? { bannerColor: dados.bannerColor } : {}),
             ...(dados.themeMode !== undefined ? { themeMode: dados.themeMode } : {}),
+            ...(dados.statusId !== undefined ? { statusId: dados.statusId } : {}),
           }),
         });
 
@@ -342,6 +344,7 @@ function usePerfilData(): PerfilState {
             avatarId: corpo?.avatarId ?? dados.avatarId ?? atual.avatarId,
             bannerColor: corpo?.bannerColor ?? dados.bannerColor ?? atual.bannerColor,
             themeMode: corpo?.themeMode ?? dados.themeMode ?? atual.themeMode,
+            statusId: dados.statusId !== undefined ? dados.statusId : corpo?.statusId ?? atual.statusId,
             iniciais: gerarIniciais(nome ?? atual.nome),
           };
           // O cache em memória é o que outras telas leem ao montar — sem

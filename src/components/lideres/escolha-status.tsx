@@ -42,8 +42,11 @@ const STATUS: Status[] = [
 const EVENTO = "zulcode:status";
 const DURACAO_MS = 220;
 
-function chaveDoStatus(perfilId?: string | null) {
-  return `zulcode:status:${perfilId ?? "anonimo"}`;
+
+/** Traduz o `statusId` que vem do backend no status desenhado aqui. Id
+ * desconhecido vira nulo, e o avatar aparece sem balão. */
+export function statusPorId(id?: string | null) {
+  return STATUS.find((item) => item.id === id) ?? null;
 }
 
 function useLogo() {
@@ -60,37 +63,46 @@ function Simbolo({ status, tamanho, logo }: { status: Status; tamanho: string; l
   return <Icone className={cn(tamanho, status.cor)} strokeWidth={2.4} />;
 }
 
-/** Lê o status escolhido e acompanha as mudanças feitas em qualquer lugar. */
+/**
+ * Lê o status escolhido e acompanha as mudanças feitas em qualquer lugar.
+ *
+ * O status vive no `User` do backend, em `statusId`, e vai junto de cada
+ * pessoa no GET /leaderboard — é isso que faz ele aparecer pros outros, e não
+ * só pra quem escolheu. Antes ficava no localStorage, então sumia ao trocar de
+ * navegador e ninguém mais via.
+ *
+ * A escolha aparece na hora e só depois é enviada: quem clica não espera a
+ * rede. Se o PUT falhar, o valor anterior volta, pra tela não mostrar um
+ * status que o servidor não guardou.
+ */
 export function useStatusEscolhido() {
-  const { perfil } = usePerfil();
-  const chave = chaveDoStatus(perfil?.id);
+  const { perfil, salvarDados } = usePerfil();
   const [id, setId] = useState<string | null>(null);
 
   useEffect(() => {
-    const ler = () => {
-      try {
-        setId(localStorage.getItem(chave));
-      } catch {
-        setId(null);
-      }
-    };
-    ler();
+    setId(perfil?.statusId ?? null);
+  }, [perfil?.statusId]);
+
+  useEffect(() => {
+    const ler = (evento: Event) => setId((evento as CustomEvent<string | null>).detail ?? null);
     window.addEventListener(EVENTO, ler);
     return () => window.removeEventListener(EVENTO, ler);
-  }, [chave]);
+  }, []);
 
-  const definir = (novo: string | null) => {
-    try {
-      if (novo) localStorage.setItem(chave, novo);
-      else localStorage.removeItem(chave);
-    } catch {
-      // navegação privada / armazenamento bloqueado: nada é guardado
-    }
+  const definir = async (novo: string | null) => {
+    const anterior = id;
+    setId(novo);
     // Avisa o card, a folha e qualquer avatar na tela ao mesmo tempo.
-    window.dispatchEvent(new Event(EVENTO));
+    window.dispatchEvent(new CustomEvent(EVENTO, { detail: novo }));
+
+    const resultado = await salvarDados({ statusId: novo });
+    if (!resultado.ok) {
+      setId(anterior);
+      window.dispatchEvent(new CustomEvent(EVENTO, { detail: anterior }));
+    }
   };
 
-  return { status: STATUS.find((item) => item.id === id) ?? null, id, definir };
+  return { status: statusPorId(id), id, definir };
 }
 
 /**
@@ -208,11 +220,9 @@ function BotaoLimpar({ onClick }: { onClick: () => void }) {
  * Card de escolha do status. Só existe do lg pra cima, no painel da direita —
  * no celular quem faz esse papel é a FolhaDeStatus, aberta pelo balãozinho.
  *
- * O status fica só no navegador, por usuário: o `User` do backend não tem
- * campo pra isso (o PUT /user aceita apenas name, email, avatarId,
- * bannerColor e themeMode), e criar um é do lado de lá. Na prática o status é
- * visível só pra própria pessoa e some se ela trocar de navegador. Quando a
- * API ganhar o campo, é só trocar o localStorage dentro do useStatusEscolhido.
+ * A escolha é salva no `statusId` do usuário, pelo PUT /user, e volta pra
+ * todo mundo no GET /leaderboard — então o status aparece pras outras
+ * pessoas e acompanha a conta, não o navegador.
  */
 export function EscolhaDeStatus() {
   const { status: escolhido, definir } = useStatusEscolhido();

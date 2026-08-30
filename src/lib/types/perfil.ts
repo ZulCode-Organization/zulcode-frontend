@@ -10,6 +10,8 @@ export interface PerfilUsuario {
   iniciais: string;
   avatarId?: string;
   bannerColor?: string | null;
+  /** Status mostrado junto do avatar na tabela de líderes. Null = sem status. */
+  statusId?: string | null;
   themeColor?: string | null;
   themeMode?: "light" | "dark" | null;
   xp: number;

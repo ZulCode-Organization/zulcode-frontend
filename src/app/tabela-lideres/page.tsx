@@ -10,11 +10,11 @@ import { SideFooter } from "@/components/shared/side-footer";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { cn } from "@/lib/utils";
-import { AvatarComStatus, EscolhaDeStatus, FolhaDeStatus, useStatusEscolhido } from "@/components/lideres/escolha-status";
+import { AvatarComStatus, EscolhaDeStatus, FolhaDeStatus, statusPorId, useStatusEscolhido } from "@/components/lideres/escolha-status";
 
 const DIVISOES = [{ id: "bronze", nome: "Bronze", cor: "bg-[#C08457]", minXp: 0 }, { id: "prata", nome: "Prata", cor: "bg-slate-300", minXp: 300 }, { id: "ouro", nome: "Ouro", cor: "bg-amber-400", minXp: 1000 }, { id: "platina", nome: "Platina", cor: "bg-emerald-500", minXp: 3000 }, { id: "diamante", nome: "Diamante", cor: "bg-sky-500", minXp: 6000 }, { id: "mestre", nome: "Mestre", cor: "bg-rose-400", minXp: 10000 }];
 const RANK_IDS: Record<string, string> = { bronze: "BRONZE", prata: "SILVER", ouro: "GOLD", platina: "PLATINUM", diamante: "DIAMOND", mestre: "MASTER" };
-type RankEntry = { rank: number; id: string; name: string; avatarId?: string; bannerColor?: string | null; xp: number; level: number; levelLabel: string };
+type RankEntry = { rank: number; id: string; name: string; avatarId?: string; bannerColor?: string | null; statusId?: string | null; xp: number; level: number; levelLabel: string };
 type UsuarioBusca = { id: string; name: string; publicCode: string; avatarId?: string; bannerColor?: string | null; level: number };
 
 /** Avatar redondo e sem anel, como na referência — o formato padrão do
@@ -120,10 +120,10 @@ function LideresContent() {
             >
               <Posicao rank={item.rank} />
 
-              {/* Só a sua própria linha mostra o balão: o status vive no
-                  navegador, então não há como saber o das outras pessoas. E
-                  no celular ele é o botão que abre a folha de escolha — por
-                  isso fica fora do link do perfil, e não dentro dele. */}
+              {/* Todo mundo mostra o balão: o status vem do backend junto de
+                  cada pessoa. Na sua própria linha ele também é o botão que
+                  abre a folha de escolha no celular — por isso fica fora do
+                  link do perfil, e não dentro dele. */}
               {souEu ? (
                 <button type="button" onClick={() => setFolhaAberta(true)} aria-label="Escolher o seu status" className="lg:pointer-events-none">
                   <AvatarComStatus status={meuStatus} pequeno vazio>
@@ -131,7 +131,9 @@ function LideresContent() {
                   </AvatarComStatus>
                 </button>
               ) : (
-                <UserAvatar iniciais={item.name.slice(0, 2).toUpperCase()} avatarId={item.avatarId} bannerColor={item.bannerColor} size="sm" className={AVATAR_REDONDO} />
+                <AvatarComStatus status={statusPorId(item.statusId)} pequeno>
+                  <UserAvatar iniciais={item.name.slice(0, 2).toUpperCase()} avatarId={item.avatarId} bannerColor={item.bannerColor} size="sm" className={AVATAR_REDONDO} />
+                </AvatarComStatus>
               )}
 
               <Link href={`/perfil/${item.id}`} className="flex min-w-0 flex-1 items-center gap-4">

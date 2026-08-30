@@ -1,10 +1,11 @@
 "use client";
 
-import { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { Check, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CursoDaJornada } from "@/hooks/use-cursos";
 import { LanguageIcon, languageColor } from "@/components/onboarding/language-icon";
+import { useArrastarFaixa } from "@/hooks/use-arrastar-faixa";
 
 /**
  * Ordem de destaque dos cursos "principais" — os mais conhecidos primeiro.
@@ -309,50 +310,6 @@ export function ListaCursosDesktop({ cursos, cursoAtual, meusCursos, onSeleciona
       </button>
     </div>
   );
-}
-
-/**
- * Arrasto horizontal da faixa. No toque o navegador já rola sozinho (com a
- * inércia certa), então isso só assume o mouse — e engole o clique quando o
- * gesto virou arrasto, senão soltar em cima de um curso trocaria de curso
- * sem querer.
- */
-function useArrastarFaixa() {
-  const ref = useRef<HTMLDivElement>(null);
-  const gesto = useRef({ ativo: false, inicioX: 0, inicioScroll: 0, arrastou: false });
-
-  const aoPressionar = (evento: ReactPointerEvent<HTMLDivElement>) => {
-    if (evento.pointerType !== "mouse" || !ref.current) return;
-    gesto.current = { ativo: true, inicioX: evento.clientX, inicioScroll: ref.current.scrollLeft, arrastou: false };
-  };
-
-  const aoMover = (evento: ReactPointerEvent<HTMLDivElement>) => {
-    if (!gesto.current.ativo || !ref.current) return;
-    const deslocamento = evento.clientX - gesto.current.inicioX;
-    if (!gesto.current.arrastou && Math.abs(deslocamento) > 4) gesto.current.arrastou = true;
-    if (gesto.current.arrastou) ref.current.scrollLeft = gesto.current.inicioScroll - deslocamento;
-  };
-
-  const aoSoltar = () => { gesto.current.ativo = false; };
-
-  const aoClicar = (evento: ReactMouseEvent<HTMLDivElement>) => {
-    if (!gesto.current.arrastou) return;
-    evento.preventDefault();
-    evento.stopPropagation();
-    gesto.current.arrastou = false;
-  };
-
-  return {
-    ref,
-    manipuladores: {
-      onPointerDown: aoPressionar,
-      onPointerMove: aoMover,
-      onPointerUp: aoSoltar,
-      onPointerCancel: aoSoltar,
-      onPointerLeave: aoSoltar,
-      onClickCapture: aoClicar,
-    },
-  };
 }
 
 /** Medidas do ladrilho deitado usado na faixa e no catálogo do celular. */

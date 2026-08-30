@@ -145,17 +145,17 @@ export function AppTopBar() {
 
   return (
     <div ref={barraRef} className="sticky top-0 z-20 bg-background px-3 pb-1 pt-3 sm:px-4 sm:pt-4 lg:pb-0 lg:pl-8 lg:pr-5 xl:pr-7">
-      <div className="relative grid grid-cols-4 gap-1 lg:flex lg:items-center lg:justify-end lg:gap-2">
+      <div className="relative grid grid-cols-4 items-center gap-1 lg:flex lg:items-center lg:justify-end lg:gap-2">
         {/* 1. Curso atual — era o botão do cabeçalho da Jornada, agora vive
             aqui, coladinho na ofensiva. */}
-        <div ref={ancoraCurso} className={cn(celula, "justify-start pl-2 lg:pl-0")}>
+        <div ref={ancoraCurso} className={cn(celula, "lg:justify-end")}>
           {/* Duas camadas, igual ao cabeçalho da Jornada e aos nós da trilha:
               a base é uma peça de verdade na mesma cor do curso, só mais
               escura, e a face desce em cima dela ao ser apertada. Não é
               box-shadow — é o que dá o corpo sólido do botão.
-              O -mt no celular sobe só este botão; no desktop ele volta pra
-              linha dos outros chips. */}
-          <div className="relative -mt-2.5 lg:mt-0">
+              No celular ele fica na mesma linha e no mesmo eixo dos outros
+              chips: a coluna centraliza e o items-center da grade alinha. */}
+          <div className="relative">
             {baseCurso > 0 && (
               <span
                 aria-hidden

@@ -74,7 +74,6 @@ export default function IntroducaoPage() {
       <NivelamentoQuiz
         languageSlug={result.payload.languageId}
         languageName={linguagemEscolhida?.name ?? "programação"}
-        level={nivelSelecionado as "some_experience" | "confident" | "expert"}
         onFinish={async (resultadoNivelamento: ResultadoNivelamento) => {
           await submitPlacement(resultadoNivelamento.languageSlug, nivelSelecionado!, resultadoNivelamento.acertos, resultadoNivelamento.total);
           setNivelamentoConcluido(true);

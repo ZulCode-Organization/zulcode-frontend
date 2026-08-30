@@ -12,6 +12,8 @@ import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { calcularProgressoNivel } from "@/lib/leveling";
 import { PerfilUsuario } from "@/lib/types/perfil";
 import { getProfileThemeStyle } from "@/hooks/use-perfil";
+import { AbasSeguidores, AdicionarAmigos } from "@/components/perfil/painel-social";
+import { SideFooter } from "@/components/shared/side-footer";
 
 function iniciais(nome: string) { return nome.trim().split(/\s+/).slice(0, 2).map((parte) => parte[0] ?? "").join("").toUpperCase(); }
 
@@ -33,5 +35,5 @@ export default function PerfilPublicoPage() {
       .catch(() => setErro(true));
   }, [id]);
 
-  return <AppShell contentClassName="max-w-6xl"><div className="pt-3">{!perfil && !erro && <div className="flex min-h-[55dvh] items-center justify-center"><span className="size-8 animate-spin rounded-full border-2 border-muted border-t-primary" /></div>}{erro && <div className="flex min-h-[55dvh] flex-col items-center justify-center gap-4"><p className="text-muted-foreground">Não foi possível carregar este perfil.</p><Button onClick={() => location.reload()}>Tentar novamente</Button></div>}{perfil && <div style={getProfileThemeStyle(perfil.themeColor, perfil.themeMode)} className="rounded-3xl bg-background p-5 text-foreground sm:p-7"><div className="flex flex-col gap-7"><ProfileHeader perfil={perfil} editavel={false} /><StatsGrid perfil={perfil} /><AchievementsSection conquistas={perfil.conquistas} /><div className="rounded-[20px] border border-border bg-card p-5 text-sm text-muted-foreground">{perfil.nome} concluiu desafios e está evoluindo no ZulCode.</div></div></div>}</div></AppShell>;
+  return <AppShell contentClassName="max-w-3xl" rightPanel={<><AbasSeguidores /><AdicionarAmigos /><SideFooter /></>}><div className="pt-3">{!perfil && !erro && <div className="flex min-h-[55dvh] items-center justify-center"><span className="size-8 animate-spin rounded-full border-2 border-muted border-t-primary" /></div>}{erro && <div className="flex min-h-[55dvh] flex-col items-center justify-center gap-4"><p className="text-muted-foreground">Não foi possível carregar este perfil.</p><Button onClick={() => location.reload()}>Tentar novamente</Button></div>}{perfil && <div style={getProfileThemeStyle(perfil.themeColor, perfil.themeMode)} className="rounded-3xl bg-background p-5 text-foreground sm:p-7"><div className="flex flex-col gap-7"><ProfileHeader perfil={perfil} editavel={false} /><StatsGrid perfil={perfil} /><AchievementsSection conquistas={perfil.conquistas} /><div className="rounded-[20px] border border-border bg-card p-5 text-sm text-muted-foreground">{perfil.nome} concluiu desafios e está evoluindo no ZulCode.</div></div></div>}</div></AppShell>;
 }

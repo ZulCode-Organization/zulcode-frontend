@@ -11,7 +11,7 @@ import { LanguageIcon } from "./language-icon";
 interface NivelamentoQuizProps {
   languageSlug: string;
   languageName: string;
-  onFinish: (resultado: ResultadoNivelamento) => void;
+  onFinish: (resultado: ResultadoNivelamento) => void | Promise<void>;
 }
 
 /** A, B, C… no lugar dos ids crus das alternativas. */
@@ -42,6 +42,8 @@ export function NivelamentoQuiz({ languageSlug, languageName, onFinish }: Nivela
   /** Alternativa escolhida na pergunta atual, antes de avançar. */
   const [escolhida, setEscolhida] = useState<string | null>(null);
   const [mostrandoPontuacao, setMostrandoPontuacao] = useState(false);
+  /** Trava o botao final enquanto o resultado esta sendo enviado. */
+  const [enviando, setEnviando] = useState(false);
 
   const semPerguntas = perguntas.length === 0;
 
@@ -166,18 +168,24 @@ export function NivelamentoQuiz({ languageSlug, languageName, onFinish }: Nivela
 
           <Button
             size="lg"
-            onClick={() =>
-              onFinish({
-                languageSlug,
-                respostas,
-                acertos,
-                total: respostas.length,
-                concluidoEm: new Date().toISOString(),
-              })
-            }
+            disabled={enviando}
+            onClick={async () => {
+              setEnviando(true);
+              try {
+                await onFinish({
+                  languageSlug,
+                  respostas,
+                  acertos,
+                  total: respostas.length,
+                  concluidoEm: new Date().toISOString(),
+                });
+              } finally {
+                setEnviando(false);
+              }
+            }}
             className="mt-8 w-full"
           >
-            Continuar
+            {enviando ? "Salvando..." : "Continuar"}
           </Button>
         </div>
       </div>

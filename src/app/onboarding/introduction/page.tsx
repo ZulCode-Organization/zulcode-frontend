@@ -75,7 +75,17 @@ export default function IntroducaoPage() {
         languageSlug={result.payload.languageId}
         languageName={linguagemEscolhida?.name ?? "programação"}
         onFinish={async (resultadoNivelamento: ResultadoNivelamento) => {
-          await submitPlacement(resultadoNivelamento.languageSlug, nivelSelecionado!, resultadoNivelamento.acertos, resultadoNivelamento.total);
+          // O nivelamento é bônus: ele adianta lições e devolve XP retroativo,
+          // mas não é o que libera o app — quem marca a pessoa como nivelada é
+          // o POST /onboarding/submit, que já rodou no `finish()`. Se o envio
+          // do resultado falhar, ela entra começando do início, e não fica
+          // presa na tela de pontuação sem nada acontecer ao clicar em
+          // "Continuar", que era o que estava travando.
+          try {
+            await submitPlacement(resultadoNivelamento.languageSlug, nivelSelecionado!, resultadoNivelamento.acertos, resultadoNivelamento.total);
+          } catch {
+            /* segue pro resumo mesmo assim */
+          }
           setNivelamentoConcluido(true);
         }}
       />

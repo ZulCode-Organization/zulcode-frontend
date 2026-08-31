@@ -112,7 +112,7 @@ export function EditorAvatar({ perfil, onFechar }: EditorAvatarProps) {
             traço (svg) e o da marca é o logo em imagem (img). Com regra só
             pra svg, o logo ficava do tamanho do texto, quase invisível. */}
         <div className="flex min-h-[240px] items-center justify-center p-6" style={{ background: fundo }}>
-          <span className="flex size-28 items-center justify-center rounded-[32px] bg-black/15 text-white [&>svg]:size-16 [&>img]:size-20">
+          <span className="flex size-28 items-center justify-center rounded-[32px] bg-black/15 text-white [&>svg]:size-16 [&>img]:size-24">
             <AvatarIcon id={avatar} />
           </span>
         </div>

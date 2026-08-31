@@ -62,10 +62,12 @@ export function AvatarIcon({ id, className }: { id?: string | null; className?: 
         alt={avatar.label}
         width={64}
         height={64}
-        // Maior que os icones de traco de proposito: o logo tem margem
-        // interna na propria arte, entao no mesmo tamanho deles ele parecia
-        // menor que todos os outros da grade.
-        className={cn("size-[1.3em] object-contain", className)}
+        // Bem maior que os icones de traco, de proposito: o logo tem margem
+        // interna na propria arte, entao no tamanho deles sobrava desenho de
+        // menos. Como o tamanho vem de em, ele acompanha o font-size de cada
+        // moldura e nunca estoura: no menor avatar da lista ocupa 74% do
+        // quadro, e nos maiores fica perto de 60%.
+        className={cn("size-[1.9em] object-contain", className)}
       />
     );
   }

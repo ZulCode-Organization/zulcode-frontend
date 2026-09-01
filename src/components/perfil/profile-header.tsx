@@ -6,6 +6,7 @@ import { Pencil } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { PerfilUsuario } from "@/lib/types/perfil";
 import { cn } from "@/lib/utils";
+import { SeloVerificado } from "@/components/shared/selo-verificado";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
 import { usePerfil } from "@/hooks/use-perfil";
 import { LadrilhoCurso } from "@/components/app-shell/topbar-cursos";
@@ -159,7 +160,13 @@ export function ProfileHeader({ perfil, editavel = true, onEditar }: ProfileHead
             onEditar?.();
           }}
           className={cn(
-            "relative h-[150px] overflow-hidden rounded-3xl border border-border",
+            // A capa segue a proporcao da arte larga (2304x450) em vez de uma
+            // altura fixa. A coluna do meio so chega nos 768px em telas de
+            // 1480px pra cima; abaixo disso ela encolhe, a caixa fica mais alta
+            // que a arte, e o object-cover comia as laterais. Seguindo a
+            // proporcao, a arte aparece inteira em qualquer largura -- e nos
+            // 768px da exatamente os mesmos 150px de antes.
+            "relative h-[150px] overflow-hidden rounded-3xl border border-border sm:h-auto sm:aspect-[2304/450]",
             editavel && "group cursor-pointer"
           )}
           style={capaStyle}
@@ -189,7 +196,7 @@ export function ProfileHeader({ perfil, editavel = true, onEditar }: ProfileHead
         </span>
 
         <div className="mt-3.5">
-          <div className="flex items-center gap-3">{editorAtivo === "nome" ? <input autoFocus value={nome} onChange={e => setNome(e.target.value)} onBlur={salvarNome} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { setNome(perfil.nome); setEditorAtivo(null); } }} className="w-full rounded-xl border border-primary bg-background px-3 py-1 text-2xl font-black text-foreground outline-none ring-2 ring-primary/20" /> : <button type="button" onClick={() => editavel && setEditorAtivo("nome")} className={cn("group flex items-center gap-2 text-left text-2xl font-black text-foreground", editavel && "cursor-text")}>{nome}{editavel && <Pencil className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />}</button>}{perfil.publicCode && <span className="text-sm font-black text-muted-foreground">#{perfil.publicCode}</span>}</div>
+          <div className="flex items-center gap-3">{editorAtivo === "nome" ? <input autoFocus value={nome} onChange={e => setNome(e.target.value)} onBlur={salvarNome} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { setNome(perfil.nome); setEditorAtivo(null); } }} className="w-full rounded-xl border border-primary bg-background px-3 py-1 text-2xl font-black text-foreground outline-none ring-2 ring-primary/20" /> : <button type="button" onClick={() => editavel && setEditorAtivo("nome")} className={cn("group flex items-center gap-2 text-left text-2xl font-black text-foreground", editavel && "cursor-text")}>{nome}{perfil.isVerified && <SeloVerificado className="text-[1.35rem]" />}{editavel && <Pencil className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />}</button>}{perfil.publicCode && <span className="text-sm font-black text-muted-foreground">#{perfil.publicCode}</span>}</div>
           {editavel && <p className="mt-0.5 text-sm text-muted-foreground/70">{perfil.email}</p>}
 
           {/* Identidade: desde quando está por aqui, o social e os cursos que

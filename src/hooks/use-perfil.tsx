@@ -243,6 +243,7 @@ function usePerfilData(): PerfilState {
           avatarId: usuario.avatarId,
           bannerColor: usuario.bannerColor,
           statusId: usuario.statusId ?? null,
+          isVerified: usuario.isVerified ?? false,
           themeColor: usuario.themeColor,
           themeMode: usuario.themeMode,
           iniciais: gerarIniciais(usuario.name),

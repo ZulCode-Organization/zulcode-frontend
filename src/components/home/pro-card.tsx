@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePerfil } from "@/hooks/use-perfil";
 
 /**
  * Card PRO do painel direito (formato do redesign), levando pra Loja.
@@ -7,6 +10,14 @@ import Link from "next/link";
  * com qualquer outro botão azul da tela.
  */
 export function ProCard() {
+  const { perfil } = usePerfil();
+
+  // Quem ja assinou nao ve mais o anuncio: vender de novo o que a pessoa
+  // ja comprou so ocupa o lugar de algo util no painel. A guarda mora aqui,
+  // e nao na pagina, porque o painel direito e montado fora do
+  // PerfilProvider -- la o usePerfil nem existiria.
+  if (perfil?.isPro) return null;
+
   return (
     <Link
       href="/pro"

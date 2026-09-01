@@ -223,6 +223,7 @@ export function ResetPasswordForm() {
               placeholder="••••••••"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && salvarSenha()}
               icon={<Lock className="size-4" />}
             />
             <Input

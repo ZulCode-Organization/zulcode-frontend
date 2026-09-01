@@ -38,11 +38,13 @@ export const adminNavItems: NavItem[] = [
 
 export const adminEntry: NavItem = { id: "administrativo", label: "Administrativo", href: "/admin/home", icon: ShieldCheck };
 
-/** No celular ficam só quatro destinos. Assim os rótulos continuam legíveis
- * em telas de 320px; os demais vivem no menu "Mais". */
+/** No celular ficam cinco destinos, só com ícone. Com o botão "Mais" são seis
+ * ladrilhos de 48px: 296px com o respiro da barra, que ainda cabe numa tela de
+ * 320px. O resto vive dentro do menu "Mais". */
 export const bottomNavItems: NavItem[] = [
   { id: "jornada", label: "Jornada", href: "/home", icon: Home },
   { id: "elementos", label: "Elementos", href: "/elementos", icon: BookOpen },
+  { id: "lideres", label: "Líderes", href: "/tabela-lideres", icon: Trophy },
   { id: "loja", label: "Loja", href: "/loja", icon: ShoppingBag },
   { id: "perfil", label: "Perfil", href: "/perfil", icon: User },
 ];
@@ -51,7 +53,6 @@ export const bottomNavItems: NavItem[] = [
  * inferior sem aumentar a quantidade de atalhos fixos. */
 export const moreNavItems: NavItem[] = [
   { id: "metas", label: "Metas", href: "/metas", icon: Zap },
-  { id: "lideres", label: "Líderes", href: "/tabela-lideres", icon: Trophy },
   { id: "playground", label: "Playground", href: "/playground", icon: Code2 },
   { id: "configuracoes", label: "Configurações", href: "/configuracoes", icon: Settings },
   { id: "reportar-bug", label: "Reportar bug", href: "https://forms.cloud.microsoft/r/FD8MLw693j", external: true, icon: Bug },

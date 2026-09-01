@@ -248,6 +248,67 @@
   .animate-pulse-ring {
     animation: pulse-ring 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
+
+  /* A pena estremecendo quando uma vida se perde. Treme e recua um pouco,
+     como quem levou o golpe -- e volta ao lugar, agora com uma mordida a
+     mais na borda. A escala encolhe no meio do gesto pra leitura ficar de
+     "perdi algo", e nao de "algo chegou". */
+  .zc-pena-desgasta {
+    animation: zc-pena-desgasta 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Tela do PRO.
+   --------------------------------------------------------------------------- */
+
+/* O mascote correndo: sobe e desce de leve, sem sair do lugar. O ciclo curto
+   e a subida pequena importam -- passo longo demais vira flutuacao, e o Zul
+   passa a parecer que boia em vez de correr. */
+@keyframes zc-pro-corre {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-9px) rotate(-1.5deg); }
+}
+
+/* A sombra encolhe quando ele sobe. Sem isso o corpo se move e a sombra fica
+   parada, que e o que faz a animacao parecer recortada. */
+@keyframes zc-pro-sombra {
+  0%, 100% { transform: scaleX(1); opacity: 0.6; }
+  50% { transform: scaleX(0.72); opacity: 0.35; }
+}
+
+/* Brilho que atravessa o card em destaque, devagar e so uma vez a cada volta
+   -- o suficiente pra puxar o olho sem virar pisca-pisca. */
+@keyframes zc-pro-brilho {
+  0% { transform: translateX(-120%) skewX(-18deg); }
+  60%, 100% { transform: translateX(320%) skewX(-18deg); }
+}
+
+.zc-pro-corre { animation: zc-pro-corre 0.9s ease-in-out infinite; }
+.zc-pro-sombra { animation: zc-pro-sombra 0.9s ease-in-out infinite; }
+.zc-pro-brilho { animation: zc-pro-brilho 4.5s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .zc-pro-corre,
+  .zc-pro-sombra,
+  .zc-pro-brilho {
+    animation: none;
+  }
+}
+
+@keyframes zc-pena-desgasta {
+  0% { transform: translateX(0) rotate(0deg) scale(1); }
+  20% { transform: translateX(-2px) rotate(-9deg) scale(0.9); }
+  45% { transform: translateX(2px) rotate(7deg) scale(0.94); }
+  70% { transform: translateX(-1px) rotate(-4deg) scale(0.98); }
+  100% { transform: translateX(0) rotate(0deg) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Sem o tremor, a mordida na borda ainda conta a perda sozinha. */
+  .zc-pena-desgasta {
+    animation: none;
+  }
 }
 
 /* ---------------------------------------------------------------------------

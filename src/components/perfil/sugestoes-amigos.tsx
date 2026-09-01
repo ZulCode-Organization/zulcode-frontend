@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { usePerfil } from "@/hooks/use-perfil";
 import { UserAvatar } from "@/components/shared/user-avatar";
+import { SeloVerificado } from "@/components/shared/selo-verificado";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { useArrastarFaixa } from "@/hooks/use-arrastar-faixa";
 
@@ -16,6 +17,7 @@ interface Sugestao {
   xp: number;
   level: number;
   levelLabel: string;
+  isVerified?: boolean;
 }
 
 /** Teto de cards no carrossel. Passa longe do que costuma vir do
@@ -161,7 +163,7 @@ export function SugestoesAmigos() {
                 size="md"
                 className="[&>div]:rounded-full [&>div]:ring-0"
               />
-              <p className="mt-3 w-full truncate font-black text-foreground">{pessoa.name}</p>
+              <p className="mt-3 w-full truncate font-black text-foreground">{pessoa.name}{pessoa.isVerified && <SeloVerificado className="ml-1 text-[0.9rem]" />}</p>
               <p className="mt-0.5 w-full truncate text-[0.8rem] text-muted-foreground">
                 Nível {pessoa.level} · {pessoa.xp.toLocaleString("pt-BR")} XP
               </p>

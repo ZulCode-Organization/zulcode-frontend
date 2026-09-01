@@ -1,2 +1,2 @@
-import { AdminNotifications } from "@/components/admin/admin-page";
+import { AdminNotifications } from "@/components/admin/admin-notificacoes";
 export default function Page() { return <AdminNotifications />; }

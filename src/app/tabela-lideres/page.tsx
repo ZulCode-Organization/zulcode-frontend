@@ -8,14 +8,15 @@ import { usePerfil } from "@/hooks/use-perfil";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { SideFooter } from "@/components/shared/side-footer";
 import { UserAvatar } from "@/components/shared/user-avatar";
+import { SeloVerificado } from "@/components/shared/selo-verificado";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { cn } from "@/lib/utils";
 import { AvatarComStatus, EscolhaDeStatus, FolhaDeStatus, statusPorId, useStatusEscolhido } from "@/components/lideres/escolha-status";
 
 const DIVISOES = [{ id: "bronze", nome: "Bronze", cor: "bg-[#C08457]", minXp: 0 }, { id: "prata", nome: "Prata", cor: "bg-slate-300", minXp: 300 }, { id: "ouro", nome: "Ouro", cor: "bg-amber-400", minXp: 1000 }, { id: "platina", nome: "Platina", cor: "bg-emerald-500", minXp: 3000 }, { id: "diamante", nome: "Diamante", cor: "bg-sky-500", minXp: 6000 }, { id: "mestre", nome: "Mestre", cor: "bg-rose-400", minXp: 10000 }];
 const RANK_IDS: Record<string, string> = { bronze: "BRONZE", prata: "SILVER", ouro: "GOLD", platina: "PLATINUM", diamante: "DIAMOND", mestre: "MASTER" };
-type RankEntry = { rank: number; id: string; name: string; avatarId?: string; bannerColor?: string | null; statusId?: string | null; xp: number; level: number; levelLabel: string };
-type UsuarioBusca = { id: string; name: string; publicCode: string; avatarId?: string; bannerColor?: string | null; level: number };
+type RankEntry = { rank: number; id: string; name: string; avatarId?: string; bannerColor?: string | null; statusId?: string | null; isVerified?: boolean; xp: number; level: number; levelLabel: string };
+type UsuarioBusca = { id: string; name: string; publicCode: string; avatarId?: string; bannerColor?: string | null; isVerified?: boolean; level: number };
 
 /** Avatar redondo e sem anel, como na referência — o formato padrão do
  * UserAvatar (quadrado arredondado com anel) continua valendo no resto do app. */
@@ -24,7 +25,7 @@ const AVATAR_REDONDO = "[&>div]:rounded-full [&>div]:ring-0";
 function PesquisaLideres() {
   const [q, setQ] = useState(""); const [resultados, setResultados] = useState<UsuarioBusca[]>([]);
   useEffect(() => { const token = localStorage.getItem("accessToken"); if (!token || q.trim().length < 2) { setResultados([]); return; } const timer = window.setTimeout(() => fetchComTimeout(`${API_BASE_URL}/leaderboard/search?q=${encodeURIComponent(q)}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : []).then(setResultados), 250); return () => clearTimeout(timer); }, [q]);
-  return <aside className="rounded-[20px] border border-border bg-card p-5"><h2 className="flex items-center gap-2 font-black"><Search className="size-4 text-primary" />Encontrar usuário</h2><p className="mt-2 text-sm text-muted-foreground">Busque por nome ou código, como #123456.</p><input value={q} onChange={e => setQ(e.target.value)} placeholder="Nome ou #123456" className="mt-4 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary" />{resultados.length > 0 && <div className="mt-3 divide-y divide-border">{resultados.map(user => <Link key={user.id} href={`/perfil/${user.id}`} className="flex items-center gap-3 py-3"><UserAvatar iniciais={user.name.slice(0,2).toUpperCase()} avatarId={user.avatarId} bannerColor={user.bannerColor} size="sm"/><span className="min-w-0"><b className="block truncate text-sm">{user.name}</b><span className="text-xs text-muted-foreground">#{user.publicCode} · Nível {user.level}</span></span></Link>)}</div>}</aside>;
+  return <aside className="rounded-[20px] border border-border bg-card p-5"><h2 className="flex items-center gap-2 font-black"><Search className="size-4 text-primary" />Encontrar usuário</h2><p className="mt-2 text-sm text-muted-foreground">Busque por nome ou código, como #123456.</p><input value={q} onChange={e => setQ(e.target.value)} placeholder="Nome ou #123456" className="mt-4 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary" />{resultados.length > 0 && <div className="mt-3 divide-y divide-border">{resultados.map(user => <Link key={user.id} href={`/perfil/${user.id}`} className="flex items-center gap-3 py-3"><UserAvatar iniciais={user.name.slice(0,2).toUpperCase()} avatarId={user.avatarId} bannerColor={user.bannerColor} size="sm"/><span className="min-w-0"><b className="block truncate text-sm">{user.name}{user.isVerified && <SeloVerificado className="ml-1 text-[0.85rem]" />}</b><span className="text-xs text-muted-foreground">#{user.publicCode} · Nível {user.level}</span></span></Link>)}</div>}</aside>;
 }
 
 /**
@@ -138,7 +139,7 @@ function LideresContent() {
 
               <Link href={`/perfil/${item.id}`} className="flex min-w-0 flex-1 items-center gap-4">
                 <span className={cn("min-w-0 flex-1 truncate text-[0.95rem] font-black", souEu && "text-primary")}>
-                  {item.name}
+                  {item.name}{item.isVerified && <SeloVerificado className="ml-1 text-[0.95rem]" />}
                   {souEu && <span className="ml-1.5 text-xs font-black opacity-70">(você)</span>}
                 </span>
                 <span className={cn("shrink-0 text-[0.95rem] font-black", souEu ? "text-primary" : "text-muted-foreground")}>

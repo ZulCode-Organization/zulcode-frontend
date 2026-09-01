@@ -13,7 +13,13 @@ export function LoginForm() {
     <div className="w-full max-w-sm animate-fade-in-up">
       <h2 className="mb-8 text-2xl font-bold text-foreground">Entrar na sua conta</h2>
 
-      <div className="flex flex-col gap-4">
+      <form
+        onSubmit={(evento) => {
+          evento.preventDefault();
+          void handleSubmit();
+        }}
+        className="flex flex-col gap-4"
+      >
         <Input
           label="E-mail"
           type="email"
@@ -44,16 +50,10 @@ export function LoginForm() {
           </p>
         )}
 
-        <Button
-          variant="default"
-          size="lg"
-          onClick={handleSubmit}
-          disabled={loading}
-          className="mt-2"
-        >
+        <Button variant="default" size="lg" type="submit" disabled={loading} className="mt-2">
           {loading ? "Entrando..." : "Entrar"}
         </Button>
-      </div>
+      </form>
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
         <Link href="/welcome" className="font-semibold text-primary hover:underline">

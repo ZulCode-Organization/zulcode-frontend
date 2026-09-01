@@ -1,3 +1,2 @@
-import { Suspense } from "react";
-import { AdminUsers } from "@/components/admin/admin-page";
-export default function Page() { return <Suspense><AdminUsers /></Suspense>; }
+import { AdminUsers } from "@/components/admin/admin-usuarios";
+export default function Page() { return <AdminUsers />; }

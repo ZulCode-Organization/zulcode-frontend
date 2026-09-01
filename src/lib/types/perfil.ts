@@ -5,6 +5,8 @@ export interface PerfilUsuario {
   isPro?: boolean;
   isDeveloper?: boolean;
   isEarlyTester?: boolean;
+  /** Conta verificada. Só a administração liga; não tem relação com o Pro. */
+  isVerified?: boolean;
   nome: string;
   email: string;
   iniciais: string;

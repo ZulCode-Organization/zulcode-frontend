@@ -25,7 +25,13 @@ export function SignupForm() {
     <div className="w-full max-w-sm animate-fade-in-up">
       <h2 className="mb-8 text-2xl font-bold text-foreground">Criar nova conta</h2>
 
-      <div className="flex flex-col gap-4">
+      <form
+        onSubmit={(evento) => {
+          evento.preventDefault();
+          void handleSubmit();
+        }}
+        className="flex flex-col gap-4"
+      >
         <Input
           label="Nome completo"
           type="text"
@@ -65,10 +71,10 @@ export function SignupForm() {
           </p>
         )}
 
-        <Button size="lg" onClick={handleSubmit} disabled={loading} className="mt-2">
+        <Button size="lg" type="submit" disabled={loading} className="mt-2">
           {loading ? "Criando conta..." : "Criar conta"}
         </Button>
-      </div>
+      </form>
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
         <Link href="/welcome" className="font-semibold text-primary hover:underline">

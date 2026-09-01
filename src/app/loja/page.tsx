@@ -22,7 +22,6 @@ import { AppShell } from "@/components/app-shell/app-shell";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
 import { cn } from "@/lib/utils";
-import { ProBanner } from "@/components/loja/pro-banner";
 
 type Item = {
   id: string;
@@ -206,22 +205,21 @@ function Store() {
           {/* Cabeçalho com o saldo em destaque: numa loja, quanto se tem é a
               primeira informação que importa — antes ela só existia na barra
               de status lá em cima. */}
-          <header className="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-border bg-card px-5 py-4">
+          <header className="mb-4 flex items-center justify-between gap-3 rounded-[18px] border border-border bg-card px-4 py-3 sm:mb-5 sm:rounded-[20px] sm:px-5 sm:py-4">
             <div className="min-w-0">
-              <h1 className="text-2xl font-black tracking-tight">Loja</h1>
-              <p className="mt-0.5 text-sm text-muted-foreground">
+              <h1 className="text-xl font-black tracking-tight sm:text-2xl">Loja</h1>
+              <p className="mt-0.5 hidden text-sm text-muted-foreground sm:block">
                 Troque suas moedas por power-ups e personalizações
               </p>
             </div>
-            <div className="flex shrink-0 items-center gap-2 rounded-2xl bg-amber-400/10 px-4 py-2.5">
-              <Coins className="size-6 text-amber-400" />
-              <span className="text-xl font-black text-amber-400">
+            <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-amber-400/10 px-3 py-2 sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2.5">
+              <Coins className="size-5 text-amber-400 sm:size-6" />
+              <span className="text-lg font-black text-amber-400 sm:text-xl">
                 {perfil?.moedas?.toLocaleString("pt-BR") ?? "—"}
               </span>
             </div>
           </header>
-          {!perfil?.isPro && <ProBanner />}
-          <div className="mt-5 flex flex-wrap gap-2 pb-1 xl:hidden">
+          <div className="flex flex-wrap gap-2 pb-1 xl:hidden">
             {categories.map(({ value, label, Icon }) => (
               <button
                 key={value}
@@ -410,11 +408,11 @@ function PowerCard({
 }) {
   const Icon = powerIcon(item.effect);
   return (
-    <article className="animate-fade-in-up group flex min-h-56 flex-col overflow-hidden rounded-[20px] border border-border bg-card transition-colors duration-200 hover:border-primary/50">
+    <article className="animate-fade-in-up group flex flex-row overflow-hidden rounded-[18px] border border-border bg-card transition-colors duration-200 hover:border-primary/50 sm:min-h-56 sm:flex-col sm:rounded-[20px]">
       {/* Vitrine: o ícone grande sobre o âmbar da moeda, que é a cor do
           power-up no app inteiro. */}
-      <div className="relative grid h-24 place-items-center bg-amber-400/10">
-        <Icon className="size-10 text-amber-400 transition-transform duration-200 group-hover:scale-110" />
+      <div className="relative grid w-[86px] shrink-0 place-items-center bg-amber-400/10 sm:h-24 sm:w-auto">
+        <Icon className="size-8 text-amber-400 transition-transform duration-200 group-hover:scale-110 sm:size-10" />
         {disabled && (
           <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-[0.6rem] font-black uppercase tracking-[0.06em] text-white">
             <Check className="size-3" strokeWidth={3} />
@@ -423,12 +421,12 @@ function PowerCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
         <span className="text-[0.62rem] font-black uppercase tracking-[0.1em] text-amber-400">Power-up</span>
         <h2 className="mt-1 font-black leading-snug">{item.title}</h2>
-        <p className="mt-1.5 flex-1 text-xs leading-relaxed text-muted-foreground">{item.description}</p>
+        <p className="mt-1 line-clamp-2 flex-1 text-[0.7rem] leading-relaxed text-muted-foreground sm:mt-1.5 sm:line-clamp-none sm:text-xs">{item.description}</p>
 
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="mt-2.5 flex items-center justify-between gap-2 sm:mt-4 sm:gap-3">
           <b className="flex items-center gap-1.5 text-[0.95rem] font-black text-amber-400">
             <Coins className="size-4" />
             {item.price}
@@ -437,7 +435,7 @@ function PowerCard({
             type="button"
             disabled={working !== null || disabled}
             onClick={() => onBuy(item)}
-            className="zc-press zc-press-shadow rounded-xl bg-primary px-4 py-2.5 text-[0.72rem] font-black uppercase tracking-[0.06em] text-primary-foreground disabled:opacity-50 disabled:shadow-none"
+            className="zc-press zc-press-shadow shrink-0 rounded-xl bg-primary px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.06em] text-primary-foreground disabled:opacity-50 disabled:shadow-none sm:px-4 sm:py-2.5 sm:text-[0.72rem]"
             style={{ ["--zc-press-color" as string]: "rgba(0,0,0,0.32)" }}
           >
             {disabled ? "Ativo" : working === item.id ? "…" : "Comprar"}
@@ -461,10 +459,10 @@ function CosmeticCard({
     item.kind === "THEME" ? "text-sky-400" : item.kind === "AVATAR" ? "text-violet-400" : "text-pink-400";
 
   return (
-    <article className="animate-fade-in-up group flex min-h-56 flex-col overflow-hidden rounded-[20px] border border-border bg-card transition-colors duration-200 hover:border-primary/50">
+    <article className="animate-fade-in-up group flex flex-row overflow-hidden rounded-[18px] border border-border bg-card transition-colors duration-200 hover:border-primary/50 sm:min-h-56 sm:flex-col sm:rounded-[20px]">
       {/* Vitrine alta: o tema e o banner aparecem no tamanho de verdade, em vez
           da faixa de 48px de antes, onde não dava pra julgar a cor. */}
-      <div className="relative h-24 overflow-hidden">
+      <div className="relative w-[86px] shrink-0 overflow-hidden sm:h-24 sm:w-auto">
         {item.kind === "THEME" ? (
           <div className="flex h-full w-full">
             {[item.value.primary, item.value.accent].map((color) => (
@@ -480,7 +478,7 @@ function CosmeticCard({
           <div className="grid h-full w-full place-items-center bg-violet-500/10">
             <AvatarIcon
               id={item.value.avatarId}
-              className="size-10 text-violet-400 transition-transform duration-200 group-hover:scale-110"
+              className="size-8 text-violet-400 transition-transform duration-200 group-hover:scale-110 sm:size-10"
             />
           </div>
         )}
@@ -498,12 +496,12 @@ function CosmeticCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
         <span className={cn("text-[0.62rem] font-black uppercase tracking-[0.1em]", corDoTipo)}>{rotulo}</span>
         <h2 className="mt-1 font-black leading-snug">{item.name}</h2>
-        <p className="mt-1.5 flex-1 text-xs leading-relaxed text-muted-foreground">{item.description}</p>
+        <p className="mt-1 line-clamp-2 flex-1 text-[0.7rem] leading-relaxed text-muted-foreground sm:mt-1.5 sm:line-clamp-none sm:text-xs">{item.description}</p>
 
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="mt-2.5 flex items-center justify-between gap-2 sm:mt-4 sm:gap-3">
           {/* Já comprado: o preço deixa de ser cobrança e vira histórico. */}
           <b
             className={cn(
@@ -518,7 +516,7 @@ function CosmeticCard({
             type="button"
             disabled={working !== null || item.equipped}
             onClick={() => onAction(item)}
-            className="zc-press zc-press-shadow rounded-xl bg-primary px-4 py-2.5 text-[0.72rem] font-black uppercase tracking-[0.06em] text-primary-foreground disabled:opacity-50 disabled:shadow-none"
+            className="zc-press zc-press-shadow shrink-0 rounded-xl bg-primary px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.06em] text-primary-foreground disabled:opacity-50 disabled:shadow-none sm:px-4 sm:py-2.5 sm:text-[0.72rem]"
             style={{ ["--zc-press-color" as string]: "rgba(0,0,0,0.32)" }}
           >
             {item.equipped ? "Em uso" : working === item.id ? "…" : item.owned ? "Usar" : "Comprar"}

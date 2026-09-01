@@ -1,2 +1,2 @@
-import { AdminCatalog } from "@/components/admin/admin-page";
-export default function Page() { return <AdminCatalog kind="goals" />; }
+import { AdminMetas } from "@/components/admin/admin-metas";
+export default function Page() { return <AdminMetas />; }

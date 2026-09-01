@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Feather, X } from "lucide-react";
+import { PenaDesgastada, PenaInfinita } from "@/components/shared/pena-desgastada";
 import { cn } from "@/lib/utils";
 import { Atividade } from "@/data/atividades";
 import { LicaoTrilha } from "@/lib/types/trilha";
@@ -68,7 +69,7 @@ function MoldeAtividade({ progresso, vidas, vidasIlimitadas, onSair, children, r
             style={{ width: `${progresso}%` }}
           />
         </div>
-        <span className="flex shrink-0 items-center gap-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm font-black text-rose-500" title={vidasIlimitadas ? "Penas ilimitadas" : `${vidas} penas restantes`}><Feather className="size-4" />{vidasIlimitadas ? "∞" : vidas}</span>
+        <span className="flex shrink-0 items-center gap-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm font-black text-rose-500" title={vidasIlimitadas ? "Penas ilimitadas" : `${vidas} penas restantes`}>{vidasIlimitadas ? <PenaInfinita className="size-4" /> : <><PenaDesgastada restantes={vidas} className="size-4" />{vidas}</>}</span>
       </div>
 
       <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 pb-4 lg:px-8">

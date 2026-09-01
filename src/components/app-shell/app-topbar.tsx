@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { Coins, Feather, Flame, ShieldCheck } from "lucide-react";
+import { Coins, Flame, ShieldCheck } from "lucide-react";
 import { usePerfil } from "@/hooks/use-perfil";
 import { useCursos } from "@/hooks/use-cursos";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { FaixaCursosMobile, LadrilhoCurso, ListaCursosDesktop, TelaTodosCursos, 
 import { PainelOfensiva } from "./topbar-ofensiva";
 import { PainelMoedas } from "./topbar-moedas";
 import { PainelVidas } from "./topbar-vidas";
+import { PenaDesgastada, PenaInfinita } from "@/components/shared/pena-desgastada";
 
 type Painel = "curso" | "ofensiva" | "moedas" | "vidas" | "todos-cursos" | null;
 
@@ -219,9 +220,20 @@ export function AppTopBar() {
 
         {/* 4. Penas: a marca é uma ave, então a vida do app é uma pena dela. */}
         <div ref={ancoraVidas} className={celula}>
-          <Chip rotulo="Penas" cor="text-rose-500" aberto={painel === "vidas"} onClick={() => alternar("vidas")}>
-            <Feather className="size-6 lg:size-5" />
-            {perfil?.isPro ? "∞" : valor(perfil?.vidas)}
+          <Chip
+            rotulo={perfil?.isPro ? "Penas ilimitadas" : "Penas"}
+            cor={perfil?.isPro ? "text-violet-500" : "text-rose-500"}
+            aberto={painel === "vidas"}
+            onClick={() => alternar("vidas")}
+          >
+            {perfil?.isPro ? (
+              <PenaInfinita className="size-6 lg:size-5" />
+            ) : (
+              <>
+                <PenaDesgastada restantes={perfil?.vidas ?? 5} className="size-6 lg:size-5" />
+                {valor(perfil?.vidas)}
+              </>
+            )}
           </Chip>
         </div>
 

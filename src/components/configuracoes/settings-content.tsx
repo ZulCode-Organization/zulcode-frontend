@@ -1,77 +1,89 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, BellRing, Check, LogOut, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { limparPerfilCache } from "@/hooks/use-perfil";
+import { useState } from "react";
+import { Bell, BellRing, ChevronRight, Loader2, LogOut, Palette, ShieldCheck, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { limparPerfilCache, usePerfil } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
 import { limparCursosCache } from "@/hooks/use-cursos";
 import { ativarNotificacoesNativas } from "@/lib/push-notifications";
-import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
-import { usePerfil } from "@/hooks/use-perfil";
+import { cn } from "@/lib/utils";
 
-type TemaComprado = {
-  id: string;
-  name: string;
-  description: string;
-  owned: boolean;
-  equipped?: boolean;
-  value: { primary?: string; accent?: string };
-};
+/**
+ * Uma linha de configuração.
+ *
+ * A tela virou lista de linhas, e não uma grade de cards. Card serve pra
+ * conteúdo que se compara lado a lado; ajuste é coisa que se percorre de cima
+ * pra baixo procurando um nome. A lista funciona igual no celular e no
+ * computador — a grade de duas colunas quebrava e virava uma pilha de caixas
+ * altas no telefone.
+ */
+function Linha({
+  Icone,
+  titulo,
+  descricao,
+  cor = "text-primary",
+  href,
+  onClick,
+  acessorio,
+  destaque = false,
+}: {
+  Icone: typeof Sun;
+  titulo: string;
+  descricao: string;
+  cor?: string;
+  href?: string;
+  onClick?: () => void;
+  acessorio?: React.ReactNode;
+  destaque?: boolean;
+}) {
+  const conteudo = (
+    <>
+      <span className={cn("grid size-10 shrink-0 place-items-center rounded-xl bg-muted", cor)}>
+        <Icone className="size-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className={cn("block text-[0.92rem] font-black", destaque && "text-destructive")}>{titulo}</span>
+        <span className="mt-0.5 block text-[0.8rem] leading-snug text-muted-foreground">{descricao}</span>
+      </span>
+      {acessorio ?? <ChevronRight className="size-4 shrink-0 text-muted-foreground" />}
+    </>
+  );
+
+  const classe =
+    "flex w-full items-center gap-3.5 border-b border-border px-4 py-4 text-left transition-colors duration-150 last:border-0 hover:bg-muted/50 sm:px-5";
+
+  if (href) {
+    return (
+      <Link href={href} className={classe}>
+        {conteudo}
+      </Link>
+    );
+  }
+  return (
+    <button type="button" onClick={onClick} className={classe}>
+      {conteudo}
+    </button>
+  );
+}
+
+function Grupo({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+  return (
+    <section className="mt-6">
+      <h2 className="px-1 text-[0.7rem] font-black uppercase tracking-[0.1em] text-muted-foreground">{titulo}</h2>
+      <div className="mt-2 overflow-hidden rounded-[20px] border border-border bg-card">{children}</div>
+    </section>
+  );
+}
 
 export function SettingsContent() {
   const router = useRouter();
+  const { perfil } = usePerfil();
+  const { resolvedTheme } = useTheme();
   const [pushMensagem, setPushMensagem] = useState<string | null>(null);
   const [ativandoPush, setAtivandoPush] = useState(false);
-  const [temas, setTemas] = useState<TemaComprado[]>([]);
-  const [aplicandoTema, setAplicandoTema] = useState<string | null>(null);
-  const { perfil, retry } = usePerfil();
-  const temasDisponiveis = [...temas, ...(perfil?.isPro ? [{ id: "pro-theme", name: "Tema PRO", description: "Tema exclusivo dos assinantes PRO.", owned: true, value: { primary: "#a855f7", accent: "#f0abfc" } }] : []), ...(perfil?.isDeveloper ? [{ id: "developer-theme", name: "Tema Desenvolvedor", description: "Tema exclusivo da equipe ZulCode.", owned: true, value: { primary: "#0f766e", accent: "#2dd4bf" } }] : []), ...(perfil?.isEarlyTester ? [{ id: "early-tester-theme", name: "Tema Pioneiro", description: "Tema exclusivo da fase de testes.", owned: true, value: { primary: "#2563eb", accent: "#60a5fa" } }] : [])];
-
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
-    fetchComTimeout(`${API_BASE_URL}/user/zulcoins/cosmetics`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => (res.ok ? res.json() : []))
-      .then((itens: (TemaComprado & { kind: string })[]) =>
-        setTemas(itens.filter((item) => item.kind === "THEME" && item.owned))
-      )
-      .catch(() => setTemas([]));
-  }, []);
-
-  const usarTema = async (tema: TemaComprado) => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
-    setAplicandoTema(tema.id);
-    try {
-      const res = await fetchComTimeout(
-        `${API_BASE_URL}/user/zulcoins/cosmetics/${tema.id}/equip`,
-        { method: "POST", headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!res.ok) return;
-      retry();
-    } finally {
-      setAplicandoTema(null);
-    }
-  };
-
-  const pararDeUsarTema = async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
-    setAplicandoTema("reset");
-    try {
-      const res = await fetchComTimeout(
-        `${API_BASE_URL}/user/zulcoins/cosmetics/theme/reset`,
-        { method: "POST", headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (res.ok) retry();
-    } finally {
-      setAplicandoTema(null);
-    }
-  };
 
   const ativarPush = async () => {
     setAtivandoPush(true);
@@ -88,130 +100,72 @@ export function SettingsContent() {
     router.replace("/welcome");
   };
 
+  // O resumo da linha de aparência diz o estado atual, pra pessoa não precisar
+  // entrar na tela só pra descobrir em que tema está.
+  const modo = resolvedTheme === "dark" ? "Escuro" : "Claro";
+  const resumoAparencia = perfil?.themeColor ? `${modo} · paleta personalizada` : `${modo} · paleta padrão`;
+
   return (
-    <div className="max-w-4xl pt-6">
-      <p className="text-sm font-black uppercase tracking-wider text-primary">
-        Conta
-      </p>
-      <h1 className="mt-2 text-4xl font-black">Configurações</h1>
-      <p className="mt-2 text-muted-foreground">
-        Personalize a experiência e controle as permissões do seu aplicativo.
+    <div className="pt-5 sm:pt-6">
+      <p className="text-sm font-black uppercase tracking-wider text-primary">Conta</p>
+      <h1 className="mt-1.5 text-2xl font-black sm:text-3xl">Configurações</h1>
+      <p className="mt-1.5 text-[0.9rem] text-muted-foreground">
+        Ajuste a aparência e as permissões do aplicativo.
       </p>
 
-      <div className="mt-9 grid gap-5 md:grid-cols-2">
-        <section className="rounded-[24px] border border-border bg-card p-6">
-          <div className="flex items-center gap-3 text-lg font-black text-foreground">
-            <Sun className="size-5 text-primary" />
-            Aparência
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Escolha como o ZulCode aparece para você.
-          </p>
-          <div className="mt-5">
-            <ThemeToggle />
-          </div>
-          <div className="mt-6 border-t border-border pt-5">
-            <p className="text-sm font-black">Temas comprados</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Troque a paleta completa da sua interface.
-            </p>
-            {temasDisponiveis.length ? (
-              <>
-                <div className="mt-3 grid gap-2">
-                  {temasDisponiveis.map((tema) => {
-                    const emUso =
-                      perfil?.themeColor?.toLowerCase() ===
-                      tema.value.primary?.toLowerCase();
-                    return (
-                      <button
-                        key={tema.id}
-                        type="button"
-                        disabled={aplicandoTema !== null || emUso}
-                        onClick={() => usarTema(tema)}
-                        className={`relative flex items-center gap-3 rounded-xl border p-3 text-left transition ${emUso ? "border-primary bg-primary/15 shadow-[inset_0_0_0_1px_var(--primary)]" : "border-border hover:border-primary/50 hover:bg-muted/50"}`}
-                      >
-                        <span className="flex size-10 overflow-hidden rounded-lg shadow-sm">
-                          {[tema.value.primary, tema.value.accent].map(
-                            (cor) => (
-                              <i
-                                key={cor}
-                                className="flex-1"
-                                style={{ background: cor }}
-                              />
-                            )
-                          )}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <b className="block text-sm">{tema.name}</b>
-                          <span className={`block text-xs ${emUso ? "font-bold text-primary" : "text-muted-foreground"}`}>
-                            {emUso ? "Tema selecionado" : "Usar tema"}
-                          </span>
-                        </span>
-                        {emUso && <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-1 text-[0.65rem] font-black text-primary-foreground"><Check className="size-3" />Em uso</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-                {perfil?.themeColor && (
-                  <button
-                    type="button"
-                    disabled={aplicandoTema !== null}
-                    onClick={pararDeUsarTema}
-                    className="mt-3 text-xs font-black text-primary hover:underline"
-                  >
-                    Parar de usar tema
-                  </button>
-                )}
-              </>
-            ) : (
-              <p className="mt-3 text-xs text-muted-foreground">
-                Você ainda não possui temas. Compre um na Loja.
-              </p>
-            )}
-          </div>
-        </section>
+      <Grupo titulo="Aparência">
+        <Linha
+          Icone={Palette}
+          titulo="Tema e paleta"
+          descricao={resumoAparencia}
+          href="/configuracoes/temas"
+          acessorio={
+            <span className="flex shrink-0 items-center gap-2">
+              <span
+                className="size-5 rounded-md border border-black/10"
+                style={{ background: perfil?.themeColor ?? "var(--primary)" }}
+                aria-hidden
+              />
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </span>
+          }
+        />
+      </Grupo>
 
-        <section className="rounded-[24px] border border-border bg-card p-6">
-          <div className="flex items-center gap-3 text-lg font-black text-foreground">
-            <Bell className="size-5 text-primary" />
-            Notificações
-          </div>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Receba avisos e novidades do ZulCode no seu APK ou IPA.
-          </p>
-          <button
-            type="button"
-            disabled={ativandoPush}
-            onClick={ativarPush}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-black text-primary-foreground disabled:opacity-60"
-          >
-            <BellRing className="size-4" />
-            {ativandoPush ? "Ativando…" : "Ativar notificações"}
-          </button>
-          {pushMensagem && (
-            <p className="mt-3 text-xs font-semibold text-muted-foreground">
-              {pushMensagem}
-            </p>
-          )}
-        </section>
+      <Grupo titulo="Avisos">
+        <Linha
+          Icone={ativandoPush ? Loader2 : Bell}
+          titulo="Notificações"
+          descricao={pushMensagem ?? "Receba avisos e novidades no seu aparelho."}
+          onClick={ativarPush}
+          acessorio={
+            <span className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-[0.7rem] font-black uppercase tracking-[0.06em] text-primary-foreground">
+              {ativandoPush ? <Loader2 className="size-3.5 animate-spin" /> : <BellRing className="size-3.5" />}
+              {ativandoPush ? "Ativando" : "Ativar"}
+            </span>
+          }
+        />
+      </Grupo>
 
-        <section className="rounded-[24px] border border-border bg-card p-6 md:col-span-2">
-          <div className="flex items-center gap-3 text-lg font-black text-foreground">
-            <LogOut className="size-5 text-destructive" />
-            Sessão
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Encerre sua sessão neste aparelho.
-          </p>
-          <button
-            type="button"
-            onClick={sair}
-            className="mt-5 rounded-xl border border-destructive/30 px-4 py-2.5 text-sm font-black text-destructive transition-colors hover:bg-destructive/10"
-          >
-            Sair da conta
-          </button>
-        </section>
-      </div>
+      <Grupo titulo="Conta">
+        {perfil?.publicCode && (
+          <Linha
+            Icone={ShieldCheck}
+            titulo="Seu código"
+            descricao="É por ele que outras pessoas encontram seu perfil."
+            acessorio={<span className="shrink-0 text-[0.85rem] font-black text-muted-foreground">#{perfil.publicCode}</span>}
+          />
+        )}
+        <Linha
+          Icone={LogOut}
+          titulo="Sair da conta"
+          descricao="Encerra a sessão neste aparelho."
+          cor="text-destructive"
+          destaque
+          onClick={sair}
+          acessorio={<ChevronRight className="size-4 shrink-0 text-destructive/60" />}
+        />
+      </Grupo>
     </div>
   );
 }

@@ -6,5 +6,5 @@ import { SettingsContent } from "@/components/configuracoes/settings-content";
 
 export default function ConfiguracoesPage() {
   useRequireAuth();
-  return <AppShell contentClassName="max-w-4xl"><SettingsContent /></AppShell>;
+  return <AppShell contentClassName="max-w-2xl"><SettingsContent /></AppShell>;
 }

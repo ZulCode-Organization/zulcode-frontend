@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app-shell/app-shell";
 import { SideFooter } from "@/components/shared/side-footer";
 import { ElementoTile } from "@/components/elementos/elemento-tile";
 import { useEffect, useMemo, useState } from "react";
+import { AvisoDemora, Esqueleto, EsqueletoElemento } from "@/components/shared/esqueleto";
 import { useJornada } from "@/hooks/use-jornada";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { ElementoGlossario } from "@/lib/types/elemento";
@@ -29,7 +30,19 @@ function ElementosContent() {
         Toque num elemento pra ver o significado e um exemplo de novo.
       </p>
 
-      {loading ? <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">{[0, 1, 2].map((item) => <div key={item} className="h-28 animate-pulse rounded-3xl bg-muted" />)}</div> : categorias.map(([categoria, itens]) => (
+      {loading ? (
+        <div className="mt-8">
+          {[0, 1, 2].map((secao) => (
+            <div key={secao} className={secao ? "mt-9" : ""}>
+              <Esqueleto className="h-4 w-32 rounded-full" />
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {[0, 1, 2, 3, 4, 5].map((item) => <EsqueletoElemento key={item} />)}
+              </div>
+            </div>
+          ))}
+          <AvisoDemora>Carregando seus elementos… isso pode levar alguns segundos.</AvisoDemora>
+        </div>
+      ) : categorias.map(([categoria, itens]) => (
         <div key={categoria} className="mt-8">
           <div className="flex items-center gap-3.5">
             <h2 className="shrink-0 text-lg font-black text-foreground">{categoria}</h2>

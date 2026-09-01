@@ -70,9 +70,11 @@ export function PenaInfinita({ className }: { className?: string }) {
       <Feather className={cn("size-5", className)} />
       <Infinito
         aria-hidden
-        // Deitado sobre a haste, no canto de baixo à esquerda: é onde a pena
-        // afina e sobra espaço, então o infinito não cobre nenhuma barba.
-        className="absolute -bottom-px -left-px size-[62%]"
+        // Canto de cima à direita, meio pra fora da pena, como um selo.
+        //
+        // A cor é o oposto do fundo em cada tema: escuro no claro, claro no
+        // escuro. Fixá-la numa das duas sumiria o símbolo na outra.
+        className="absolute -right-1 -top-1 size-[58%] text-neutral-900 dark:text-white"
         strokeWidth={3}
       />
     </span>

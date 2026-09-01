@@ -259,6 +259,49 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Esqueleto de carregamento.
+   --------------------------------------------------------------------------- */
+
+/* O brilho atravessa o bloco da esquerda pra direita. O animate-pulse do
+   Tailwind so apaga e acende a peca inteira, o que le como algo piscando; a
+   varredura le como "esta vindo". Numa espera de varios segundos e essa
+   diferenca que separa "carregando" de "travou". */
+@keyframes zc-esqueleto {
+  from { background-position: -160% 0; }
+  to { background-position: 260% 0; }
+}
+
+.zc-esqueleto {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--foreground) 9%, transparent) 45%,
+    color-mix(in srgb, var(--foreground) 9%, transparent) 55%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  background-repeat: no-repeat;
+  animation: zc-esqueleto 1.5s ease-in-out infinite;
+}
+
+/* O aviso de demora nasce apagado e so aparece depois de alguns segundos:
+   dizer "esta demorando" de imediato ensinaria a esperar demora sempre. */
+@keyframes zc-esqueleto-aviso {
+  0%, 55% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.zc-esqueleto-aviso {
+  animation: zc-esqueleto-aviso 7s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Sem a varredura, o bloco cinza ja diz que o espaco esta reservado. */
+  .zc-esqueleto { animation: none; }
+  .zc-esqueleto-aviso { animation: none; opacity: 1; }
+}
+
+/* ---------------------------------------------------------------------------
    Tela do PRO.
    --------------------------------------------------------------------------- */
 

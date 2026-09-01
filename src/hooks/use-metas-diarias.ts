@@ -18,8 +18,11 @@ export interface MissaoEspecial { id:string; title:string; description:string; i
  * "Resolver 3 desafios na primeira tentativa" depende de acerto por questão,
  * que não existe em lugar nenhum da API — essa continua sem fonte.
  */
-export function useMetasDiarias(): { metas: MetaDoDia[]; especiais: MissaoEspecial[]; conectada: boolean; resgatar: (id: string) => Promise<number> } {
+export function useMetasDiarias(): { metas: MetaDoDia[]; especiais: MissaoEspecial[]; conectada: boolean; carregando: boolean; resgatar: (id: string) => Promise<number> } {
   const [metas, setMetas] = useState<MetaDoDia[]>([]); const [especiais, setEspeciais] = useState<MissaoEspecial[]>([]); const [conectada, setConectada] = useState(false);
+  // Comeca carregando, e nao vazio: sao duas chamadas a rede, e sem isso a
+  // tela pisca "nenhuma meta hoje" antes de os dados chegarem.
+  const [carregando, setCarregando] = useState(true);
   const carregar = useCallback(async () => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
@@ -36,6 +39,8 @@ export function useMetasDiarias(): { metas: MetaDoDia[]; especiais: MissaoEspeci
       setConectada(true);
     } catch {
       setConectada(false);
+    } finally {
+      setCarregando(false);
     }
   }, []);
   useEffect(() => { void carregar(); }, [carregar]);
@@ -55,5 +60,5 @@ export function useMetasDiarias(): { metas: MetaDoDia[]; especiais: MissaoEspeci
       return 0;
     }
   }, [carregar]);
-  return { metas, especiais, conectada, resgatar };
+  return { metas, especiais, conectada, carregando, resgatar };
 }

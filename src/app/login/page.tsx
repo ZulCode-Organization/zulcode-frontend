@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useRedirectIfAuth } from "@/hooks/useAuthGuard";
 import { AuthLogo } from "@/components/auth/AuthLogo";
 import { AuthShowcase } from "@/components/auth/AuthShowcase";
@@ -17,7 +18,9 @@ export default function LoginPage() {
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-24">
-        <LoginForm />
+        <Suspense fallback={<div className="h-[420px] w-full max-w-sm" />}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );

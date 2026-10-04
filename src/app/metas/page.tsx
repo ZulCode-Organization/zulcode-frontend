@@ -1,6 +1,7 @@
 "use client";
 
-import { Award, Clock, Coins, Flag, Trophy, Zap } from "lucide-react";
+import { Award, Clock, Flag, Trophy, Zap } from "lucide-react";
+import { Rupee } from "@/components/shared/rupee";
 import { useState } from "react";
 import Link from "next/link";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
@@ -15,10 +16,10 @@ const PERIODOS_PLURAL = { DAILY: "diárias", WEEKLY: "semanais", MONTHLY: "mensa
 function MetaItem({ meta, index, onClaim }: { meta: ReturnType<typeof useMetasDiarias>["metas"][number]; index: number; onClaim:(id:string)=>void }) {
   // Metas recorrentes sempre pagam moedas: o ícone comunica a recompensa,
   // não a atividade necessária para ganhá-la.
-  const Icon = Coins; const cor = "text-amber-500"; const pct = Math.min(100, Math.round((meta.current / meta.target) * 100));
+  const Icon = Rupee; const cor = "text-emerald-500"; const pct = Math.min(100, Math.round((meta.current / meta.target) * 100));
   const concluida = meta.completed;
   return <div className={`flex items-center gap-3 border-b border-border py-4 last:border-b-0 sm:gap-4.5 sm:py-5.5 ${concluida ? "opacity-55 grayscale" : ""}`}>
-    <span className={`relative flex size-9 shrink-0 items-center justify-center sm:size-11 ${concluida ? "text-muted-foreground" : cor}`}><Icon className="size-7 sm:size-9" /><span className="absolute -bottom-1 -right-1 grid min-w-5 place-items-center rounded-full bg-amber-400 px-1 py-0.5 text-[0.58rem] font-black leading-none text-amber-950 shadow-sm">+{meta.coinReward}</span></span>
+    <span className={`relative flex size-9 shrink-0 items-center justify-center sm:size-11 ${concluida ? "text-muted-foreground" : cor}`}><Icon className="size-7 sm:size-9" /><span className="absolute -bottom-1 -right-1 grid min-w-5 place-items-center rounded-full bg-emerald-500 px-1 py-0.5 text-[0.58rem] font-black leading-none text-emerald-950 shadow-sm">+{meta.coinReward}</span></span>
     <div className="min-w-0 flex-1"><p className={`text-[0.92rem] font-extrabold text-foreground text-pretty sm:text-base ${concluida ? "line-through" : ""}`}>{meta.title}</p>{meta.type === "DAILY_MINUTES" && <p className="mt-1 text-xs font-semibold text-muted-foreground">Faltam {Math.max(0, meta.target - meta.current)} min para sua meta de hoje.</p>}<div className="mt-2.5 flex items-center gap-2.5 sm:mt-3 sm:gap-3"><div className="relative h-5 flex-1 overflow-hidden rounded-xl bg-muted sm:h-[22px]"><div className={`absolute inset-y-0 left-0 rounded-xl ${concluida ? "bg-muted-foreground" : cor.replace("text-", "bg-")}`} style={{ width: `${pct}%` }} /><span className="absolute inset-0 flex items-center justify-center text-[0.78rem] font-black text-foreground drop-shadow-[0_1px_0_rgba(255,255,255,0.7)]">{meta.current} / {meta.target}{meta.type === "DAILY_MINUTES" ? " min" : ""}</span></div>{meta.claimable && !meta.isRankJourney && <button onClick={()=>onClaim(meta.id)} className="zc-press zc-press-shadow shrink-0 rounded-xl bg-amber-400 px-3 py-2 text-[0.66rem] font-black uppercase text-amber-950">Resgatar</button>}</div></div>
   </div>;
 }
@@ -57,7 +58,7 @@ function MetasContent() {
           <img src="/mascot.png" alt="" className="size-full object-contain" />
         </div>
       </div>
-      {moedas > 0 && <div className="animate-pop-in fixed left-1/2 top-20 z-50 -translate-x-1/2 rounded-2xl bg-amber-400 px-6 py-3 text-lg font-black text-amber-950 shadow-xl">+{moedas} moedas</div>}
+      {moedas > 0 && <div className="animate-pop-in fixed left-1/2 top-20 z-50 -translate-x-1/2 rounded-2xl bg-emerald-500 px-6 py-3 text-lg font-black text-emerald-950 shadow-xl">+{moedas} moedas</div>}
 
       <div className="mt-7 flex gap-2 border-b border-border"><button onClick={()=>setAba("metas")} className={`px-4 py-3 text-sm font-black ${aba === "metas" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>Metas</button><button onClick={()=>setAba("especiais")} className={`px-4 py-3 text-sm font-black ${aba === "especiais" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>Missões especiais</button></div>
       {carregando ? (

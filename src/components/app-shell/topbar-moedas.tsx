@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Coins } from "lucide-react";
+import { Rupee } from "@/components/shared/rupee";
 
 /**
  * Tela das moedas: mostra o saldo e leva pra Loja, que é onde elas são
@@ -12,8 +12,8 @@ export function PainelMoedas({ moedas, onNavegar }: { moedas: number | null; onN
   return (
     <div className="mx-auto w-full max-w-md pb-2">
       <div className="relative overflow-hidden rounded-[20px] border border-border bg-card px-5 py-6">
-        <Coins className="pointer-events-none absolute -right-3 top-1/2 size-32 -translate-y-1/2 text-yellow-500/15" aria-hidden />
-        <p className="relative text-5xl font-black leading-none text-yellow-500">
+        <Rupee className="pointer-events-none absolute -right-3 top-1/2 size-32 -translate-y-1/2 text-emerald-500/15" />
+        <p className="relative text-5xl font-black leading-none text-emerald-500">
           {moedas === null ? "—" : moedas.toLocaleString("pt-BR")}
         </p>
         <p className="relative mt-1.5 text-lg font-black">

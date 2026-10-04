@@ -49,7 +49,7 @@ export function PenaDesgastada({
       className={cn("relative inline-flex", tremendo && "zc-pena-desgasta")}
       title={`${restantes} de ${maximo} penas`}
     >
-      <Feather className={cn("size-5", className)} />
+      <Feather className={cn("size-5 fill-rose-500 text-rose-800", className)} />
     </span>
   );
 }
@@ -67,7 +67,7 @@ export function PenaDesgastada({
 export function PenaInfinita({ className }: { className?: string }) {
   return (
     <span className={cn("relative inline-flex text-violet-500", className)} title="Penas ilimitadas">
-      <Feather className={cn("size-5", className)} />
+      <Feather className={cn("size-5 fill-violet-500 text-violet-800", className)} />
       <Infinito
         aria-hidden
         // Canto de cima à direita, meio pra fora da pena, como um selo.

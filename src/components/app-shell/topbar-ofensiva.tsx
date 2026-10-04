@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Flame, ShieldCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
+import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { cn } from "@/lib/utils";
 
 const DIAS_DA_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -60,12 +61,11 @@ export function PainelOfensiva({ streakAtual, streakRecorde, protecoes, diasProt
     <div className="mx-auto w-full max-w-md pb-2">
       {/* Cabeçalho: o número grande com a chama atrás, como na referência. */}
       <div className="relative overflow-hidden rounded-[20px] border border-border bg-card px-5 py-6">
-        <Flame
-          className={cn("pointer-events-none absolute -right-3 top-1/2 size-32 -translate-y-1/2", sequencia > 0 ? "text-orange-500/15" : "text-muted-foreground/10")}
-          fill="currentColor"
-          aria-hidden
+        <ChamaDupla
+          className="pointer-events-none absolute -right-3 top-1/2 size-36 -translate-y-1/2 opacity-15"
+          aceso={sequencia > 0}
         />
-        <p className={cn("relative text-6xl font-black leading-none", sequencia > 0 ? "text-orange-500" : "text-muted-foreground/50")}>
+        <p className={cn("relative text-6xl font-black leading-none", sequencia > 0 ? "text-blue-600" : "text-muted-foreground/50")}>
           {sequencia}
         </p>
         <p className={cn("relative mt-1 text-lg font-black", sequencia > 0 ? "text-foreground" : "text-muted-foreground")}>
@@ -154,7 +154,7 @@ export function PainelOfensiva({ streakAtual, streakRecorde, protecoes, diasProt
                 {marcado && (ligaAntes || ligaDepois) && (
                   <span
                     className={cn(
-                      "absolute inset-y-1.5 bg-orange-500/15",
+                      "absolute inset-y-1.5 bg-blue-600/15",
                       ligaAntes ? "left-0" : "left-1/2",
                       ligaDepois ? "right-0" : "right-1/2"
                     )}
@@ -164,9 +164,9 @@ export function PainelOfensiva({ streakAtual, streakRecorde, protecoes, diasProt
                 <span
                   className={cn(
                     "relative flex size-8 items-center justify-center rounded-full text-[0.82rem] font-black",
-                    protegido ? "bg-sky-500 text-white" : marcado ? "bg-orange-500 text-white" : "text-muted-foreground",
+                    protegido ? "bg-sky-500 text-white" : marcado ? "bg-blue-600 text-white" : "text-muted-foreground",
                     ehHoje && !marcado && "ring-2 ring-inset ring-primary text-primary",
-                    ehHoje && marcado && "ring-2 ring-offset-2 ring-orange-500 ring-offset-card"
+                    ehHoje && marcado && "ring-2 ring-offset-2 ring-blue-600 ring-offset-card"
                   )}
                 >
                   {dia}

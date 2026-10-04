@@ -1,10 +1,11 @@
+import type { ComponentType } from "react";
+import { Rupee } from "@/components/shared/rupee";
 import {
   Award,
   BookOpen,
   Bug,
   CalendarCheck,
   Code2,
-  Coins,
   Feather,
   Flame,
   FlaskConical,
@@ -26,11 +27,11 @@ import {
   UserRound,
   Users,
   Zap,
-  type LucideIcon,
 } from "lucide-react";
 
 export interface EstiloConquista {
-  Icone: LucideIcon;
+  /** Aceita icone do lucide ou desenho proprio, como o Rupee. */
+  Icone: ComponentType<{ className?: string; strokeWidth?: number }>;
   /** Cor do traço. */
   cor: string;
   /** Fundo do ladrilho, na mesma cor e bem diluído. */
@@ -64,7 +65,7 @@ const POR_ID: Record<string, EstiloConquista> = {
 
   // Efeitos que vêm da loja: cada um usa o próprio símbolo, e não o da família
   "double-xp": { Icone: Zap, cor: "text-amber-400", fundo: "bg-amber-400/12" },
-  "double-coins": { Icone: Coins, cor: "text-yellow-400", fundo: "bg-yellow-400/12" },
+  "double-coins": { Icone: Rupee, cor: "text-emerald-400", fundo: "bg-emerald-400/12" },
   "feather-shield": { Icone: Shield, cor: "text-indigo-500", fundo: "bg-indigo-500/12" },
   "freeze-streak": { Icone: Snowflake, cor: "text-cyan-400", fundo: "bg-cyan-400/12" },
   "heal-one-life": { Icone: HeartPulse, cor: "text-pink-500", fundo: "bg-pink-500/12" },
@@ -75,7 +76,7 @@ const POR_ID: Record<string, EstiloConquista> = {
 const POR_FAMILIA: [string, EstiloConquista][] = [
   ["streak-", { Icone: Flame, cor: "text-orange-500", fundo: "bg-orange-500/12" }],
   ["xp-", { Icone: Zap, cor: "text-amber-500", fundo: "bg-amber-500/12" }],
-  ["coins-", { Icone: Coins, cor: "text-yellow-500", fundo: "bg-yellow-500/12" }],
+  ["coins-", { Icone: Rupee, cor: "text-emerald-500", fundo: "bg-emerald-500/12" }],
   ["lesson-", { Icone: BookOpen, cor: "text-blue-500", fundo: "bg-blue-500/12" }],
   ["unit-", { Icone: Layers, cor: "text-indigo-500", fundo: "bg-indigo-500/12" }],
   ["rank-", { Icone: Trophy, cor: "text-violet-500", fundo: "bg-violet-500/12" }],

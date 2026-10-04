@@ -321,20 +321,17 @@ function BotaoCurso({
   curso,
   ativo,
   onSelecionar,
-  indice = 0,
 }: {
   curso: CursoDaJornada;
   ativo: boolean;
   onSelecionar: (slug: string) => void;
-  /** Posição na faixa, só pra escalonar a entrada. */
-  indice?: number;
 }) {
   return (
     <button
       type="button"
       onClick={() => onSelecionar(curso.id)}
-      className="animate-fade-in-up flex shrink-0 flex-col items-center gap-2 pt-1"
-      style={{ width: LARGURA_LADRILHO, animationDelay: `${indice * 45}ms` }}
+      className="flex shrink-0 flex-col items-center gap-2 pt-1"
+      style={{ width: LARGURA_LADRILHO }}
     >
       <LadrilhoCurso curso={curso} ativo={ativo} px={ALTURA_LADRILHO} largura={LARGURA_LADRILHO} className="zc-press" />
       <span
@@ -366,8 +363,8 @@ export function FaixaCursosMobile({ cursos, cursoAtual, meusCursos, onSelecionar
           {...manipuladores}
           className="zc-scroll-hidden -mx-3 flex touch-pan-x select-none gap-3 overflow-x-auto overscroll-x-contain px-3 pb-1"
         >
-          {exibidos.map((curso, indice) => (
-            <BotaoCurso key={curso.id} curso={curso} ativo={curso.id === cursoAtual} onSelecionar={onSelecionar} indice={indice} />
+          {exibidos.map((curso) => (
+            <BotaoCurso key={curso.id} curso={curso} ativo={curso.id === cursoAtual} onSelecionar={onSelecionar} />
           ))}
 
           <button
@@ -390,7 +387,7 @@ export function FaixaCursosMobile({ cursos, cursoAtual, meusCursos, onSelecionar
 
         {/* Sombra na borda direita: sinaliza que a faixa continua. */}
         <span
-          className="pointer-events-none absolute -right-3 bottom-1 top-0 w-8 bg-gradient-to-l from-popover to-transparent"
+          className="pointer-events-none absolute -right-3 bottom-1 top-0 w-8 bg-gradient-to-l from-background to-transparent"
           aria-hidden
         />
       </div>

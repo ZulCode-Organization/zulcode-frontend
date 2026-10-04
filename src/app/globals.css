@@ -259,6 +259,37 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Selecao de texto.
+
+   O texto da interface nao e selecionavel; os campos de digitacao sao. Isso
+   nao impede ninguem de copiar de verdade -- quem abrir as ferramentas do
+   navegador ou desligar o CSS copia do mesmo jeito. O que isso resolve e
+   outra coisa: no celular, arrastar o dedo sobre um botao parava de rolar a
+   tela e abria o menu de "copiar", e no duplo toque a palavra ficava
+   marcada de azul.
+   --------------------------------------------------------------------------- */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  /* Sem isso o toque longo no iOS ainda abre o balao de copiar. */
+  -webkit-touch-callout: none;
+}
+
+/* O que a pessoa digita continua dela: selecionar, copiar e colar seguem
+   funcionando nos campos, inclusive no editor do Playground, que e um
+   textarea. Sem esta regra, nem recortar o proprio texto daria. */
+input,
+textarea,
+select,
+[contenteditable="true"],
+.zc-selecionavel,
+.zc-selecionavel * {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* ---------------------------------------------------------------------------
    Esqueleto de carregamento.
    --------------------------------------------------------------------------- */
 
@@ -519,4 +550,64 @@
 
 @media (prefers-reduced-motion: reduce) {
   .zc-chama, .zc-brasa { animation: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   Faixa de cursos do celular. Ela desce de trás da barra de status: o pai
+   recorta (overflow:hidden) e o conteúdo começa inteiro acima dele, então o
+   que aparece primeiro é a BORDA DE BAIXO do conteúdo — os nomes dos cursos —
+   e os ladrilhos vão surgindo acima deles conforme desce. É o oposto de um
+   painel que simplesmente cresce, e é o que dá a sensação de que a faixa
+   estava guardada atrás da barra.
+
+   Fora de @layer utilities pelo mesmo motivo das chamas do PRO: dentro da
+   camada o Tailwind v4 trata a regra como utilitário candidato e pode podá-la.
+   --------------------------------------------------------------------------- */
+@keyframes zc-cursos-desce {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+.zc-cursos-desce {
+  animation: zc-cursos-desce 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Promove a camada antes do primeiro quadro: sem isso o navegador monta a
+     textura com a animacao ja rodando, e o comeco sai travado. */
+  will-change: transform;
+}
+
+/* Recolher e o mesmo caminho de volta, um pouco mais rapido e com a curva
+   invertida: abrir desacelera no fim, fechar acelera ate sumir. Fechamento
+   lento parece travado, porque quem fechou ja decidiu. */
+@keyframes zc-cursos-sobe {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-100%); }
+}
+.zc-cursos-sobe {
+  animation: zc-cursos-sobe 0.24s cubic-bezier(0.3, 0, 0.8, 0.15) both;
+  will-change: transform;
+}
+
+@keyframes zc-cursos-fundo {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.zc-cursos-fundo {
+  animation: zc-cursos-fundo 0.25s ease both;
+}
+
+@keyframes zc-cursos-fundo-sai {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+.zc-cursos-fundo-sai {
+  animation: zc-cursos-fundo-sai 0.24s ease both;
+}
+
+/* Sem movimento, mas NAO sem animacao: quem desmonta a faixa e o animationend
+   do recolher. Com animation:none o evento nunca dispara e ela ficaria presa
+   na tela pra sempre. */
+@media (prefers-reduced-motion: reduce) {
+  .zc-cursos-desce,
+  .zc-cursos-sobe,
+  .zc-cursos-fundo,
+  .zc-cursos-fundo-sai { animation-duration: 1ms; }
 }

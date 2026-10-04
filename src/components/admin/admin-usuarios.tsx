@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Ban, Coins, Flame, Heart, Search, ShieldCheck, Sparkles, X, Zap } from "lucide-react";
+import { Ban, Heart, Search, ShieldCheck, Sparkles, X, Zap } from "lucide-react";
+import { ChamaDupla } from "@/components/shared/chama-dupla";
+import { Rupee } from "@/components/shared/rupee";
 import { API_BASE_URL } from "@/lib/api-config";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
 import { SeloVerificado } from "@/components/shared/selo-verificado";
@@ -74,7 +76,7 @@ function BotaoSelo({ usuario, campo, rotulo, cor, aoMudar }: { usuario: UsuarioA
 }
 
 /** Um número da ficha, com ícone. */
-function Medida({ Icone, rotulo, valor, cor }: { Icone: typeof Coins; rotulo: string; valor: number; cor: string }) {
+function Medida({ Icone, rotulo, valor, cor }: { Icone: React.ComponentType<{ className?: string }>; rotulo: string; valor: number; cor: string }) {
   return (
     <div className="rounded-2xl border bg-card p-3 text-center">
       <Icone className={cn("mx-auto size-4", cor)} />
@@ -170,9 +172,9 @@ function FichaUsuario({ usuario, aoFechar, recarregar }: { usuario: UsuarioAdmin
 
         <div className="mt-6 grid grid-cols-4 gap-2">
           <Medida Icone={Zap} rotulo="XP" valor={usuario.xp} cor="text-amber-500" />
-          <Medida Icone={Coins} rotulo="Moedas" valor={usuario.coins} cor="text-yellow-500" />
+          <Medida Icone={Rupee} rotulo="Moedas" valor={usuario.coins} cor="text-emerald-500" />
           <Medida Icone={Heart} rotulo="Penas" valor={usuario.lives} cor="text-rose-500" />
-          <Medida Icone={Flame} rotulo="Ofensiva" valor={usuario.currentStreak} cor="text-orange-500" />
+          <Medida Icone={ChamaDupla} rotulo="Ofensiva" valor={usuario.currentStreak} cor="text-blue-600" />
         </div>
 
         <section className="mt-7">

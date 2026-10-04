@@ -1,13 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Mail, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BotaoRelevo } from "@/components/shared/botao-relevo";
+import { BotoesSociais } from "@/components/auth/botoes-sociais";
 import { Input } from "@/components/ui/input";
 import { useLogin } from "@/hooks/useLogin";
 
 export function LoginForm() {
   const { email, setEmail, senha, setSenha, error, loading, handleSubmit } = useLogin();
+
+  // Quando a entrada por provedor falha, quem traz o motivo e a URL: a falha
+  // acontece fora daqui, do lado do Google ou do GitHub, e o backend devolve a
+  // pessoa pra esta tela com a explicacao.
+  const erroDaUrl = useSearchParams().get("erro");
+  const aviso = error || erroDaUrl;
 
   return (
     <div className="w-full max-w-sm animate-fade-in-up">
@@ -44,15 +52,15 @@ export function LoginForm() {
           Esqueci minha senha
         </Link>
 
-        {error && (
-          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-center text-sm text-destructive">
-            {error}
+        {aviso && (
+          <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-center text-sm text-destructive">
+            {aviso}
           </p>
         )}
 
-        <Button variant="default" size="lg" type="submit" disabled={loading} className="mt-2">
-          {loading ? "Entrando..." : "Entrar"}
-        </Button>
+        <BotaoRelevo type="submit" disabled={loading} className="mt-2">
+          {loading ? "Entrando…" : "Entrar"}
+        </BotaoRelevo>
       </form>
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
@@ -60,6 +68,10 @@ export function LoginForm() {
           Voltar para a tela inicial
         </Link>
       </p>
+
+      <div className="mt-7">
+        <BotoesSociais />
+      </div>
     </div>
   );
 }

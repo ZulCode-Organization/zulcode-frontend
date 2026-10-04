@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { Coins, Flame, Heart, Plus, Shield, Sparkles, Trash2, X, Zap } from "lucide-react";
+import { Flame, Heart, Plus, Shield, Sparkles, Trash2, X, Zap } from "lucide-react";
+import { Rupee } from "@/components/shared/rupee";
 import { API_BASE_URL } from "@/lib/api-config";
 import { BotaoAcao } from "@/components/admin/botao-acao";
 import { chamarAdmin, useAcao } from "@/components/admin/use-acao";
@@ -15,13 +16,13 @@ type ItemLoja = { id: string; title: string; description: string; price: number;
  * próprio ícone e cor, então o item se reconhece de relance na listagem em vez
  * de virar mais uma linha de texto igual às outras.
  */
-const EFEITOS: { valor: EfeitoLoja; rotulo: string; Icone: typeof Heart; cor: string }[] = [
+const EFEITOS: { valor: EfeitoLoja; rotulo: string; Icone: React.ComponentType<{ className?: string }>; cor: string }[] = [
   { valor: "RECOVER_LIVES", rotulo: "Recuperar penas", Icone: Heart, cor: "text-rose-500" },
   { valor: "HEAL_ONE_LIFE", rotulo: "Recuperar uma pena", Icone: Heart, cor: "text-pink-500" },
   { valor: "FREEZE_STREAK", rotulo: "Congelar ofensiva", Icone: Flame, cor: "text-sky-500" },
   { valor: "FEATHER_SHIELD", rotulo: "Escudo de pena", Icone: Shield, cor: "text-indigo-500" },
   { valor: "DOUBLE_XP", rotulo: "XP em dobro", Icone: Zap, cor: "text-amber-500" },
-  { valor: "DOUBLE_COINS", rotulo: "Moedas em dobro", Icone: Coins, cor: "text-yellow-500" },
+  { valor: "DOUBLE_COINS", rotulo: "Moedas em dobro", Icone: Rupee, cor: "text-emerald-500" },
 ];
 
 const efeitoDe = (valor: EfeitoLoja) => EFEITOS.find((e) => e.valor === valor);
@@ -188,7 +189,7 @@ export default function AdminLoja() {
 
                 <div className="mt-4 flex items-center justify-between gap-3">
                   <span className="flex items-center gap-1.5 text-sm font-black text-yellow-600 dark:text-yellow-400">
-                    <Coins className="size-4" /> {item.price}
+                    <Rupee className="size-4" /> {item.price}
                     <span className="ml-2 font-bold text-muted-foreground">{efeito?.rotulo ?? item.effect}</span>
                   </span>
                   <div className="flex shrink-0 gap-2">

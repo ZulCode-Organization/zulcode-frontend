@@ -25,10 +25,20 @@ export interface PerfilUsuario {
   xpNecessarioNivel: number | null;
   /** XP que falta pro próximo nível; null quando já está no nível máximo. */
   xpProximoNivel: number | null;
+  /** Quantas pessoas seguem essa conta, e quantas ela segue. */
+  seguidores?: number;
+  seguindo?: number;
+  /** Eu sigo essa conta? So vem no perfil de outra pessoa, e e a base contra a
+   * qual o contador se corrige enquanto o botao e clicado. */
+  euSigo?: boolean;
   /** Quando a conta foi criada (createdAt da API), pro "por aqui desde". */
   membroDesde?: string | null;
   streakAtual: number;
   streakRecorde: number;
+  /** Última vez que a pessoa estudou. É o que diz se a sequência de hoje
+   * já foi feita — o streak sozinho não distingue "5 dias, inclusive hoje"
+   * de "5 dias, e hoje ainda não". */
+  ultimaAtividade?: string | null;
   streakFreezes?: number;
   /** Dias em que uma proteção impediu a quebra da sequência (YYYY-MM-DD). */
   protectedStreakDays?: string[];

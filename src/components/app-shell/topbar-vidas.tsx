@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Coins, Feather, Infinity as InfinityIcon } from "lucide-react";
+import { Feather, Infinity as InfinityIcon } from "lucide-react";
+import { Rupee } from "@/components/shared/rupee";
 import { cn } from "@/lib/utils";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { usePerfil } from "@/hooks/use-perfil";
@@ -166,7 +167,7 @@ export function PainelVidas({ onNavegar }: { onNavegar?: () => void }) {
             </span>
           </span>
           <span className={cn("flex shrink-0 items-center gap-1 text-[0.9rem] font-black", podePagar ? "text-yellow-500" : "text-muted-foreground")}>
-            <Coins className="size-4.5" />
+            <Rupee className="size-4.5" />
             {item.price}
           </span>
         </button>

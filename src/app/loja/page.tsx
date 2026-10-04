@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Coins,
   Feather,
   Check,
   Gift,
@@ -20,6 +19,7 @@ import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { usePerfil } from "@/hooks/use-perfil";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
+import { Rupee } from "@/components/shared/rupee";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
 import { cn } from "@/lib/utils";
 
@@ -212,8 +212,8 @@ function Store() {
                 Troque suas moedas por power-ups e personalizações
               </p>
             </div>
-            <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-amber-400/10 px-3 py-2 sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2.5">
-              <Coins className="size-5 text-amber-400 sm:size-6" />
+            <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-emerald-500/10 px-3 py-2 sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2.5">
+              <Rupee className="size-5 text-emerald-500 sm:size-6" />
               <span className="text-lg font-black text-amber-400 sm:text-xl">
                 {perfil?.moedas?.toLocaleString("pt-BR") ?? "—"}
               </span>
@@ -411,7 +411,7 @@ function PowerCard({
     <article className="animate-fade-in-up group flex flex-row overflow-hidden rounded-[18px] border border-border bg-card transition-colors duration-200 hover:border-primary/50 sm:min-h-56 sm:flex-col sm:rounded-[20px]">
       {/* Vitrine: o ícone grande sobre o âmbar da moeda, que é a cor do
           power-up no app inteiro. */}
-      <div className="relative grid w-[86px] shrink-0 place-items-center bg-amber-400/10 sm:h-24 sm:w-auto">
+      <div className="relative grid w-[86px] shrink-0 place-items-center bg-emerald-500/10 sm:h-24 sm:w-auto">
         <Icon className="size-8 text-amber-400 transition-transform duration-200 group-hover:scale-110 sm:size-10" />
         {disabled && (
           <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-[0.6rem] font-black uppercase tracking-[0.06em] text-white">
@@ -427,8 +427,8 @@ function PowerCard({
         <p className="mt-1 line-clamp-2 flex-1 text-[0.7rem] leading-relaxed text-muted-foreground sm:mt-1.5 sm:line-clamp-none sm:text-xs">{item.description}</p>
 
         <div className="mt-2.5 flex items-center justify-between gap-2 sm:mt-4 sm:gap-3">
-          <b className="flex items-center gap-1.5 text-[0.95rem] font-black text-amber-400">
-            <Coins className="size-4" />
+          <b className="flex items-center gap-1.5 text-[0.95rem] font-black text-emerald-500">
+            <Rupee className="size-4" />
             {item.price}
           </b>
           <button
@@ -506,10 +506,10 @@ function CosmeticCard({
           <b
             className={cn(
               "flex items-center gap-1.5 text-[0.95rem] font-black",
-              item.owned ? "text-muted-foreground line-through" : "text-amber-400"
+              item.owned ? "text-muted-foreground line-through" : "text-emerald-500"
             )}
           >
-            <Coins className="size-4" />
+            <Rupee className="size-4" />
             {item.price}
           </b>
           <button

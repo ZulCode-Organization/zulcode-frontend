@@ -59,17 +59,17 @@ function MoldeAtividade({ progresso, vidas, vidasIlimitadas, onSair, children, r
           type="button"
           onClick={onSair}
           aria-label="Sair da lição"
-          className="flex size-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground"
+          className="flex size-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground"
         >
-          <X className="size-5" />
+          <X className="size-6" strokeWidth={2.6} />
         </button>
-        <div className="h-3 flex-1 overflow-hidden rounded-full bg-muted">
+        <div className="h-5 flex-1 overflow-hidden rounded-full bg-muted">
           <div
             className="h-full rounded-full bg-primary transition-[width] duration-300"
             style={{ width: `${progresso}%` }}
           />
         </div>
-        <span className="flex shrink-0 items-center gap-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm font-black text-rose-500" title={vidasIlimitadas ? "Penas ilimitadas" : `${vidas} penas restantes`}>{vidasIlimitadas ? <PenaInfinita className="size-4" /> : <><PenaDesgastada restantes={vidas} className="size-4" />{vidas}</>}</span>
+        <span className="flex shrink-0 items-center gap-1.5 text-sm font-black text-rose-500" title={vidasIlimitadas ? "Penas ilimitadas" : `${vidas} penas restantes`}>{vidasIlimitadas ? <PenaInfinita className="size-8" /> : <><PenaDesgastada restantes={vidas} className="size-8" />{vidas}</>}</span>
       </div>
 
       <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 pb-4 lg:px-8">

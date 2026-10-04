@@ -1,7 +1,9 @@
 "use client";
 
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { Coins, Flame, ShieldCheck } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { ShieldCheck } from "lucide-react";
+import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { usePerfil } from "@/hooks/use-perfil";
 import { useCursos } from "@/hooks/use-cursos";
 import { cn } from "@/lib/utils";
@@ -11,6 +13,8 @@ import { PainelOfensiva } from "./topbar-ofensiva";
 import { PainelMoedas } from "./topbar-moedas";
 import { PainelVidas } from "./topbar-vidas";
 import { PenaDesgastada, PenaInfinita } from "@/components/shared/pena-desgastada";
+import { Rupee } from "@/components/shared/rupee";
+import { sequenciaAtivaHoje } from "@/lib/sequencia";
 
 type Painel = "curso" | "ofensiva" | "moedas" | "vidas" | "todos-cursos" | null;
 
@@ -83,7 +87,16 @@ export function AppTopBar() {
   const ehMobile = useEhMobile();
   const [painel, setPainel] = useState<Painel>(null);
   const [cursoAfundado, setCursoAfundado] = useState(false);
+  // A faixa de cursos do celular precisa sobreviver ao clique que a fecha:
+  // sem isso o React a desmonta na hora e ela some de uma vez, sem recolher.
+  // Quem a tira do DOM é o animationend do recolhimento.
+  const [faixaRecolhendo, setFaixaRecolhendo] = useState(false);
   const barraRef = useRef<HTMLDivElement>(null);
+
+  // Os chips so existem na trilha. Em Loja, Perfil, Metas e companhia
+  // eles nao tinham o que fazer: sao atalhos do estudo, e ali so repetiam
+  // informacao que a propria pagina ja mostra.
+  const naTrilha = usePathname() === "/home";
 
   // Cada chip é a âncora do próprio popover, que vive num portal no body.
   const ancoraCurso = useRef<HTMLDivElement>(null);
@@ -110,8 +123,18 @@ export function AppTopBar() {
     };
   }, []);
 
-  const fechar = () => setPainel(null);
-  const alternar = (alvo: Exclude<Painel, null>) => setPainel((atual) => (atual === alvo ? null : alvo));
+  const fechar = () => {
+    if (ehMobile && painel === "curso") setFaixaRecolhendo(true);
+    setPainel(null);
+  };
+  const alternar = (alvo: Exclude<Painel, null>) => {
+    if (painel === alvo) {
+      fechar();
+      return;
+    }
+    setFaixaRecolhendo(false);
+    setPainel(alvo);
+  };
 
   /** `teto` corta o número no chip pra ele não empurrar os vizinhos: acima
    * dele vira "teto+". O valor cheio continua aparecendo dentro do painel. */
@@ -138,11 +161,23 @@ export function AppTopBar() {
     onAbrirTodos: () => setPainel("todos-cursos"),
   };
 
+  // O fogo so acende quando a sequencia existe e foi feita hoje. Zero apaga,
+  // e "fiz ontem, hoje ainda nao" tambem — nos dois casos a pessoa precisa
+  // estudar, e uma chama acesa ali diria o contrario.
+  const sequenciaAcesa = sequenciaAtivaHoje(perfil?.streakAtual, perfil?.ultimaAtividade);
+
   const baseCurso = ehMobile ? CURSO_BASE.mobile : CURSO_BASE.desktop;
   const cursoAltura = ehMobile ? CURSO_ALTURA.mobile : CURSO_ALTURA.desktop;
   const cursoLargura = ehMobile ? CURSO_LARGURA.mobile : CURSO_LARGURA.desktop;
 
   const celula = "relative z-30 flex min-w-0 justify-center lg:justify-end";
+
+  // Fora da trilha sobra so o respiro do topo. E a mesma div medida, entao
+  // --zc-topbar-h continua sendo publicada (agora com a altura menor) e o
+  // painel da direita gruda no lugar certo em vez de cair no fallback de 72px.
+  if (!naTrilha) {
+    return <div ref={barraRef} className="sticky top-0 z-20 bg-background px-3 pt-3 sm:px-4 sm:pt-4" />;
+  }
 
   return (
     <div ref={barraRef} className="sticky top-0 z-20 bg-background px-3 pb-1 pt-3 sm:px-4 sm:pt-4 lg:pb-0 lg:pl-8 lg:pr-5 xl:pr-7">
@@ -198,8 +233,13 @@ export function AppTopBar() {
 
         {/* 2. Ofensiva */}
         <div ref={ancoraOfensiva} className={celula}>
-          <Chip rotulo="Dias seguidos" cor="text-orange-500" aberto={painel === "ofensiva"} onClick={() => alternar("ofensiva")}>
-            <Flame className="size-6 fill-current lg:size-5" />
+          <Chip
+            rotulo={sequenciaAcesa ? "Dias seguidos" : "Estude hoje para manter a sequência"}
+            cor={sequenciaAcesa ? "text-blue-600" : "text-muted-foreground"}
+            aberto={painel === "ofensiva"}
+            onClick={() => alternar("ofensiva")}
+          >
+            <ChamaDupla className="size-7 lg:size-6" aceso={sequenciaAcesa} />
             {valor(perfil?.streakAtual, 1000)}
             {protecoes > 0 && (
               <span className="flex items-center gap-0.5 text-sky-500" title="Proteções de sequência">
@@ -212,8 +252,8 @@ export function AppTopBar() {
 
         {/* 3. Moedas */}
         <div ref={ancoraMoedas} className={celula}>
-          <Chip rotulo="Moedas" cor="text-yellow-500" aberto={painel === "moedas"} onClick={() => alternar("moedas")}>
-            <Coins className="size-6 lg:size-5" />
+          <Chip rotulo="Moedas" cor="text-emerald-500" aberto={painel === "moedas"} onClick={() => alternar("moedas")}>
+            <Rupee className="size-6 lg:size-5" />
             {valor(perfil?.moedas, 999)}
           </Chip>
         </div>
@@ -237,23 +277,60 @@ export function AppTopBar() {
           </Chip>
         </div>
 
-        {/* Faixa de cursos do celular: abre logo abaixo da barra, sem empurrar
-            o conteúdo (é um menu, não parte do layout). */}
-        {ehMobile && painel === "curso" && (
+        {/* Faixa de cursos do celular: desce de trás da barra, cobrindo o
+            conteúdo sem empurrá-lo (é um menu, não parte do layout). */}
+        {ehMobile && (painel === "curso" || faixaRecolhendo) && (
           <>
-            <div className="fixed inset-0 z-20 lg:hidden" onClick={fechar} role="presentation" />
-            {/* Balão: cresce a partir do canto de cima à esquerda, que é onde
-                fica o botão de curso, com a setinha apontando pra ele. */}
-            <div className="absolute left-0 right-0 top-full z-30 pt-2 lg:hidden">
-              <div className="animate-pop-in relative origin-top-left rounded-[20px] border border-border bg-popover p-3 shadow-2xl">
-                <span
-                  className="absolute -top-[7px] left-[42px] size-3 rotate-45 border-l border-t border-border bg-popover"
-                  aria-hidden
-                />
-                <div className="relative">
+            {/* Escurece o que está embaixo pra faixa virar o foco. Começa no
+                fim da barra, e não em inset-0: cobrindo a barra também, os
+                próprios chips apagariam junto. */}
+            <div
+              className={cn(
+                "fixed inset-x-0 bottom-0 z-20 bg-background/70 lg:hidden",
+                faixaRecolhendo ? "zc-cursos-fundo-sai" : "zc-cursos-fundo"
+              )}
+              style={{ top: "var(--zc-topbar-h, 0px)" }}
+              onClick={fechar}
+              role="presentation"
+            />
+            <div className="absolute inset-x-0 top-full z-30 lg:hidden">
+              {/* O quadro parado: sangra até as bordas da tela (o -mx cancela o
+                  px do container), recorta a faixa e segura a linha que separa
+                  da barra. Transparente de propósito — a cor vai no pedaço que
+                  se move, logo abaixo. */}
+              <div className="-mx-3 overflow-hidden border-t border-border sm:-mx-4">
+                {/* O pedaço que se move, fundo incluso. O fundo precisa viajar
+                    junto: parado no quadro de cima, ele ficava na altura cheia
+                    enquanto o conteúdo subia e só sumia de uma vez no fim — era
+                    a engasgada do recolhimento.
+
+                    Recortado pelo pai, nasce inteiro acima e desce, então
+                    aparece de baixo pra cima: primeiro os nomes, depois os
+                    ladrilhos. */}
+                <div
+                  className={cn(
+                    "bg-background px-3 pb-3 pt-3 sm:px-4",
+                    faixaRecolhendo ? "zc-cursos-sobe" : "zc-cursos-desce"
+                  )}
+                  // Só o fim do recolhimento desmonta. O mesmo evento dispara
+                  // ao abrir, daí a guarda do estado; e a do alvo garante que uma
+                  // animação de algum filho não arranque a faixa da tela no meio.
+                  onAnimationEnd={(evento) => {
+                    if (evento.target !== evento.currentTarget) return;
+                    if (faixaRecolhendo) setFaixaRecolhendo(false);
+                  }}
+                >
                   <FaixaCursosMobile {...propsDaLista} />
                 </div>
               </div>
+              {/* Bico apontando pro botão de curso. Ele é a 1ª de 4 colunas
+                  iguais e fica centralizado nela, então o centro cai em 12,5%
+                  da largura — medida, não chutada. */}
+              <span
+                className="absolute top-0 size-3 -translate-x-1/2 -translate-y-1/2 rotate-45 border-l border-t border-border bg-background"
+                style={{ left: "12.5%" }}
+                aria-hidden
+              />
             </div>
           </>
         )}
@@ -317,8 +394,8 @@ export function AppTopBar() {
         <TopbarSheet
           titulo="Cursos"
           direita={
-            <span className="flex items-center gap-1 text-[0.9rem] font-black text-yellow-500">
-              <Coins className="size-4.5" />
+            <span className="flex items-center gap-1 text-[0.9rem] font-black text-emerald-500">
+              <Rupee className="size-4.5" />
               {valor(perfil?.moedas, 999)}
             </span>
           }

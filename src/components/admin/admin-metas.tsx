@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { Coins, Plus, Target, Trash2, X } from "lucide-react";
+import { Plus, Target, Trash2, X } from "lucide-react";
+import { Rupee } from "@/components/shared/rupee";
 import { API_BASE_URL } from "@/lib/api-config";
 import { BotaoAcao } from "./botao-acao";
 import { chamarAdmin, useAcao } from "./use-acao";
@@ -155,7 +156,7 @@ export function AdminMetas() {
                   </p>
                 </div>
                 <span className="flex shrink-0 items-center gap-1.5 text-sm font-black text-yellow-600 dark:text-yellow-400">
-                  <Coins className="size-4" /> {meta.coinReward}
+                  <Rupee className="size-4" /> {meta.coinReward}
                 </span>
                 <div className="flex shrink-0 gap-2">
                   <button

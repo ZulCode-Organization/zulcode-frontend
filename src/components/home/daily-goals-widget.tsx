@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Coins } from "lucide-react";
+import { Rupee } from "@/components/shared/rupee";
 import { useEffect, useState } from "react";
 import { useMetasDiarias } from "@/hooks/use-metas-diarias";
 
@@ -63,7 +63,7 @@ export function DailyGoalsWidget() {
         </p>
       )}
 
-      {recompensa > 0 && <p role="status" className="animate-pop-in mb-4 rounded-xl bg-amber-400 px-3 py-2 text-center text-xs font-black text-amber-950">+{recompensa} moedas adicionadas!</p>}
+      {recompensa > 0 && <p role="status" className="animate-pop-in mb-4 rounded-xl bg-emerald-500 px-3 py-2 text-center text-xs font-black text-emerald-950">+{recompensa} moedas adicionadas!</p>}
       {erro && <p role="alert" className="mb-4 rounded-xl bg-destructive/10 px-3 py-2 text-center text-xs font-bold text-destructive">{erro}</p>}
 
       <div className="flex flex-col gap-4">
@@ -74,8 +74,8 @@ export function DailyGoalsWidget() {
           return (
             <div key={meta.id} className="animate-fade-in-up flex items-center gap-4 py-1">
               <span className="relative flex size-10.5 shrink-0 items-center justify-center rounded-xl bg-amber-400/15 text-amber-500">
-                <Coins className="size-6" />
-                <span className="absolute -bottom-1 -right-1 grid min-w-5 place-items-center rounded-full bg-amber-400 px-1 py-0.5 text-[0.58rem] font-black leading-none text-amber-950 shadow-sm">+{meta.coinReward}</span>
+                <Rupee className="size-6" />
+                <span className="absolute -bottom-1 -right-1 grid min-w-5 place-items-center rounded-full bg-emerald-500 px-1 py-0.5 text-[0.58rem] font-black leading-none text-emerald-950 shadow-sm">+{meta.coinReward}</span>
               </span>
 
               <div className="min-w-0 flex-1">

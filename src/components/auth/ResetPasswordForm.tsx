@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, KeyRound, Lock, Mail, MailCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BotaoRelevo } from "@/components/shared/botao-relevo";
 import { Input } from "@/components/ui/input";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 
@@ -163,9 +163,9 @@ export function ResetPasswordForm() {
               icon={<Mail className="size-4" />}
             />
             {erro && <Aviso texto={erro} />}
-            <Button size="lg" onClick={pedirCodigo} disabled={carregando} className="mt-2">
-              {carregando ? "Enviando..." : "Enviar código"}
-            </Button>
+            <BotaoRelevo onClick={pedirCodigo} disabled={carregando} className="mt-2">
+              {carregando ? "Enviando…" : "Enviar código"}
+            </BotaoRelevo>
           </div>
         </>
       )}
@@ -193,9 +193,9 @@ export function ResetPasswordForm() {
               className="text-center text-lg font-black tracking-[0.4em]"
             />
             {erro && <Aviso texto={erro} />}
-            <Button size="lg" onClick={conferirCodigo} disabled={carregando} className="mt-2">
-              {carregando ? "Conferindo..." : "Continuar"}
-            </Button>
+            <BotaoRelevo onClick={conferirCodigo} disabled={carregando} className="mt-2">
+              {carregando ? "Conferindo…" : "Continuar"}
+            </BotaoRelevo>
 
             <button
               type="button"
@@ -236,9 +236,9 @@ export function ResetPasswordForm() {
               icon={<Lock className="size-4" />}
             />
             {erro && <Aviso texto={erro} />}
-            <Button size="lg" onClick={salvarSenha} disabled={carregando} className="mt-2">
-              {carregando ? "Salvando..." : "Salvar nova senha"}
-            </Button>
+            <BotaoRelevo onClick={salvarSenha} disabled={carregando} className="mt-2">
+              {carregando ? "Salvando…" : "Salvar nova senha"}
+            </BotaoRelevo>
           </div>
         </>
       )}
@@ -252,9 +252,9 @@ export function ResetPasswordForm() {
           <p className="mt-2 text-sm text-muted-foreground">
             Agora é só entrar com a senha nova.
           </p>
-          <Button size="lg" onClick={() => router.push("/login")} className="mt-7 w-full">
+          <BotaoRelevo onClick={() => router.push("/login")} className="mt-7">
             Ir para o login
-          </Button>
+          </BotaoRelevo>
         </div>
       )}
 

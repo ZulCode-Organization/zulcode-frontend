@@ -10,12 +10,17 @@ import { SeloVerificado } from "@/components/shared/selo-verificado";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
 import { usePerfil } from "@/hooks/use-perfil";
 import { LadrilhoCurso } from "@/components/app-shell/topbar-cursos";
+import { BotaoSeguir } from "./botao-seguir";
+import { useSeguir } from "@/hooks/use-seguir";
 
 interface ProfileHeaderProps {
   /** Abre a tela de edição do perfil. Só faz sentido com `editavel`. */
   onEditar?: () => void;
   perfil: PerfilUsuario;
   editavel?: boolean;
+  /** Id de quem esta sendo visitado, quando o perfil nao e o meu. Com ele o
+   * cabecalho ganha o botao de seguir; sem ele, so os contadores. */
+  seguirId?: string;
 }
 
 /** "novembro de 2025", a partir do createdAt que a API devolve. */
@@ -26,19 +31,36 @@ function mesEAno(iso: string) {
 }
 
 /**
- * Segue / seguidores. O backend não tem sistema de amizade — nenhum model,
- * nenhuma rota — então os números ficam em zero e o bloco vem marcado como
- * "em breve". Colocar um contador qualquer aqui seria inventar relação social
- * que não existe.
+ * Segue / seguidores, e o botao quando o perfil nao e o meu.
+ *
+ * O numero de seguidores leva uma correcao ao vivo: o botao muda de estado
+ * antes da resposta do servidor, e um contador que so acerta ao recarregar
+ * faria o botao dizer "Seguindo" ao lado de um numero parado. A correcao e a
+ * diferenca entre o que o servidor disse quando a pagina carregou e o que vale
+ * agora, entao ela some sozinha na proxima carga, sem acumular.
  */
-function ContadoresSociais() {
+function ContadoresSociais({ perfil, seguirId }: { perfil: PerfilUsuario; seguirId?: string }) {
+  const { sigo, carregado } = useSeguir();
+
+  // A base e o que o servidor disse quando a pagina carregou, e nao o primeiro
+  // valor do store: na primeira renderizacao o /follows/me ainda nao voltou, e
+  // partir de "nao sigo" faria o contador somar um a mais assim que chegasse.
+  const base = perfil.euSigo ?? false;
+  const agora = seguirId && carregado ? sigo(seguirId) : base;
+  const correcao = agora === base ? 0 : agora ? 1 : -1;
+  const seguidores = Math.max(0, (perfil.seguidores ?? 0) + correcao);
+  const seguindo = perfil.seguindo ?? 0;
+
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm font-black">
-      <span className="text-muted-foreground">Segue 0</span>
-      <span className="text-muted-foreground">Tem 0 seguidores</span>
-      <span className="rounded-md bg-muted px-2 py-0.5 text-[0.6rem] uppercase tracking-[0.08em] text-muted-foreground">
-        Em breve
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-black">
+      <span className="text-foreground">
+        {seguindo.toLocaleString("pt-BR")} <span className="text-muted-foreground">seguindo</span>
       </span>
+      <span className="text-foreground">
+        {seguidores.toLocaleString("pt-BR")}{" "}
+        <span className="text-muted-foreground">{seguidores === 1 ? "seguidor" : "seguidores"}</span>
+      </span>
+      {seguirId && <BotaoSeguir id={seguirId} className="px-3 py-2 text-[0.68rem]" />}
     </div>
   );
 }
@@ -110,7 +132,7 @@ const BANNER_TESTER = "linear-gradient(135deg, #172554, #2563eb, #60a5fa)";
 const BANNER_PRO = "linear-gradient(135deg, #7c3aed, #d946ef 55%, #f0abfc)";
 const BANNER_RICHARD = "linear-gradient(135deg, #111827, #1e3a8a 52%, #38bdf8)";
 
-export function ProfileHeader({ perfil, editavel = true, onEditar }: ProfileHeaderProps) {
+export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: ProfileHeaderProps) {
   const { salvarDados, cursosEmAndamento, cursosConcluidos } = usePerfil();
   const cursos = [...cursosEmAndamento, ...cursosConcluidos];
   const nivelMaximo = perfil.xpNecessarioNivel === null;
@@ -206,7 +228,7 @@ export function ProfileHeader({ perfil, editavel = true, onEditar }: ProfileHead
           </p>
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
-            <ContadoresSociais />
+            <ContadoresSociais perfil={perfil} seguirId={seguirId} />
             {/* Os cursos da pessoa viram só estes ladrilhos: o card que os
                 listava embaixo saiu, então entram aqui os dois grupos — em
                 andamento e concluídos — pra nenhum sumir da tela. */}

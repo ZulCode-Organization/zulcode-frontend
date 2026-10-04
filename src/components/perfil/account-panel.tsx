@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { limparPerfilCache } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
+import { limparSeguidos } from "@/hooks/use-seguir";
 import { limparCursosCache } from "@/hooks/use-cursos";
 import { ativarNotificacoesNativas } from "@/lib/push-notifications";
 
@@ -22,6 +23,7 @@ export function AccountPanel() {
     // anterior.
     limparPerfilCache();
     limparTrilhaCache();
+    limparSeguidos();
     limparCursosCache();
     router.replace("/welcome");
   };

@@ -8,6 +8,7 @@ import { UserAvatar } from "@/components/shared/user-avatar";
 import { SeloVerificado } from "@/components/shared/selo-verificado";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { useArrastarFaixa } from "@/hooks/use-arrastar-faixa";
+import { BotaoSeguir } from "./botao-seguir";
 
 interface Sugestao {
   id: string;
@@ -34,11 +35,14 @@ function chaveDispensados(perfilId?: string | null) {
 /**
  * Sugestões de pessoas pra seguir.
  *
- * São usuários **reais** da plataforma, tirados do GET /leaderboard — não é
- * grafo social: o backend não guarda quem segue quem, então não dá pra dizer
- * "fulano segue". Por isso o card mostra o nível e o XP da pessoa, que é
- * informação de verdade, e o botão leva ao perfil dela em vez de "seguir",
- * que não existe do outro lado.
+ * São usuários **reais** da plataforma, tirados do GET /leaderboard. Não há
+ * recomendação por afinidade — o que existe é quem está jogando —, então o
+ * card mostra nível e XP, que é informação de verdade sobre a pessoa.
+ *
+ * Quem você já segue continua na faixa, com o botão dizendo "Seguindo".
+ * Sumir com o card no instante do clique faria o próximo subir pro lugar e o
+ * toque seguinte cair em quem você nem viu — e quem quiser tirar alguém da
+ * lista já tem o X no canto do card.
  */
 export function SugestoesAmigos() {
   const { perfil } = usePerfil();
@@ -156,28 +160,23 @@ export function SugestoesAmigos() {
                 <X className="size-4" />
               </button>
 
-              <UserAvatar
-                iniciais={pessoa.name.slice(0, 2).toUpperCase()}
-                avatarId={pessoa.avatarId}
-                bannerColor={pessoa.bannerColor}
-                size="md"
-                className="[&>div]:rounded-full [&>div]:ring-0"
-              />
-              <p className="mt-3 w-full truncate font-black text-foreground">{pessoa.name}{pessoa.isVerified && <SeloVerificado className="ml-1 text-[0.9rem]" />}</p>
-              <p className="mt-0.5 w-full truncate text-[0.8rem] text-muted-foreground">
-                Nível {pessoa.level} · {pessoa.xp.toLocaleString("pt-BR")} XP
-              </p>
-
-              {/* "Seguir" não existe no backend; o que dá pra fazer de verdade é
-                  abrir o perfil da pessoa. */}
-              <Link
-                href={`/perfil/${pessoa.id}`}
-                draggable={false}
-                className="zc-press zc-press-shadow mt-4 w-full rounded-[14px] bg-primary py-3 text-[0.78rem] font-black uppercase tracking-[0.06em] text-primary-foreground"
-                style={{ ["--zc-press-color" as string]: "rgba(0,0,0,0.32)" }}
-              >
-                Ver perfil
+              {/* O retrato e o nome levam ao perfil; o botão embaixo segue. Eram
+                  a mesma coisa antes, porque seguir não existia. */}
+              <Link href={`/perfil/${pessoa.id}`} draggable={false} className="flex w-full flex-col items-center">
+                <UserAvatar
+                  iniciais={pessoa.name.slice(0, 2).toUpperCase()}
+                  avatarId={pessoa.avatarId}
+                  bannerColor={pessoa.bannerColor}
+                  size="md"
+                  className="[&>div]:rounded-full [&>div]:ring-0"
+                />
+                <p className="mt-3 w-full truncate font-black text-foreground">{pessoa.name}{pessoa.isVerified && <SeloVerificado className="ml-1 text-[0.9rem]" />}</p>
+                <p className="mt-0.5 w-full truncate text-[0.8rem] text-muted-foreground">
+                  Nível {pessoa.level} · {pessoa.xp.toLocaleString("pt-BR")} XP
+                </p>
               </Link>
+
+              <BotaoSeguir id={pessoa.id} larguraCheia className="mt-4" />
             </div>
           ))}
         </div>

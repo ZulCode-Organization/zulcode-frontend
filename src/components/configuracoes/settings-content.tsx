@@ -7,6 +7,7 @@ import { Bell, BellRing, ChevronRight, Loader2, LogOut, Palette, ShieldCheck, Su
 import { useTheme } from "next-themes";
 import { limparPerfilCache, usePerfil } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
+import { limparSeguidos } from "@/hooks/use-seguir";
 import { limparCursosCache } from "@/hooks/use-cursos";
 import { ativarNotificacoesNativas } from "@/lib/push-notifications";
 import { cn } from "@/lib/utils";
@@ -96,6 +97,7 @@ export function SettingsContent() {
     localStorage.removeItem("accessToken");
     limparPerfilCache();
     limparTrilhaCache();
+    limparSeguidos();
     limparCursosCache();
     router.replace("/welcome");
   };

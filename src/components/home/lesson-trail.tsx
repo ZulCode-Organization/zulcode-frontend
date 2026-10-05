@@ -14,10 +14,37 @@ interface LessonTrailProps {
 const SHAKE_MS = 400;
 const HIGHLIGHT_MS = 900;
 
-/** Zigue-zague do redesign: começa à esquerda, vai pra direita e volta —
- * o índice roda por todas as unidades sem resetar, senão o desenho pulava
- * de forma estranha bem na virada de cada unidade. */
-const ALINHAMENTO = ["justify-start", "justify-end", "justify-center"] as const;
+/** Quantos nós cabem numa volta inteira da serpente. Oito dá os dois lados
+ * com um meio-termo entre eles: centro, meio, ponta, meio, centro, e o mesmo
+ * do outro lado. */
+const PASSOS_DA_VOLTA = 8;
+/** Afastamento máximo do centro, em px.
+ *
+ * O valor sai da proporção medida na referência: a amplitude é ~0,8 do passo
+ * vertical entre dois nós. É essa razão que faz a trilha ler como serpente — e
+ * ela é a mesma em qualquer tela, porque é a forma do desenho, não um limite de
+ * espaço. Uma amplitude maior no computador transformava a curva num ziguezague
+ * largo, com os nós soltos em vez de encadeados. */
+const AMPLITUDE = 80;
+
+/**
+ * O deslocamento lateral de cada nó.
+ *
+ * Antes isto era uma lista de três alinhamentos (esquerda, direita, centro)
+ * girando com %3. Como a lista reinicia, o nó saltava do centro direto pra
+ * esquerda a cada três — o desenho virava uma escada, com degraus retos e um
+ * pulo na volta.
+ *
+ * O seno não tem volta: ele passa pelos meios-termos nos dois sentidos e emenda
+ * o fim do ciclo no começo sem degrau. É o que faz a trilha ler como uma
+ * serpente em vez de uma escada.
+ *
+ * O índice corre por todas as unidades sem resetar, senão o desenho daria um
+ * salto bem na virada de cada uma.
+ */
+function deslocamentoDoNo(indice: number) {
+  return Math.round(Math.sin((indice / PASSOS_DA_VOLTA) * Math.PI * 2) * AMPLITUDE);
+}
 
 /** Faixa fina perto do topo (abaixo da barra de status + cabeçalho fixo) —
  * a unidade cujo bloco cruza essa faixa vira a "ativa" no cabeçalho. */
@@ -85,7 +112,7 @@ export function LessonTrail({ unidades }: LessonTrailProps) {
 
       {/* Coluna estreita (290px) centralizada: o deslocamento dos nós acontece
           dentro dela, então a trilha nunca gera scroll horizontal na página. */}
-      <div className="mx-auto mt-7 flex max-w-[290px] flex-col items-center gap-4 pb-3">
+      <div className="mx-auto mt-7 flex max-w-[300px] flex-col items-center gap-3 pb-3">
         {unidades.map((unidade, unidadeIndex) => (
           <div
             key={unidade.id}
@@ -93,7 +120,7 @@ export function LessonTrail({ unidades }: LessonTrailProps) {
               unidadeRefs.current[unidadeIndex] = el;
             }}
             data-unidade-index={unidadeIndex}
-            className="flex w-full flex-col items-center gap-4"
+            className="flex w-full flex-col items-center gap-3"
           >
             {unidadeIndex > 0 && (
               // Linha cortando a trilha pra separar as unidades, com o
@@ -107,7 +134,7 @@ export function LessonTrail({ unidades }: LessonTrailProps) {
             )}
 
             {unidade.licoes.map((licao) => {
-              const alinhamento = ALINHAMENTO[indiceGlobal % 3];
+              const deslocamento = deslocamentoDoNo(indiceGlobal);
               const delay = indiceGlobal * 80;
               indiceGlobal += 1;
 
@@ -117,8 +144,12 @@ export function LessonTrail({ unidades }: LessonTrailProps) {
                   ref={(el) => {
                     nodeRefs.current[licao.id] = el;
                   }}
-                  className={`animate-fade-in-up flex w-full ${alinhamento}`}
-                  style={{ animationDelay: `${delay}ms` }}
+                  // O desvio vai em `left`, e não em transform: o
+                  // animate-fade-in-up termina em `transform: translateY(0)`
+                  // com fill-mode both, e animação vence estilo inline — um
+                  // translateX aqui era apagado e a trilha saía toda reta.
+                  className="animate-fade-in-up relative flex w-full justify-center"
+                  style={{ animationDelay: `${delay}ms`, left: `${deslocamento}px` }}
                 >
                   <LessonNode
                     licao={licao}

@@ -64,11 +64,11 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
                 colado na barra. */}
             {rightPanel &&
               (rightPanelVariant === "sticky-bottom" ? (
-                <StickyBottomPanel className="hidden w-[300px] shrink-0 self-start lg:block xl:w-[360px]">
+                <StickyBottomPanel className="hidden w-[340px] shrink-0 self-start lg:block xl:w-[410px]">
                   <div className="flex flex-col gap-4 px-5 pb-10 pt-5 xl:px-7">{rightPanel}</div>
                 </StickyBottomPanel>
               ) : (
-                <aside className="sticky hidden w-[300px] shrink-0 flex-col gap-4 self-start px-5 pb-10 pt-5 lg:flex xl:w-[360px] xl:px-7" style={{ top: "var(--zc-topbar-h, 72px)" }}>
+                <aside className="sticky hidden w-[340px] shrink-0 flex-col gap-4 self-start px-5 pb-10 pt-5 lg:flex xl:w-[410px] xl:px-7" style={{ top: "var(--zc-topbar-h, 72px)" }}>
                   {rightPanel}
                 </aside>
               ))}

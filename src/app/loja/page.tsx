@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { usePerfil } from "@/hooks/use-perfil";
+import { GasOfensiva } from "@/components/shared/gas-ofensiva";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { Rupee } from "@/components/shared/rupee";
@@ -62,7 +63,7 @@ const powerIcon = (effect: Item["effect"]) =>
   effect === "RECOVER_LIVES"
     ? Feather
     : effect === "FREEZE_STREAK"
-    ? ShieldCheck
+    ? GasOfensiva
     : effect === "FEATHER_SHIELD"
     ? ShieldCheck
     : effect === "DOUBLE_COINS"

@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ChamaDupla } from "@/components/shared/chama-dupla";
+import { GasOfensiva } from "@/components/shared/gas-ofensiva";
 import { cn } from "@/lib/utils";
 
 const DIAS_DA_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -64,6 +65,7 @@ export function PainelOfensiva({ streakAtual, streakRecorde, protecoes, diasProt
         <ChamaDupla
           className="pointer-events-none absolute -right-3 top-1/2 size-36 -translate-y-1/2 opacity-15"
           aceso={sequencia > 0}
+          protegido={protecoes > 0}
         />
         <p className={cn("relative text-6xl font-black leading-none", sequencia > 0 ? "text-blue-600" : "text-muted-foreground/50")}>
           {sequencia}
@@ -78,22 +80,21 @@ export function PainelOfensiva({ streakAtual, streakRecorde, protecoes, diasProt
         )}
       </div>
 
-      {/* Proteções de sequência: o item existe na loja (FREEZE_STREAK), então o
-          card leva pra lá em vez de prometer algo que não dá pra fazer aqui. */}
+      {/* Gás de ofensiva: o item existe na loja, então o card leva pra lá em vez de prometer algo que não dá pra fazer aqui. */}
       <div className="mt-3 flex items-center gap-3 rounded-[20px] border border-border bg-card px-4 py-4">
         <span
           className={cn(
             "flex size-11 shrink-0 items-center justify-center rounded-2xl",
-            protecoes > 0 ? "bg-sky-500/15 text-sky-500" : "bg-muted text-muted-foreground"
+            protecoes > 0 ? "bg-violet-500/15" : "bg-muted"
           )}
         >
-          <ShieldCheck className="size-6" />
+          <GasOfensiva className="size-6" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[0.9rem] font-black leading-snug">
             {protecoes > 0
-              ? `Você tem ${protecoes} ${protecoes === 1 ? "proteção" : "proteções"} de ofensiva`
-              : "Você está sem proteção de ofensiva!"}
+              ? `Você tem ${protecoes} ${protecoes === 1 ? "gás" : "gases"} de ofensiva`
+              : "Você está sem gás de ofensiva!"}
           </p>
           <Link
             href="/loja"

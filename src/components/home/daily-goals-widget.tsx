@@ -73,9 +73,9 @@ export function DailyGoalsWidget() {
 
           return (
             <div key={meta.id} className="animate-fade-in-up flex items-center gap-4 py-1">
-              <span className="relative flex size-10.5 shrink-0 items-center justify-center rounded-xl bg-amber-400/15 text-amber-500">
+              <span className="relative flex size-10.5 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-500">
                 <Rupee className="size-6" />
-                <span className="absolute -bottom-1 -right-1 grid min-w-5 place-items-center rounded-full bg-emerald-500 px-1 py-0.5 text-[0.58rem] font-black leading-none text-emerald-950 shadow-sm">+{meta.coinReward}</span>
+                <span className="absolute -bottom-1 -right-1 grid min-w-5 place-items-center rounded-full bg-amber-400 px-1 py-0.5 text-[0.58rem] font-black leading-none text-amber-950 shadow-sm">+{meta.coinReward}</span>
               </span>
 
               <div className="min-w-0 flex-1">

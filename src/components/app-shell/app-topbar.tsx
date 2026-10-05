@@ -2,7 +2,6 @@
 
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
 import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { usePerfil } from "@/hooks/use-perfil";
 import { useCursos } from "@/hooks/use-cursos";
@@ -37,10 +36,8 @@ interface ChipProps {
 }
 
 /**
- * Chip de ofensiva, moedas e penas. No celular é só ícone + número, como na
- * referência; do lg pra cima (mesmo corte que liga a sidebar) ele ganha a
- * moldura do card. A peça afunda ao ser apertada com a sombra sumindo junto —
- * o `zc-press` de sempre.
+ * Chip de ofensiva, moedas e penas: ícone + número, sem moldura, em qualquer
+ * largura. A peça ainda afunda ao ser apertada — o `zc-press` de sempre.
  *
  * O botão de curso não passa por aqui: ele é montado em duas camadas, com
  * base sólida na cor do próprio curso, como o cabeçalho da Jornada.
@@ -55,15 +52,16 @@ function Chip({ rotulo, cor, aberto, onClick, children }: ChipProps) {
       aria-haspopup="dialog"
       aria-expanded={aberto}
       className={cn(
-        // zc-chip-sombra, e não zc-press-shadow: a sombra sólida só existe do
-        // lg pra cima, onde o chip tem o corpo do card pra apoiar. No celular
-        // ele é só ícone + número, e a barra escura ficaria solta embaixo.
-        "zc-press zc-chip-sombra flex h-11 min-w-0 items-center justify-center gap-1.5 rounded-2xl px-1 text-[1.05rem] font-extrabold transition-colors duration-150",
-        "lg:w-auto lg:gap-2 lg:border lg:bg-card lg:px-2.5 lg:text-[0.95rem]",
-        aberto ? "bg-muted lg:border-primary lg:bg-card" : "lg:border-border",
+        // Sem moldura em tamanho nenhum: ícone + número, como no celular. A
+        // sombra sólida saiu junto — ela existia pra apoiar o corpo do card, e
+        // sozinha viraria uma barra escura solta embaixo do ícone.
+        "zc-press flex h-11 min-w-0 items-center justify-center gap-1.5 rounded-2xl px-1 text-[1.05rem] font-extrabold transition-colors duration-150",
+        "lg:w-auto lg:gap-2 lg:px-1.5 lg:text-[0.95rem]",
+        // O fundo ao abrir é o que sobrou pra dizer qual painel está aberto,
+        // já que não há mais borda pra acender.
+        aberto && "bg-muted",
         cor
       )}
-      style={{ ["--zc-press-color" as string]: "rgba(0,0,0,0.18)" }}
     >
       {children}
     </button>
@@ -239,21 +237,15 @@ export function AppTopBar() {
             aberto={painel === "ofensiva"}
             onClick={() => alternar("ofensiva")}
           >
-            <ChamaDupla className="size-7 lg:size-6" aceso={sequenciaAcesa} />
+            <ChamaDupla className="size-8 lg:size-7" aceso={sequenciaAcesa} protegido={protecoes > 0} />
             {valor(perfil?.streakAtual, 1000)}
-            {protecoes > 0 && (
-              <span className="flex items-center gap-0.5 text-sky-500" title="Proteções de sequência">
-                <ShieldCheck className="size-5 lg:size-4" />
-                {protecoes}
-              </span>
-            )}
           </Chip>
         </div>
 
         {/* 3. Moedas */}
         <div ref={ancoraMoedas} className={celula}>
           <Chip rotulo="Moedas" cor="text-emerald-500" aberto={painel === "moedas"} onClick={() => alternar("moedas")}>
-            <Rupee className="size-6 lg:size-5" />
+            <Rupee className="size-7 lg:size-6" />
             {valor(perfil?.moedas, 999)}
           </Chip>
         </div>
@@ -267,10 +259,10 @@ export function AppTopBar() {
             onClick={() => alternar("vidas")}
           >
             {perfil?.isPro ? (
-              <PenaInfinita className="size-6 lg:size-5" />
+              <PenaInfinita className="size-7 lg:size-6" />
             ) : (
               <>
-                <PenaDesgastada restantes={perfil?.vidas ?? 5} className="size-6 lg:size-5" />
+                <PenaDesgastada restantes={perfil?.vidas ?? 5} className="size-7 lg:size-6" />
                 {valor(perfil?.vidas)}
               </>
             )}

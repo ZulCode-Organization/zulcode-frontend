@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePerfil } from "@/hooks/use-perfil";
+import { SeloPro } from "@/components/shared/selo-pro";
 
 /**
  * Card PRO do painel direito (formato do redesign), levando pra Loja.
@@ -25,9 +26,7 @@ export function ProCard() {
     >
       <div className="flex items-start gap-4">
         <div className="min-w-0 flex-1">
-          <span className="inline-block rounded-md bg-violet-600 px-2.5 py-1 text-[0.75rem] font-black uppercase tracking-[0.12em] text-white">
-            Pro
-          </span>
+          <SeloPro />
           <h3 className="mt-2.5 text-base font-black text-foreground">
             O ZulCode PRO tá chegando
           </h3>

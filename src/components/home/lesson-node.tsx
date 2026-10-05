@@ -34,7 +34,7 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
   };
 
   return (
-    <div className="flex w-[136px] flex-col items-center gap-2">
+    <div className="flex w-[120px] flex-col items-center gap-2">
       {estado === "atual" && (
         // Balão "Começar" flutuando por cima do nó (animate-float), bem
         // colado nele. Some com uma transição quando o popup abre, e volta
@@ -62,19 +62,19 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
           de verdade em vez de só escurecer. Raio fixo em px (não o token
           --radius, que escala com rem) pra manter a proporção sempre igual —
           arredondado o bastante pra não parecer quadrado, sem virar círculo. */}
-      <div className="relative size-[96px] h-[104px]">
+      <div className="relative size-[84px] h-[92px]">
         {/* Anel só aparece durante o pulso de destaque (voltar pra lição
             atual) — antes ficava sempre visível e virava uma sombra
             esbranquiçada atrás do nó o tempo todo. */}
         {estado === "atual" && highlighted && (
           <span
-            className="absolute left-0 top-0 size-[96px] rounded-[34px] bg-foreground/10 animate-pulse-ring"
+            className="absolute left-0 top-0 size-[84px] rounded-[30px] bg-foreground/10 animate-pulse-ring"
             aria-hidden
           />
         )}
 
         <span
-          className={cn("absolute left-[8px] top-[17px] size-[80px] rounded-[30px]", preenchido ? "bg-primary brightness-75" : "bg-border")}
+          className={cn("absolute left-[6px] top-[15px] size-[72px] rounded-[26px]", preenchido ? "bg-primary brightness-75" : "bg-border")}
           aria-hidden
         />
 
@@ -85,7 +85,7 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
           aria-disabled={bloqueada}
           onClick={handleClick}
           className={cn(
-            "absolute left-[8px] top-[8px] flex size-[80px] items-center justify-center rounded-[30px] transition-[top] duration-100 active:top-[15px]",
+            "absolute left-[6px] top-[6px] flex size-[72px] items-center justify-center rounded-[26px] transition-[top] duration-100 active:top-[13px]",
             preenchido && "bg-primary text-primary-foreground",
             estado === "disponivel" && "border-2 border-primary bg-card text-primary",
             bloqueada && "cursor-not-allowed border-2 border-border bg-muted text-muted-foreground/60",
@@ -93,9 +93,9 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
           )}
         >
           {bloqueada ? (
-            <Lock className="size-7" />
+            <Lock className="size-6" />
           ) : (
-            <CodeXml className="size-8" strokeWidth={2.75} />
+            <CodeXml className="size-7" strokeWidth={2.75} />
           )}
 
           {estado === "concluida" && (

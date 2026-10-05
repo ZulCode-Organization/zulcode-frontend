@@ -19,7 +19,7 @@ type ItemLoja = { id: string; title: string; description: string; price: number;
 const EFEITOS: { valor: EfeitoLoja; rotulo: string; Icone: React.ComponentType<{ className?: string }>; cor: string }[] = [
   { valor: "RECOVER_LIVES", rotulo: "Recuperar penas", Icone: Heart, cor: "text-rose-500" },
   { valor: "HEAL_ONE_LIFE", rotulo: "Recuperar uma pena", Icone: Heart, cor: "text-pink-500" },
-  { valor: "FREEZE_STREAK", rotulo: "Congelar ofensiva", Icone: Flame, cor: "text-sky-500" },
+  { valor: "FREEZE_STREAK", rotulo: "Gás de ofensiva", Icone: Flame, cor: "text-violet-500" },
   { valor: "FEATHER_SHIELD", rotulo: "Escudo de pena", Icone: Shield, cor: "text-indigo-500" },
   { valor: "DOUBLE_XP", rotulo: "XP em dobro", Icone: Zap, cor: "text-amber-500" },
   { valor: "DOUBLE_COINS", rotulo: "Moedas em dobro", Icone: Rupee, cor: "text-emerald-500" },

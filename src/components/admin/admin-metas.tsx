@@ -212,7 +212,7 @@ export function AdminMetas() {
                   <input name="target" type="number" min="1" required defaultValue={editando.target} className="mt-1.5 w-full rounded-xl border bg-background p-3 font-bold tabular-nums outline-none focus:border-primary" />
                 </label>
                 <label className="block text-sm font-black">
-                  Moedas
+                  Rupees
                   <input name="coinReward" type="number" min="0" required defaultValue={editando.coinReward} className="mt-1.5 w-full rounded-xl border bg-background p-3 font-bold tabular-nums outline-none focus:border-primary" />
                 </label>
                 <label className="block text-sm font-black">

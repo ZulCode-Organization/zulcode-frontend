@@ -41,7 +41,7 @@ const COMPARACAO: { grupo: string; linhas: { recurso: string; gratis: boolean | 
     grupo: "Avançar mais rápido",
     linhas: [
       { recurso: "XP em dobro", gratis: false, pro: true, max: true },
-      { recurso: "Moedas em dobro", gratis: false, pro: false, max: true },
+      { recurso: "Rupees em dobro", gratis: false, pro: false, max: true },
       { recurso: "Proteção de ofensiva", gratis: false, pro: true, max: true },
       { recurso: "Escudo de pena", gratis: false, pro: false, max: true },
     ],

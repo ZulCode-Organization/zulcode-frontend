@@ -11,6 +11,9 @@ export interface PessoaSocial {
   xp: number;
   nivel: number;
   nivelLabel: string;
+  /** Dias seguidos. Vem junto da lista pra tela de ofensiva poder ordenar os
+   * amigos sem uma consulta por pessoa. */
+  currentStreak: number;
 }
 
 /** O que o backend responde depois de seguir ou deixar de seguir: ja traz os

@@ -162,7 +162,7 @@ function Store() {
     if ((perfil?.moedas ?? 0) < item.price)
       return setNotice({
         title: "Saldo insuficiente",
-        message: `Você tem ${perfil?.moedas ?? 0} moedas e este item custa ${
+        message: `Você tem ${perfil?.moedas ?? 0} Rupees e este item custa ${
           item.price
         }.`,
         error: true,
@@ -180,7 +180,7 @@ function Store() {
     if (!item.owned && (perfil?.moedas ?? 0) < item.price)
       return setNotice({
         title: "Saldo insuficiente",
-        message: `Você tem ${perfil?.moedas ?? 0} moedas e este item custa ${
+        message: `Você tem ${perfil?.moedas ?? 0} Rupees e este item custa ${
           item.price
         }.`,
         error: true,
@@ -210,7 +210,7 @@ function Store() {
             <div className="min-w-0">
               <h1 className="text-xl font-black tracking-tight sm:text-2xl">Loja</h1>
               <p className="mt-0.5 hidden text-sm text-muted-foreground sm:block">
-                Troque suas moedas por power-ups e personalizações
+                Troque suas Rupees por power-ups e personalizações
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-emerald-500/10 px-3 py-2 sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2.5">
@@ -349,7 +349,7 @@ function Store() {
                       }
                     >
                       {item.amount > 0 ? "+" : ""}
-                      {item.amount} moedas
+                      {item.amount} Rupees
                     </span>
                   </div>
                 ))}

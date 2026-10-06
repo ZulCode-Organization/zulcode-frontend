@@ -3,12 +3,18 @@
 import Link from "next/link";
 import { usePerfil } from "@/hooks/use-perfil";
 import { SeloPro } from "@/components/shared/selo-pro";
+import { DIAS_DE_TESTE } from "@/lib/pro/planos";
 
 /**
- * Card PRO do painel direito (formato do redesign), levando pra Loja.
- * Roxo sólido próprio (violet-600), separado do --primary azul do resto do
- * app — é assim que o card se destaca como "premium" em vez de se misturar
- * com qualquer outro botão azul da tela.
+ * Card PRO do painel direito.
+ *
+ * É o mesmo banner da tela de Rupees do celular — mesmo degradê, mesmo texto,
+ * mesmo botão branco. O PRO aparece em vários cantos do app, e ter uma cara
+ * diferente em cada um faz parecer que são ofertas diferentes.
+ *
+ * O degradê vai em `style` porque tem quatro paradas de cor; classe arbitrária
+ * desse tipo nem sempre vira CSS, e aqui o erro seria silencioso — o card
+ * ficaria transparente, com texto branco sobre o fundo da página.
  */
 export function ProCard() {
   const { perfil } = usePerfil();
@@ -22,29 +28,18 @@ export function ProCard() {
   return (
     <Link
       href="/pro"
-      className="animate-fade-in-up block rounded-[20px] border border-border bg-card p-6 transition-colors duration-150 hover:border-violet-500/40"
+      className="animate-fade-in-up block overflow-hidden rounded-[20px] p-5"
+      style={{ background: "linear-gradient(120deg, #4f63e3 0%, #8a63e6 48%, #bd73e9 100%)" }}
     >
-      <div className="flex items-start gap-4">
-        <div className="min-w-0 flex-1">
-          <SeloPro />
-          <h3 className="mt-2.5 text-base font-black text-foreground">
-            O ZulCode PRO tá chegando
-          </h3>
-          <p className="mt-1 text-[0.85rem] leading-snug text-muted-foreground">
-            Vidas ilimitadas, XP em dobro e zero anúncios.
-          </p>
-        </div>
-
-        <div className="flex size-[68px] shrink-0 items-center justify-center">
-          <img src="/mascot.png" alt="" className="size-full object-contain" />
-        </div>
-      </div>
-
-      <span
-        className="zc-press zc-press-shadow mt-4 block rounded-[13px] bg-violet-600 py-4 text-center text-[0.82rem] font-black uppercase tracking-[0.06em] text-white"
-        style={{ ["--zc-press-color" as string]: "rgba(0,0,0,0.32)" }}
-      >
-        Conhecer o PRO
+      <SeloPro className="h-6" />
+      <p className="mt-3 text-[1.25rem] font-black leading-tight text-white">
+        Tudo pra você aprender mais rápido
+      </p>
+      <p className="mt-1.5 text-[0.85rem] leading-snug text-white/80">
+        Penas ilimitadas, XP em dobro e sem anúncios.
+      </p>
+      <span className="zc-press mt-4 block rounded-[14px] bg-white py-3.5 text-center text-[0.8rem] font-black uppercase tracking-[0.06em] text-violet-700">
+        Teste {DIAS_DE_TESTE} dias grátis
       </span>
     </Link>
   );

@@ -172,7 +172,7 @@ function FichaUsuario({ usuario, aoFechar, recarregar }: { usuario: UsuarioAdmin
 
         <div className="mt-6 grid grid-cols-4 gap-2">
           <Medida Icone={Zap} rotulo="XP" valor={usuario.xp} cor="text-amber-500" />
-          <Medida Icone={Rupee} rotulo="Moedas" valor={usuario.coins} cor="text-emerald-500" />
+          <Medida Icone={Rupee} rotulo="Rupees" valor={usuario.coins} cor="text-emerald-500" />
           <Medida Icone={Heart} rotulo="Penas" valor={usuario.lives} cor="text-rose-500" />
           <Medida Icone={ChamaDupla} rotulo="Ofensiva" valor={usuario.currentStreak} cor="text-blue-600" />
         </div>
@@ -200,7 +200,7 @@ function FichaUsuario({ usuario, aoFechar, recarregar }: { usuario: UsuarioAdmin
           </p>
           <div className="mt-3 grid grid-cols-3 gap-2">
             {[
-              { rotulo: "Moedas", valor: moedas, set: setMoedas },
+              { rotulo: "Rupees", valor: moedas, set: setMoedas },
               { rotulo: "XP", valor: xp, set: setXp },
               { rotulo: "Penas", valor: penas, set: setPenas },
             ].map((campo) => (
@@ -371,7 +371,7 @@ export function AdminUsers() {
                   {usuario.isVerified && <SeloVerificado className="text-[0.95rem]" />}
                 </span>
                 <span className="block truncate text-sm text-muted-foreground">
-                  {usuario.email} · {usuario.xp} XP · {usuario.coins} moedas
+                  {usuario.email} · {usuario.xp} XP · {usuario.coins} Rupees
                 </span>
               </span>
               <span className="hidden shrink-0 gap-1.5 sm:flex">

@@ -49,13 +49,12 @@ export function UnitBanner({ unidade, cor, unidades, onUnidadeClick }: UnitBanne
   const concluidas = unidade?.licoes?.filter((l) => l.estado === "concluida").length ?? 0;
 
   return (
-    // A camada de fora só cuida de grudar no topo: --zc-banner-top é a altura
-    // medida da barra de status no celular, e 12px do lg pra cima, onde o
-    // cabeçalho sobe pra dentro da faixa vazia da barra (zc-banner-topo).
-    // Nenhum visual mora aqui — o corpo do botão são as duas camadas de dentro.
+    // A camada de fora só cuida de grudar no topo, na altura medida da barra
+    // de status. Nenhum visual mora aqui — o corpo do botão são as duas
+    // camadas de dentro.
     <div
       ref={bannerRef}
-      className="zc-banner-topo animate-fade-in-up sticky z-10"
+      className="zc-banner-sobe animate-fade-in-up sticky z-10"
       style={{ top: "var(--zc-banner-top, 72px)" }}
     >
       <div className="relative">

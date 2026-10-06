@@ -460,15 +460,30 @@ select,
 /* ---------------------------------------------------------------------------
    Cabeçalho da Jornada.
 
-   No celular os chips da barra ocupam a largura toda, então o cabeçalho tem
-   mesmo que ficar abaixo dela. Do lg pra cima os chips vivem só na coluna da
-   direita, e a faixa da barra em cima da trilha fica vazia — então o cabeçalho
-   sobe pra dentro dela (margem negativa) e passa a ficar por cima (z-index),
-   ganhando a altura quase inteira da barra. Nenhuma outra tela é afetada: a
-   barra continua ocupando espaço normal no fluxo.
+   Ele gruda logo abaixo da barra de status, usando a altura medida dela. No
+   computador sobe um pouco pra dentro da barra, aproveitando a faixa vazia à
+   esquerda dos chips.
    --------------------------------------------------------------------------- */
 :root {
   --zc-banner-top: var(--zc-topbar-h, 72px);
+}
+
+@media (min-width: 1024px) {
+  :root {
+    /* Quanto o cabeçalho sobe pra dentro da barra, aproveitando a faixa vazia
+       à esquerda dos chips.
+
+       O min() com a própria altura da barra é a trava: o puxão nunca passa do
+       espaço que existe acima. A versão antiga puxava pela diferença entre a
+       altura medida e o encaixe, e bastava a medida vir maior que a barra real
+       pra o topo sair da área rolável e ser cortado. */
+    --zc-banner-sobe: min(44px, var(--zc-topbar-h, 72px));
+    --zc-banner-top: calc(var(--zc-topbar-h, 72px) - var(--zc-banner-sobe));
+  }
+  .zc-banner-sobe {
+    margin-top: calc(-1 * var(--zc-banner-sobe));
+    z-index: 30;
+  }
 }
 
 /* O guia de unidades desenrola de dentro do cabeçalho, em vez de aparecer
@@ -496,15 +511,6 @@ select,
   }
 }
 
-@media (min-width: 1024px) {
-  :root {
-    --zc-banner-top: 20px;
-  }
-  .zc-banner-topo {
-    margin-top: calc((var(--zc-topbar-h, 72px) - var(--zc-banner-top)) * -1);
-    z-index: 30;
-  }
-}
 
 
 /* ---------------------------------------------------------------------------

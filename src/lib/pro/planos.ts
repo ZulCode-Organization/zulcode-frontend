@@ -60,7 +60,7 @@ export const PLANOS: Plano[] = [
     // empacotamento, não a existência delas. Confirme ou troque antes de abrir
     // a venda: prometer o que não se entrega é o jeito mais rápido de perder
     // uma assinatura logo no primeiro mês.
-    recursos: ["Moedas em dobro", "Escudo de pena", "Playground sem limites", "Suporte prioritário"],
+    recursos: ["Rupees em dobro", "Escudo de pena", "Playground sem limites", "Suporte prioritário"],
   },
 ];
 

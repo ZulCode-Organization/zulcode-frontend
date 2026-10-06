@@ -244,9 +244,9 @@ export function AppTopBar() {
 
         {/* 3. Moedas */}
         <div ref={ancoraMoedas} className={celula}>
-          <Chip rotulo="Moedas" cor="text-emerald-500" aberto={painel === "moedas"} onClick={() => alternar("moedas")}>
+          <Chip rotulo="Rupees" cor="text-emerald-500" aberto={painel === "moedas"} onClick={() => alternar("moedas")}>
             <Rupee className="size-7 lg:size-6" />
-            {valor(perfil?.moedas, 999)}
+            {valor(perfil?.moedas, 99999)}
           </Chip>
         </div>
 
@@ -346,7 +346,7 @@ export function AppTopBar() {
       )}
 
       {!ehMobile && painel === "moedas" && (
-        <TopbarPopover ancora={ancoraMoedas} rotulo="Moedas" largura={320} onClose={fechar}>
+        <TopbarPopover ancora={ancoraMoedas} rotulo="Rupees" largura={320} onClose={fechar}>
           <div className="p-4">
             <PainelMoedas moedas={perfil?.moedas ?? null} onNavegar={fechar} />
           </div>
@@ -369,7 +369,7 @@ export function AppTopBar() {
       )}
 
       {ehMobile && painel === "moedas" && (
-        <TopbarSheet titulo="Moedas" onClose={fechar}>
+        <TopbarSheet titulo="Rupees" onClose={fechar}>
           <PainelMoedas moedas={perfil?.moedas ?? null} onNavegar={fechar} />
         </TopbarSheet>
       )}
@@ -388,7 +388,7 @@ export function AppTopBar() {
           direita={
             <span className="flex items-center gap-1 text-[0.9rem] font-black text-emerald-500">
               <Rupee className="size-4.5" />
-              {valor(perfil?.moedas, 999)}
+              {valor(perfil?.moedas, 99999)}
             </span>
           }
           onClose={fechar}

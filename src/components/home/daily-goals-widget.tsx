@@ -63,7 +63,7 @@ export function DailyGoalsWidget() {
         </p>
       )}
 
-      {recompensa > 0 && <p role="status" className="animate-pop-in mb-4 rounded-xl bg-emerald-500 px-3 py-2 text-center text-xs font-black text-emerald-950">+{recompensa} moedas adicionadas!</p>}
+      {recompensa > 0 && <p role="status" className="animate-pop-in mb-4 rounded-xl bg-emerald-500 px-3 py-2 text-center text-xs font-black text-emerald-950">+{recompensa} Rupees adicionadas!</p>}
       {erro && <p role="alert" className="mb-4 rounded-xl bg-destructive/10 px-3 py-2 text-center text-xs font-bold text-destructive">{erro}</p>}
 
       <div className="flex flex-col gap-4">

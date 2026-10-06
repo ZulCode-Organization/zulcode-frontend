@@ -58,7 +58,7 @@ function MetasContent() {
           <img src="/mascot.png" alt="" className="size-full object-contain" />
         </div>
       </div>
-      {moedas > 0 && <div className="animate-pop-in fixed left-1/2 top-20 z-50 -translate-x-1/2 rounded-2xl bg-emerald-500 px-6 py-3 text-lg font-black text-emerald-950 shadow-xl">+{moedas} moedas</div>}
+      {moedas > 0 && <div className="animate-pop-in fixed left-1/2 top-20 z-50 -translate-x-1/2 rounded-2xl bg-emerald-500 px-6 py-3 text-lg font-black text-emerald-950 shadow-xl">+{moedas} Rupees</div>}
 
       <div className="mt-7 flex gap-2 border-b border-border"><button onClick={()=>setAba("metas")} className={`px-4 py-3 text-sm font-black ${aba === "metas" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>Metas</button><button onClick={()=>setAba("especiais")} className={`px-4 py-3 text-sm font-black ${aba === "especiais" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>Missões especiais</button></div>
       {carregando ? (

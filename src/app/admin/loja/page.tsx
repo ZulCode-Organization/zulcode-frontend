@@ -22,7 +22,7 @@ const EFEITOS: { valor: EfeitoLoja; rotulo: string; Icone: React.ComponentType<{
   { valor: "FREEZE_STREAK", rotulo: "Gás de ofensiva", Icone: Flame, cor: "text-violet-500" },
   { valor: "FEATHER_SHIELD", rotulo: "Escudo de pena", Icone: Shield, cor: "text-indigo-500" },
   { valor: "DOUBLE_XP", rotulo: "XP em dobro", Icone: Zap, cor: "text-amber-500" },
-  { valor: "DOUBLE_COINS", rotulo: "Moedas em dobro", Icone: Rupee, cor: "text-emerald-500" },
+  { valor: "DOUBLE_COINS", rotulo: "Rupees em dobro", Icone: Rupee, cor: "text-emerald-500" },
 ];
 
 const efeitoDe = (valor: EfeitoLoja) => EFEITOS.find((e) => e.valor === valor);
@@ -130,7 +130,7 @@ export default function AdminLoja() {
         <div>
           <p className="text-sm font-black uppercase tracking-wider text-primary">Economia</p>
           <h1 className="mt-1.5 text-3xl font-black sm:text-4xl">Loja</h1>
-          <p className="mt-2 text-muted-foreground">O que dá pra comprar com moedas, e por quanto.</p>
+          <p className="mt-2 text-muted-foreground">O que dá pra comprar com Rupees, e por quanto.</p>
         </div>
         <button
           type="button"
@@ -151,7 +151,7 @@ export default function AdminLoja() {
         <div className="mt-6 rounded-2xl border bg-card p-10 text-center">
           <Sparkles className="mx-auto size-7 text-muted-foreground/60" />
           <p className="mt-3 font-black">A loja está vazia</p>
-          <p className="mt-1 text-sm text-muted-foreground">Crie o primeiro item para as pessoas gastarem moedas.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Crie o primeiro item para as pessoas gastarem Rupees.</p>
         </div>
       ) : (
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -236,7 +236,7 @@ export default function AdminLoja() {
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block text-sm font-black">
-                  Preço em moedas
+                  Preço em Rupees
                   <input name="price" type="number" min="0" required defaultValue={editando.price} className="mt-1.5 w-full rounded-xl border bg-background p-3 font-bold tabular-nums outline-none focus:border-primary" />
                 </label>
                 <label className="block text-sm font-black">

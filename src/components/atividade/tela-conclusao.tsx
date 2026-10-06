@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Target, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -91,7 +92,7 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salv
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
-        <img src="/mascot.png" alt="" className="size-28" />
+        <Image src="/mascot.png" alt="" width={112} height={112} className="size-28" />
         <h1 className="text-3xl font-black text-foreground">Lição concluída!</h1>
 
         <div className="flex gap-4">

@@ -120,6 +120,7 @@ export function PainelMoedas({ moedas, onNavegar }: { moedas: number | null; onN
   const [itens, setItens] = useState<ItemLoja[] | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [aviso, setAviso] = useState<{ texto: string; erro?: boolean } | null>(null);
+  const [barril, setBarril] = useState<{ disponivel: boolean; rupees: number; proximoEm: string } | null>(null);
 
   const saldo = moedas ?? perfil?.moedas ?? 0;
 
@@ -127,7 +128,8 @@ export function PainelMoedas({ moedas, onNavegar }: { moedas: number | null; onN
     const token = localStorage.getItem("accessToken");
     if (!token) return;
     let valeu = true;
-    fetchComTimeout(`${API_BASE_URL}/user/zulcoins/items`, { headers: { Authorization: `Bearer ${token}` } })
+    const cabecalho = { Authorization: `Bearer ${token}` };
+    fetchComTimeout(`${API_BASE_URL}/user/zulcoins/items`, { headers: cabecalho })
       .then((r) => (r.ok ? r.json() : []))
       .then((lista) => {
         if (valeu) setItens(Array.isArray(lista) ? lista : []);
@@ -135,6 +137,12 @@ export function PainelMoedas({ moedas, onNavegar }: { moedas: number | null; onN
       .catch(() => {
         if (valeu) setItens([]);
       });
+    fetchComTimeout(`${API_BASE_URL}/user/zulcoins/barril`, { headers: cabecalho })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((estado) => {
+        if (valeu && estado) setBarril(estado);
+      })
+      .catch(() => {});
     return () => {
       valeu = false;
     };
@@ -160,6 +168,27 @@ export function PainelMoedas({ moedas, onNavegar }: { moedas: number | null; onN
       retry();
     } catch (erro) {
       setAviso({ texto: erro instanceof Error ? erro.message : "Não foi possível comprar.", erro: true });
+    } finally {
+      setOcupado(null);
+    }
+  };
+
+  const abrirBarril = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token || ocupado) return;
+    setOcupado("barril");
+    try {
+      const resposta = await fetchComTimeout(`${API_BASE_URL}/user/zulcoins/barril`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const corpo = await resposta.json().catch(() => null);
+      if (!resposta.ok) throw new Error(corpo?.message ?? "Não foi possível abrir o barril.");
+      setAviso({ texto: corpo?.message ?? "Barril aberto!" });
+      setBarril((atual) => (atual ? { ...atual, disponivel: false } : atual));
+      retry();
+    } catch (erro) {
+      setAviso({ texto: erro instanceof Error ? erro.message : "Não foi possível abrir o barril.", erro: true });
     } finally {
       setOcupado(null);
     }
@@ -269,26 +298,37 @@ export function PainelMoedas({ moedas, onNavegar }: { moedas: number | null; onN
         </Secao>
       )}
 
-      {/* Barris. Não existe nada por trás disso no backend — nem rota, nem
-          contagem de tempo, nem recompensa — então o cartão diz "em breve" em
-          vez de abrir um barril que não dá nada. */}
+      {/* Barris. Um por dia, de graça: as metas pagam por estudar, o barril
+          paga por aparecer. Não há barril por anúncio nem por faixa de
+          horário — não existe anúncio aqui, e um barril que só abre de manhã
+          puniria quem estuda à noite. */}
       <Secao titulo="Barris">
-        <div className="flex items-center gap-3.5 rounded-[18px] border border-border bg-card px-4 py-3.5 opacity-60">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-amber-400/15 text-amber-500">
-            <Barrel className="size-6" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-[0.92rem] font-black leading-snug text-foreground">Barril da manhã</p>
-            <p className="mt-0.5 text-[0.78rem] leading-snug text-muted-foreground">
-              Faça uma lição cedo para destravar o barril.
-            </p>
-          </div>
-          <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-[0.6rem] font-black uppercase tracking-[0.08em] text-muted-foreground">
-            Em breve
-          </span>
-        </div>
+        <Cartao
+          Icone={Barrel}
+          cor={barril?.disponivel === false ? "text-muted-foreground" : "text-amber-500"}
+          fundo={barril?.disponivel === false ? "bg-muted" : "bg-amber-400/15"}
+          titulo="Barril do dia"
+          descricao={
+            barril === null
+              ? "Carregando…"
+              : barril.disponivel
+                ? `Abra e leve ${barril.rupees} Rupees. Volta todo dia.`
+                : "Você já abriu o de hoje. Volta amanhã."
+          }
+          acao={
+            barril?.disponivel ? (
+              <button
+                type="button"
+                onClick={() => void abrirBarril()}
+                disabled={ocupado === "barril"}
+                className="zc-press rounded-xl bg-amber-400 px-3 py-2 text-[0.72rem] font-black uppercase text-amber-950 disabled:opacity-60"
+              >
+                {ocupado === "barril" ? "…" : "Abrir"}
+              </button>
+            ) : undefined
+          }
+        />
       </Secao>
-
       {carregando ? (
         <div className="mt-6 flex flex-col gap-2.5">
           {[0, 1, 2].map((i) => (

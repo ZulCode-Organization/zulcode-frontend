@@ -1,3 +1,4 @@
+import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 /**
  * Os planos do ZulCode e o ponto onde o pagamento vai entrar.
  *
@@ -110,8 +111,23 @@ export async function iniciarAssinatura(
   planoId: PlanoId,
   periodo: PeriodoCobranca
 ): Promise<ResultadoAssinatura> {
-  // O plano e o período entram na mensagem de propósito: quando alguém
-  // relatar que "o botão não funciona", o relato já vem dizendo qual botão.
-  console.info(`[pro] assinatura pedida: ${planoId} / ${periodo} — pagamento ainda não ligado.`);
-  throw new Error("O pagamento ainda não está ligado. Em breve o ZulCode PRO abre para assinatura.");
+  const token = typeof window === "undefined" ? null : localStorage.getItem("accessToken");
+  if (!token) throw new Error("Entre na sua conta para assinar.");
+
+  const resposta = await fetchComTimeout(`${API_BASE_URL}/pro/checkout`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ plano: periodo === "anual" ? "anual" : "mensal", planoId }),
+  });
+
+  const corpo = await resposta.json().catch(() => null);
+  if (!resposta.ok) {
+    // A mensagem do backend é específica (qual variável falta, qual plano não
+    // está configurado). Trocá-la por um texto genérico aqui transformaria um
+    // problema de configuração em mistério.
+    throw new Error(corpo?.message ?? "Não foi possível abrir o pagamento.");
+  }
+  if (!corpo?.url) throw new Error("O pagamento não devolveu um endereço válido.");
+
+  return { urlDeCheckout: corpo.url };
 }

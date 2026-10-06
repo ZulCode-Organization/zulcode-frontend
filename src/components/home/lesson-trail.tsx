@@ -104,7 +104,17 @@ export function LessonTrail({ unidades }: LessonTrailProps) {
   const corAtiva = CORES_UNIDADE[unidadeAtivaIndex % CORES_UNIDADE.length];
   const ultimaSecao = unidades[unidades.length - 1]?.secao ?? 1;
 
-  let indiceGlobal = 0;
+  // Onde cada unidade começa na contagem corrida de lições. A serpente e a
+  // cascata de entrada dependem da posição global do nó, não da posição dele
+  // dentro da unidade — senão o desenho reiniciaria a cada divisória.
+  //
+  // É calculado antes de desenhar, e não num contador incrementado no meio do
+  // JSX: mutar variável durante o render quebra quando o React interrompe e
+  // retoma uma renderização, e o mesmo nó sairia com índices diferentes.
+  const inicioDaUnidade = unidades.reduce<number[]>((acc, unidade, i) => {
+    acc.push(i === 0 ? 0 : acc[i - 1] + unidades[i - 1].licoes.length);
+    return acc;
+  }, []);
 
   return (
     <>
@@ -133,10 +143,10 @@ export function LessonTrail({ unidades }: LessonTrailProps) {
               </div>
             )}
 
-            {unidade.licoes.map((licao) => {
+            {unidade.licoes.map((licao, licaoIndex) => {
+              const indiceGlobal = inicioDaUnidade[unidadeIndex] + licaoIndex;
               const deslocamento = deslocamentoDoNo(indiceGlobal);
               const delay = indiceGlobal * 80;
-              indiceGlobal += 1;
 
               return (
                 <div

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useMontado } from "@/hooks/use-montado";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,9 +15,7 @@ const OPTIONS = [
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const { perfil, salvarDados } = usePerfil();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const mounted = useMontado();
 
   useEffect(() => {
     if (!mounted || (resolvedTheme !== "light" && resolvedTheme !== "dark") || perfil?.themeMode === resolvedTheme) return;

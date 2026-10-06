@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Award, Clock, Flag, Trophy, Zap } from "lucide-react";
 import { Rupee } from "@/components/shared/rupee";
 import { useState } from "react";
@@ -10,10 +11,9 @@ import { SideFooter } from "@/components/shared/side-footer";
 import { useMetasDiarias } from "@/hooks/use-metas-diarias";
 import { AvisoDemora, EsqueletoMeta } from "@/components/shared/esqueleto";
 
-const PERIODOS = { DAILY: "Diária", WEEKLY: "Semanal", MONTHLY: "Mensal" } as const;
 const PERIODOS_PLURAL = { DAILY: "diárias", WEEKLY: "semanais", MONTHLY: "mensais" } as const;
 
-function MetaItem({ meta, index, onClaim }: { meta: ReturnType<typeof useMetasDiarias>["metas"][number]; index: number; onClaim:(id:string)=>void }) {
+function MetaItem({ meta, onClaim }: { meta: ReturnType<typeof useMetasDiarias>["metas"][number]; onClaim:(id:string)=>void }) {
   // Metas recorrentes sempre pagam moedas: o ícone comunica a recompensa,
   // não a atividade necessária para ganhá-la.
   const Icon = Rupee; const cor = "text-emerald-500"; const pct = Math.min(100, Math.round((meta.current / meta.target) * 100));
@@ -55,7 +55,7 @@ function MetasContent() {
         </div>
 
         <div className="flex h-[100px] min-w-[90px] max-w-[110px] flex-1 basis-27.5 items-center justify-center p-2 sm:h-[130px] sm:min-w-[120px] sm:max-w-[150px] sm:basis-35">
-          <img src="/mascot.png" alt="" className="size-full object-contain" />
+          <Image src="/mascot.png" alt="" width={260} height={260} className="size-full object-contain" />
         </div>
       </div>
       {moedas > 0 && <div className="animate-pop-in fixed left-1/2 top-20 z-50 -translate-x-1/2 rounded-2xl bg-emerald-500 px-6 py-3 text-lg font-black text-emerald-950 shadow-xl">+{moedas} Rupees</div>}
@@ -68,7 +68,7 @@ function MetasContent() {
         </section>
       ) : aba === "especiais" ? <section className="mt-5"><h2 className="text-lg font-black">Missões especiais</h2><p className="mt-1 text-sm text-muted-foreground">Desafios públicos permanentes que marcam sua jornada. As secretas só aparecem quando você as encontra.</p><div className="mt-3 rounded-[20px] border border-border bg-card px-4">{especiais.map(m => { const Icon=m.icon === "rank" ? Trophy : m.icon === "unit" ? Flag : Award; const pct=Math.min(100,Math.round(m.current/m.target*100)); return <div key={m.id} className={`flex gap-4 border-b border-border py-5 last:border-0 ${m.unavailable ? "opacity-55" : ""}`}><Icon className="mt-1 size-8 shrink-0 text-violet-500"/><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><p className="font-black">{m.title}</p>{m.unavailable && <span className="rounded-full bg-muted px-2 py-0.5 text-[0.62rem] font-black uppercase tracking-wide text-muted-foreground">Esgotada</span>}</div><p className="mt-1 text-sm text-muted-foreground">{m.description}</p>{m.rewardLabel && <p className="mt-2 text-xs font-black text-amber-500">Presente: {m.rewardLabel}</p>}<div className="relative mt-3 h-5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-violet-500" style={{width:`${pct}%`}}/><span className="absolute inset-0 flex items-center justify-center text-xs font-black">{m.current}/{m.target}</span></div></div></div>})}</div></section> : (["DAILY", "WEEKLY", "MONTHLY"] as const).map(periodo => {
         const grupo = metas.filter(meta => meta.period === periodo); if (!grupo.length) return null;
-        return <section key={periodo} className="mt-7"><div className="flex items-center justify-between gap-3"><h2 className="text-lg font-black text-foreground sm:text-xl">Metas {PERIODOS_PLURAL[periodo]}</h2>{periodo === "DAILY" && <span className="flex shrink-0 items-center gap-1.5 text-[0.7rem] font-black uppercase tracking-[0.06em] text-amber-500"><Clock className="size-3.5" />Renova à meia-noite</span>}</div><div className="mt-3 rounded-[20px] border border-border bg-card px-4 py-1 sm:px-5.5 sm:py-1.5">{grupo.map((meta,index)=><MetaItem key={meta.id} meta={meta} index={index} onClaim={resgatarMeta} />)}</div></section>;
+        return <section key={periodo} className="mt-7"><div className="flex items-center justify-between gap-3"><h2 className="text-lg font-black text-foreground sm:text-xl">Metas {PERIODOS_PLURAL[periodo]}</h2>{periodo === "DAILY" && <span className="flex shrink-0 items-center gap-1.5 text-[0.7rem] font-black uppercase tracking-[0.06em] text-amber-500"><Clock className="size-3.5" />Renova à meia-noite</span>}</div><div className="mt-3 rounded-[20px] border border-border bg-card px-4 py-1 sm:px-5.5 sm:py-1.5">{grupo.map((meta)=><MetaItem key={meta.id} meta={meta} onClaim={resgatarMeta} />)}</div></section>;
       })}
     </div>
   );

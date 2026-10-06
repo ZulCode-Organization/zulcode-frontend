@@ -1,10 +1,6 @@
 import { LanguageOption, OnboardingQuestion, OnboardingSubmission, OnboardingSubmissionResult } from "./types";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 
-function mockDelay<T>(value: T, ms = 500): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(value), ms));
-}
-
 export async function getOnboardingQuestions(): Promise<OnboardingQuestion[]> {
   const res = await fetchComTimeout(`${API_BASE_URL}/onboarding/questions`);
   if (!res.ok) throw new Error("Falha ao buscar perguntas do nivelamento");

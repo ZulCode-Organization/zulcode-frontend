@@ -25,6 +25,8 @@ export interface PerfilUsuario {
   xpNecessarioNivel: number | null;
   /** XP que falta pro próximo nível; null quando já está no nível máximo. */
   xpProximoNivel: number | null;
+  /** Semanas em que a pessoa terminou no top 3 da liga dela. */
+  podios?: number;
   /** Quantas pessoas seguem essa conta, e quantas ela segue. */
   seguidores?: number;
   seguindo?: number;
@@ -47,10 +49,16 @@ export interface PerfilUsuario {
   vidas: number | null;
   /** Moedas. null enquanto a API não devolver o campo. */
   moedas: number | null;
-  /** XP ganho hoje. null enquanto a API não recortar progresso por dia. */
+  /** XP ganho hoje, lições concluídas hoje e minutos estudados hoje.
+   *
+   * O corte do dia é o de Brasília, feito no backend — não o do navegador de
+   * quem acessa, senão duas pessoas em fusos diferentes veriam metas virando
+   * em horas diferentes.
+   *
+   * null só no perfil de outra pessoa, onde esses números não são expostos. */
   xpHoje: number | null;
-  /** Lições concluídas hoje. null enquanto a API não recortar por dia. */
   licoesHoje: number | null;
+  minutosHoje?: number | null;
   conquistas?: { id: string; title: string; description: string; iconSvg: string; bannerSvg: string; unlockedAt: string }[];
 }
 

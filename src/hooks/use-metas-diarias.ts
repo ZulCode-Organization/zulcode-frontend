@@ -7,16 +7,12 @@ export interface MetaDoDia { id:string; title:string; period:"DAILY"|"WEEKLY"|"M
 export interface MissaoEspecial { id:string; title:string; description:string; icon:"rank"|"unit"|"secret"|"achievement"; current:number; target:number; completed:boolean; secret?:boolean; unavailable?:boolean; rewardLabel?:string; }
 
 /**
- * Casa cada meta do dia com o dado real do perfil.
+ * As metas do dia, com o progresso que o backend já contabiliza.
  *
- * Hoje o GET /user só devolve totais (xp acumulado, streak, desafios
- * completos) — nada recortado por dia. Enquanto os campos do dia não
- * existirem, `atual` fica null e a tela mostra a barra zerada avisando que a
- * contagem não está ligada, em vez de inventar progresso. Quando o backend
- * mandar `xpHoje` e `licoesHoje`, estas duas metas passam a valer sozinhas.
- *
- * "Resolver 3 desafios na primeira tentativa" depende de acerto por questão,
- * que não existe em lugar nenhum da API — essa continua sem fonte.
+ * O progresso vem de `userGoalProgress`, incrementado quando uma aula é
+ * concluída — não é inferido na tela. O GET /user também devolve `xpHoje`,
+ * `licoesHoje` e `minutosHoje`, recortados pelo dia de Brasília, para quem
+ * precisar do número solto fora das metas.
  */
 export function useMetasDiarias(): { metas: MetaDoDia[]; especiais: MissaoEspecial[]; conectada: boolean; carregando: boolean; resgatar: (id: string) => Promise<number> } {
   const [metas, setMetas] = useState<MetaDoDia[]>([]); const [especiais, setEspeciais] = useState<MissaoEspecial[]>([]); const [conectada, setConectada] = useState(false);

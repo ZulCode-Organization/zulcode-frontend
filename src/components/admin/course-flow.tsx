@@ -1,3 +1,6 @@
+/* eslint-disable @next/next/no-img-element -- As capas de curso vêm do banco:
+   o admin cola o endereço que quiser. O next/image exigiria allowlist de host,
+   e liberar qualquer host transformaria o app num proxy de imagem. */
 "use client";
 
 import Link from "next/link";

@@ -255,6 +255,7 @@ function usePerfilData(): PerfilState {
           xpNecessarioNivel: progresso.xpNecessarioNivel,
           xpProximoNivel: usuario.xpProximoNivel,
           membroDesde: usuario.createdAt ?? null,
+          podios: usuario.podios ?? 0,
           seguidores: usuario.seguidores ?? 0,
           seguindo: usuario.seguindo ?? 0,
           streakAtual: usuario.currentStreak,
@@ -266,6 +267,7 @@ function usePerfilData(): PerfilState {
           moedas: numeroOuNulo(usuario.coins, usuario.moedas),
           xpHoje: numeroOuNulo(usuario.xpHoje, usuario.xpToday),
           licoesHoje: numeroOuNulo(usuario.licoesHoje, usuario.lessonsToday),
+          minutosHoje: numeroOuNulo(usuario.minutosHoje, usuario.minutesToday),
           conquistas: Array.isArray(usuario.achievements) ? usuario.achievements : [],
         };
         perfilCache = { token, perfil: perfilCarregado, cursos: cursosData };

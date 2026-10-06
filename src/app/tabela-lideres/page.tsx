@@ -59,12 +59,16 @@ function LideresContent() {
   const [ranking, setRanking] = useState<{ entries: RankEntry[]; me: { rank: number | null } } | null>(null);
   const { status: meuStatus } = useStatusEscolhido();
   const [folhaAberta, setFolhaAberta] = useState(false);
+  // Qual das duas tabelas está na tela. A de sempre ordena por XP acumulado e
+  // responde "quem chegou mais longe"; a semanal zera toda segunda e responde
+  // "quem está estudando agora". São perguntas diferentes, por isso convivem.
+  const [aba, setAba] = useState<"total" | "semana">("total");
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
-    fetchComTimeout(`${API_BASE_URL}/leaderboard?league=${ligaSelecionada}`, { headers: { Authorization: `Bearer ${token}` } }).then((res) => res.ok ? res.json() : null).then(setRanking).catch(() => setRanking(null));
-  }, [ligaSelecionada]);
+    fetchComTimeout(`${API_BASE_URL}${aba === "semana" ? "/leaderboard/weekly" : "/leaderboard"}?league=${ligaSelecionada}`, { headers: { Authorization: `Bearer ${token}` } }).then((res) => res.ok ? res.json() : null).then(setRanking).catch(() => setRanking(null));
+  }, [ligaSelecionada, aba]);
 
   const divisao = DIVISOES.find((item) => RANK_IDS[item.id] === ligaSelecionada) ?? atual;
   const alvo = DIVISOES.find((item) => item.minXp > xp) ?? null;
@@ -79,6 +83,24 @@ function LideresContent() {
         balãozinho, logo abaixo. */}
     <div className="mb-5 lg:hidden"><PesquisaLideres /></div>
 
+    {/* As duas tabelas, lado a lado. A semanal não substitui a geral: uma diz
+        quem acumulou mais no total, a outra quem está estudando esta semana. */}
+    <div className="mb-5 flex">
+      {([["total", "Geral"], ["semana", "Da semana"]] as const).map(([valor, rotulo]) => (
+        <button
+          key={valor}
+          type="button"
+          onClick={() => setAba(valor)}
+          className={cn(
+            "flex-1 border-b-2 pb-3 text-[0.8rem] font-black uppercase tracking-[0.08em] transition-colors duration-150",
+            aba === valor ? "border-primary text-primary" : "border-border text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {rotulo}
+        </button>
+      ))}
+    </div>
+
     <div className="flex origin-top scale-[0.72] flex-wrap items-end justify-center gap-3 sm:scale-100">{DIVISOES.map((item) => { const selecionada = RANK_IDS[item.id] === ligaSelecionada; return <button type="button" key={item.id} onClick={() => setLigaSelecionada(RANK_IDS[item.id])} className={`flex size-14 items-center justify-center rounded-[16px_16px_26px_26px] shadow-[inset_0_-4px_0_rgba(0,0,0,.18)] transition-all hover:-translate-y-1 ${selecionada ? `${item.cor} scale-110 ring-2 ring-primary/40` : "bg-muted"}`}><Trophy className={selecionada ? "size-8 text-white" : "size-6 text-muted-foreground/60"} /></button>; })}</div>
 
     {/* Cabeçalho centrado: nome da divisão, a regra de verdade pra subir e a
@@ -86,7 +108,9 @@ function LideresContent() {
     <header className="mt-3 text-center">
       <h1 className="text-2xl font-black tracking-tight sm:text-[1.75rem]">Divisão {divisao.nome}</h1>
       <p className="mx-auto mt-2 max-w-md text-[0.95rem] leading-snug text-muted-foreground">
-        {alvo
+        {aba === "semana"
+          ? "Conta só o XP ganho desde segunda. Zera toda semana, e o top 3 de cada divisão vira pódio."
+          : alvo
           ? `Some ${faltam.toLocaleString("pt-BR")} XP pra subir pra divisão ${alvo.nome}.`
           : "Você chegou à divisão Mestre — não há nível acima deste."}
       </p>

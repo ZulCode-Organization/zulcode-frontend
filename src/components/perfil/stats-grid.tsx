@@ -25,7 +25,7 @@ interface StatsGridProps {
 export function StatsGrid({ perfil }: StatsGridProps) {
   const divisao = divisaoDoXp(perfil.xp);
 
-  const cartoes: { id: string; icone: ReactNode; valor: string; rotulo: string; emBreve?: boolean }[] = [
+  const cartoes: { id: string; icone: ReactNode; valor: string; rotulo: string }[] = [
     {
       id: "streak",
       // A mesma chama da barra de cima: ela é azul desde a última mudança, e
@@ -51,13 +51,11 @@ export function StatsGrid({ perfil }: StatsGridProps) {
     },
     {
       id: "podios",
-      // Cheio como os outros, mas em cinza: o card inteiro já está esmaecido
-      // por "em breve", e um ícone colorido ali chamaria mais atenção que os
-      // três que têm dado de verdade.
-      icone: <Medal className="size-6 shrink-0 sm:size-7 fill-muted-foreground/30 text-muted-foreground" strokeWidth={2.4} />,
-      valor: "—",
+      // Deixou de ser "em breve": a tabela semanal fecha e registra o top 3 de
+      // cada liga, então este número vem de pódios que aconteceram mesmo.
+      icone: <Medal className="size-6 shrink-0 sm:size-7 fill-amber-400 text-amber-600" strokeWidth={2.4} />,
+      valor: (perfil.podios ?? 0).toLocaleString("pt-BR"),
       rotulo: "Pódios",
-      emBreve: true,
     },
   ];
 
@@ -66,14 +64,12 @@ export function StatsGrid({ perfil }: StatsGridProps) {
       <h2 className="text-lg font-black text-foreground">Estatísticas</h2>
 
       <div className="mt-4 grid grid-cols-2 gap-2.5 sm:gap-3">
-        {cartoes.map(({ id, icone, valor, rotulo, emBreve }) => (
+        {cartoes.map(({ id, icone, valor, rotulo }) => (
           <div
             key={id}
-            title={emBreve ? "Em breve" : undefined}
             className={cn(
               "relative flex items-center gap-2.5 rounded-2xl border border-border bg-card px-3 py-3",
-              "sm:gap-3.5 sm:rounded-[18px] sm:px-5 sm:py-4",
-              emBreve && "opacity-60"
+              "sm:gap-3.5 sm:rounded-[18px] sm:px-5 sm:py-4"
             )}
           >
             {icone}
@@ -81,11 +77,6 @@ export function StatsGrid({ perfil }: StatsGridProps) {
               <p className="truncate text-[0.95rem] font-black leading-none sm:text-[1.15rem] text-foreground">{valor}</p>
               <p className="mt-1 truncate text-[0.75rem] sm:mt-1.5 sm:text-[0.85rem] text-muted-foreground">{rotulo}</p>
             </div>
-            {emBreve && (
-              <span className="absolute right-3 top-3 hidden sm:block rounded-md bg-muted px-2 py-0.5 text-[0.6rem] font-black uppercase tracking-[0.08em] text-muted-foreground">
-                Em breve
-              </span>
-            )}
           </div>
         ))}
       </div>

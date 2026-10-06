@@ -1,17 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMontado } from "@/hooks/use-montado";
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 
 export function AuthLogo() {
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMontado();
 
   const logo = resolvedTheme !== "dark" ? "/icon-only.svg" : "/icon-only-dark.svg";
 

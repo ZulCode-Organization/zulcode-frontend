@@ -59,18 +59,30 @@ const categories: { value: Category; label: string; Icon: typeof Sparkles }[] =
     { value: "BANNER", label: "Banners", Icon: Gift },
     { value: "POWER", label: "Power-ups", Icon: Zap },
   ];
-const powerIcon = (effect: Item["effect"]) =>
-  effect === "RECOVER_LIVES"
-    ? Feather
-    : effect === "FREEZE_STREAK"
-    ? GasOfensiva
-    : effect === "FEATHER_SHIELD"
-    ? ShieldCheck
-    : effect === "DOUBLE_COINS"
-    ? CircleDollarSign
-    : effect === "HEAL_ONE_LIFE"
-    ? HeartPulse
-    : Zap;
+/**
+ * O desenho de cada power-up.
+ *
+ * Devolve o elemento pronto em vez do tipo do componente. Guardar o tipo numa
+ * variável dentro do render faz o React tratar aquilo como um componente novo
+ * a cada passagem, o que desmonta e remonta a árvore à toa — e é por isso que
+ * o lint recusa o padrão.
+ */
+function IconeDoPoder({ effect, className }: { effect: Item["effect"]; className?: string }) {
+  switch (effect) {
+    case "RECOVER_LIVES":
+      return <Feather className={className} />;
+    case "FREEZE_STREAK":
+      return <GasOfensiva className={className} />;
+    case "FEATHER_SHIELD":
+      return <ShieldCheck className={className} />;
+    case "DOUBLE_COINS":
+      return <CircleDollarSign className={className} />;
+    case "HEAL_ONE_LIFE":
+      return <HeartPulse className={className} />;
+    default:
+      return <Zap className={className} />;
+  }
+}
 
 function Store() {
   const { perfil, retry } = usePerfil();
@@ -407,13 +419,12 @@ function PowerCard({
   disabled: boolean;
   onBuy: (item: Item) => void;
 }) {
-  const Icon = powerIcon(item.effect);
   return (
     <article className="animate-fade-in-up group flex flex-row overflow-hidden rounded-[18px] border border-border bg-card transition-colors duration-200 hover:border-primary/50 sm:min-h-56 sm:flex-col sm:rounded-[20px]">
       {/* Vitrine: o ícone grande sobre o âmbar da moeda, que é a cor do
           power-up no app inteiro. */}
       <div className="relative grid w-[86px] shrink-0 place-items-center bg-emerald-500/10 sm:h-24 sm:w-auto">
-        <Icon className="size-8 text-amber-400 transition-transform duration-200 group-hover:scale-110 sm:size-10" />
+        <IconeDoPoder effect={item.effect} className="size-8 text-amber-400 transition-transform duration-200 group-hover:scale-110 sm:size-10" />
         {disabled && (
           <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-[0.6rem] font-black uppercase tracking-[0.06em] text-white">
             <Check className="size-3" strokeWidth={3} />

@@ -1,0 +1,10 @@
+{
+  "name": "zulcode-playground-preview",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "acorn": "8.17.0"
+  }
+}

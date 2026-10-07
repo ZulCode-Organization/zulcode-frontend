@@ -9,7 +9,9 @@
     "lint": "eslint",
     "cap:sync": "cap sync android",
     "cap:open": "cap open android",
-    "cap:run": "cap run android"
+    "cap:run": "cap run android",
+    "predev": "node playground-preview/build.mjs --app",
+    "prebuild": "node playground-preview/build.mjs --app"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",
@@ -36,6 +38,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "acorn": "8.17.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",

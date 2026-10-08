@@ -333,41 +333,199 @@ select,
 }
 
 /* ---------------------------------------------------------------------------
-   Tela do PRO.
+   Tela do PRO: a viagem pelo espaço.
+
+   Cada gesto tem o peso da coisa: o Zul chega de longe e assenta, o 2x cai e
+   amassa no horizonte, o cometa acelera até bater no escudo, a supernova
+   explode uma vez e fica respirando. Com movimento reduzido tudo fica parado
+   no quadro final -- por isso cada peça tem a posição de repouso também fora
+   da animação.
    --------------------------------------------------------------------------- */
 
-/* O mascote correndo: sobe e desce de leve, sem sair do lugar. O ciclo curto
-   e a subida pequena importam -- passo longo demais vira flutuacao, e o Zul
-   passa a parecer que boia em vez de correr. */
-@keyframes zc-pro-corre {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-9px) rotate(-1.5deg); }
+/* O Zul de adesivo: a própria silhueta em branco, em oito direções, e um halo. */
+.zc-zul-pro {
+  filter: drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff)
+    drop-shadow(2px 2px 0 #fff) drop-shadow(-2px 2px 0 #fff) drop-shadow(2px -2px 0 #fff) drop-shadow(-2px -2px 0 #fff)
+    drop-shadow(0 0 22px rgba(190, 115, 233, 0.6));
 }
 
-/* A sombra encolhe quando ele sobe. Sem isso o corpo se move e a sombra fica
-   parada, que e o que faz a animacao parecer recortada. */
-@keyframes zc-pro-sombra {
-  0%, 100% { transform: scaleX(1); opacity: 0.6; }
-  50% { transform: scaleX(0.72); opacity: 0.35; }
+/* A câmera: a cena que entra vem de perto, a que sai se afasta. */
+.zc-pro-camada {
+  transition: opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1), transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.zc-pro-camada[data-ativa="false"] { opacity: 0; transform: scale(1.14); }
+
+@keyframes zc-pro-gas {
+  0% { transform: translate(-50%, -50%) translate(-3%, -2%) scale(1); }
+  100% { transform: translate(-50%, -50%) translate(3%, 2.5%) scale(1.08); }
+}
+.zc-pro-gas { transform: translate(-50%, -50%); animation: zc-pro-gas 26s ease-in-out infinite alternate; }
+.zc-pro-planeta { transform: translateX(-50%); }
+
+@keyframes zc-pro-gira { to { transform: rotate(360deg); } }
+.zc-pro-disco { animation: zc-pro-gira 9s linear infinite; }
+
+@keyframes zc-pro-coroa {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.94); opacity: 0.85; }
+  50% { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
+}
+.zc-pro-coroa { transform: translate(-50%, -50%); animation: zc-pro-coroa 3.2s ease-in-out infinite; }
+
+@keyframes zc-pro-chama {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  30% { transform: scale(1.035, 0.98) rotate(-1.5deg); }
+  60% { transform: scale(0.98, 1.04) rotate(1.5deg); }
+}
+.zc-pro-chama { transform-origin: 50% 90%; animation: zc-pro-chama 2.2s ease-in-out infinite; }
+
+/* O cometa anda junto com um invólucro do tamanho do palco: assim o destino
+   (o centro) é uma porcentagem do palco, e não do risco. */
+@keyframes zc-pro-cometa {
+  0% { transform: translate(0, 0); opacity: 0; }
+  3% { opacity: 1; }
+  18% { transform: translate(62%, 46%); opacity: 1; }
+  20%, 100% { transform: translate(66%, 49%); opacity: 0; }
+}
+.zc-pro-cometa { opacity: 0; animation: zc-pro-cometa 5s cubic-bezier(0.55, 0, 0.85, 0.35) 0.9s infinite both; }
+
+@keyframes zc-pro-escudo {
+  0%, 17% { opacity: 0; transform: scale(0.85); }
+  20% { opacity: 1; transform: scale(1); }
+  42%, 100% { opacity: 0; transform: scale(1.25); }
+}
+.zc-pro-escudo {
+  opacity: 0;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 0 30px 8px rgba(189, 115, 233, 0.8), inset 0 0 30px rgba(189, 115, 233, 0.5);
+  animation: zc-pro-escudo 5s ease-out 0.9s infinite both;
 }
 
-/* Brilho que atravessa o card em destaque, devagar e so uma vez a cada volta
-   -- o suficiente pra puxar o olho sem virar pisca-pisca. */
-@keyframes zc-pro-brilho {
-  0% { transform: translateX(-120%) skewX(-18deg); }
-  60%, 100% { transform: translateX(320%) skewX(-18deg); }
+@keyframes zc-pro-cadente {
+  0% { transform: rotate(28deg) translateX(-60%); opacity: 0; }
+  5% { opacity: 1; }
+  15%, 100% { transform: rotate(28deg) translateX(130%); opacity: 0; }
+}
+.zc-pro-cadente {
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, #fff);
+  box-shadow: 0 0 8px #fff;
+  animation: zc-pro-cadente 5.5s cubic-bezier(0.55, 0, 0.85, 0.35) infinite both;
 }
 
-.zc-pro-corre { animation: zc-pro-corre 0.9s ease-in-out infinite; }
-.zc-pro-sombra { animation: zc-pro-sombra 0.9s ease-in-out infinite; }
-.zc-pro-brilho { animation: zc-pro-brilho 4.5s ease-in-out infinite; }
+/* O 2x cai, amassa no chão e volta ao tamanho. */
+@keyframes zc-pro-dois-x {
+  0% { transform: translate(-50%, -170%) scale(1.5); opacity: 0; }
+  50% { transform: translate(-50%, 6%) scale(1.08, 0.88); opacity: 1; }
+  68% { transform: translate(-50%, -8%) scale(0.96, 1.06); }
+  84% { transform: translate(-50%, 2%) scale(1.02, 0.98); }
+  100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+}
+.zc-pro-dois-x { transform: translate(-50%, 0); animation: zc-pro-dois-x 1.1s cubic-bezier(0.55, 0, 0.85, 0.35) 0.25s both; }
+
+/* O Zul chega voando de longe: do canto, pequeno e desfocado. */
+@keyframes zc-pro-chegada {
+  0% { transform: translate(38%, -46%) scale(0.08) rotate(-20deg); opacity: 0; filter: blur(6px); }
+  55% { opacity: 1; filter: blur(0); }
+  100% { transform: none; opacity: 1; }
+}
+.zc-pro-chegada { animation: zc-pro-chegada 1.15s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes zc-pro-flutua {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-5%) rotate(1.5deg); }
+}
+.zc-pro-flutua { animation: zc-pro-flutua 4.2s ease-in-out infinite; }
+
+/* As boas-vindas: o clarão, a onda de choque e o Zul nascendo dela. */
+@keyframes zc-pro-clarao {
+  0% { transform: translate(-50%, -50%) scale(0.05); opacity: 0; }
+  16% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0.55; }
+}
+.zc-pro-clarao { transform: translate(-50%, -50%); opacity: 0.55; animation: zc-pro-clarao 1.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes zc-pro-onda {
+  0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(3.4); opacity: 0; }
+}
+.zc-pro-onda { transform: translate(-50%, -50%); opacity: 0; animation: zc-pro-onda 1.6s ease-out 0.15s both; }
+
+@keyframes zc-pro-nasce {
+  0%, 22% { transform: scale(0); opacity: 0; }
+  68% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.zc-pro-nasce { animation: zc-pro-nasce 1.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* A entrada: a logo surge na dobra espacial e passa pela câmera. */
+@keyframes zc-pro-selo-entrada {
+  0% { transform: scale(0.4); opacity: 0; filter: blur(10px); }
+  50% { transform: scale(1.08); opacity: 1; filter: blur(0) drop-shadow(0 0 40px rgba(189, 115, 233, 0.9)); }
+  78% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.7); opacity: 0; filter: blur(4px); }
+}
+.zc-pro-selo-entrada { animation: zc-pro-selo-entrada 1.25s cubic-bezier(0.65, 0, 0.35, 1) both; }
+
+/* Troca de tela: a que sai sobe e desfoca; a que entra assenta. */
+@keyframes zc-pro-entra-tela {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes zc-pro-sai-tela {
+  to { opacity: 0; transform: translateY(-12px) scale(1.02); filter: blur(4px); }
+}
+.zc-pro-entra-tela { animation: zc-pro-entra-tela 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.zc-pro-sai-tela { animation: zc-pro-sai-tela 0.23s cubic-bezier(0.55, 0, 0.85, 0.35) forwards; }
+
+@keyframes zc-pro-sobe {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+.zc-pro-sobe { animation: zc-pro-sobe 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* O número da pílula vira: o novo sobe de baixo e passa um pouco do tamanho. */
+@keyframes zc-pro-virada {
+  0% { transform: translateY(70%) scale(0.6); opacity: 0; }
+  60% { transform: translateY(-12%) scale(1.25); opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+.zc-pro-virada { display: inline-block; animation: zc-pro-virada 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+@keyframes zc-pro-linha { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.zc-pro-linha { animation: zc-pro-linha 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both; }
+
+@keyframes zc-pro-ponto {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.zc-pro-ponto { animation: zc-pro-ponto 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+@keyframes zc-pro-coluna {
+  from { opacity: 0; transform: scaleY(0.6); }
+  to { opacity: 1; transform: none; }
+}
+.zc-pro-coluna { animation: zc-pro-coluna 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+
+@keyframes zc-pro-varre {
+  0% { transform: translateY(-110%); }
+  60%, 100% { transform: translateY(320%); }
+}
+.zc-pro-brilho-coluna {
+  transform: translateY(-110%);
+  background: linear-gradient(transparent, rgba(255, 255, 255, 0.28), transparent);
+  animation: zc-pro-varre 3.6s ease-in-out 1s infinite;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .zc-pro-corre,
-  .zc-pro-sombra,
-  .zc-pro-brilho {
+  .zc-pro-camada { transition: opacity 0.3s linear; }
+  .zc-pro-camada[data-ativa="false"] { transform: none; }
+  .zc-pro-gas, .zc-pro-disco, .zc-pro-coroa, .zc-pro-chama, .zc-pro-dois-x, .zc-pro-chegada,
+  .zc-pro-flutua, .zc-pro-clarao, .zc-pro-nasce, .zc-pro-selo-entrada, .zc-pro-entra-tela, .zc-pro-sai-tela,
+  .zc-pro-sobe, .zc-pro-virada, .zc-pro-linha, .zc-pro-ponto, .zc-pro-coluna {
     animation: none;
   }
+  .zc-pro-cometa, .zc-pro-escudo, .zc-pro-cadente, .zc-pro-onda, .zc-pro-brilho-coluna { animation: none; opacity: 0; }
 }
 
 @keyframes zc-pena-desgasta {

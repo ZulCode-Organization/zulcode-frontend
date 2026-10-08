@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { PerfilProvider } from "@/hooks/use-perfil";
 import { AppSidebar } from "./app-sidebar";
 import { AppBottomNav } from "./app-bottom-nav";
+import { AvisoFimDoTeste } from "@/components/pro/aviso-fim-do-teste";
 import { AppTopBar } from "./app-topbar";
 import { StickyBottomPanel } from "./sticky-bottom-panel";
 import { cn } from "@/lib/utils";
@@ -89,6 +90,7 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
           </div>
         </div>
 
+        <AvisoFimDoTeste />
         <AppBottomNav />
       </div>
     </div>

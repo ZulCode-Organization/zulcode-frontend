@@ -261,7 +261,7 @@ export function PainelMoedas({ moedas, onNavegar }: { moedas: number | null; onN
             Tudo pra você aprender mais rápido
           </p>
           <p className="mt-1.5 text-[0.85rem] leading-snug text-white/80">
-            Penas ilimitadas, XP em dobro e sem anúncios.
+            Penas ilimitadas, XP e rupees em dobro.
           </p>
           <span className="zc-press mt-4 block rounded-[14px] bg-white py-3.5 text-center text-[0.8rem] font-black uppercase tracking-[0.06em] text-violet-700">
             Teste {DIAS_DE_TESTE} dias grátis

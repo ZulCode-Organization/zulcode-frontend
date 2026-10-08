@@ -32,24 +32,39 @@ function useTremorAoPerder(valor: number) {
  * O que sobrou é o tremor: quando o número cai, a pena estremece uma vez. Ele
  * dispara na queda e não no valor em si, então recarregar a página com 2 penas
  * não sacode nada — só perder a segunda sacode.
+ *
+ * Sem nenhuma pena ela fica cinza. É o mesmo recurso da chama apagada: o ícone
+ * continua no lugar, mas sem cor ele lê como "acabou" antes de alguém ler o 0.
+ *
+ * A barra de cima desliga o tremor (`tremer={false}`) porque lá a perda tem
+ * uma animação própria, maior; as duas juntas brigariam.
  */
 export function PenaDesgastada({
   restantes,
   maximo = 5,
   className,
+  tremer = true,
 }: {
   restantes: number;
   maximo?: number;
   className?: string;
+  tremer?: boolean;
 }) {
-  const tremendo = useTremorAoPerder(restantes);
+  const tremendo = useTremorAoPerder(restantes) && tremer;
+  const vazia = restantes <= 0;
 
   return (
     <span
       className={cn("relative inline-flex", tremendo && "zc-pena-desgasta")}
       title={`${restantes} de ${maximo} penas`}
     >
-      <Feather className={cn("size-5 fill-rose-500 text-rose-800", className)} />
+      <Feather
+        className={cn(
+          "size-5 transition-[fill,color] duration-500",
+          vazia ? "fill-muted-foreground/35 text-muted-foreground/60" : "fill-rose-500 text-rose-800",
+          className,
+        )}
+      />
     </span>
   );
 }

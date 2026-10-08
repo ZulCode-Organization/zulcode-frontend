@@ -607,3 +607,348 @@ select,
 
 
 
+
+/* ------------------------------------------------------------------
+   PLAYGROUND
+
+   A moldura inteira — abas, barras, painéis — tira a cor das variáveis
+   --pg-*, que o React preenche a partir da paleta do editor. Escolher
+   Dracula pinta a tela toda de Dracula, não um Dracula dentro de um app
+   azul. É o que separa "ferramenta de programar" de "site com editor
+   dentro", e é também o que faz a cor do código ser a única coisa viva
+   na tela.
+
+   Nada de canto arredondado grande, sombra ou pílula aqui: borda de 1px
+   e superfície chapada, como em qualquer editor de verdade.
+   ------------------------------------------------------------------ */
+@layer utilities {
+  .zc-pg {
+    background: var(--pg-fundo);
+    color: var(--pg-texto);
+    /* O texto do editor é monoespaçado; o da moldura não, senão a tela
+       vira um terminal e os rótulos ficam difíceis de ler. */
+    --pg-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  .zc-pg-barra { background: var(--pg-barra); }
+  .zc-pg-fundo { background: var(--pg-fundo); }
+  .zc-pg-ativo { background: var(--pg-ativo); }
+  .zc-pg-selecao { background: var(--pg-selecao); }
+  .zc-pg-borda { border-color: var(--pg-borda); }
+  .zc-pg-texto { color: var(--pg-texto); }
+  .zc-pg-apagado { color: var(--pg-apagado); }
+  .zc-pg-acento { color: var(--pg-acento); }
+  .zc-pg-erro { color: var(--pg-erro); }
+  .zc-pg-mono { font-family: var(--pg-mono); }
+
+  /* O rótulo de seção dos editores: pequeno, maiúsculo, espaçado. Carrega
+     hierarquia sem precisar de caixa nem de cor. */
+  .zc-pg-rotulo {
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--pg-apagado);
+  }
+
+  /* Botão de ícone da barra: sem borda, sem fundo, até o cursor chegar. */
+  .zc-pg-botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    border-radius: 4px;
+    color: var(--pg-apagado);
+    transition: background-color 0.1s ease, color 0.1s ease;
+  }
+  .zc-pg-botao:hover:not(:disabled) {
+    background: var(--pg-ativo);
+    color: var(--pg-texto);
+  }
+  .zc-pg-botao:disabled { opacity: 0.4; }
+  .zc-pg-botao[aria-pressed="true"] {
+    background: var(--pg-ativo);
+    color: var(--pg-acento);
+  }
+
+  /* A aba do arquivo. A faixa de cima marca a ativa — é o jeito que não
+     depende de fundo claro ou escuro para ficar legível. */
+  .zc-pg-aba {
+    position: relative;
+    border-top: 2px solid transparent;
+    color: var(--pg-apagado);
+    background: var(--pg-barra);
+  }
+  .zc-pg-aba:hover { color: var(--pg-texto); }
+  .zc-pg-aba[aria-selected="true"] {
+    border-top-color: var(--pg-acento);
+    background: var(--pg-fundo);
+    color: var(--pg-texto);
+  }
+
+  /* A alça de arrastar entre os painéis. Fina, e o alvo do ponteiro é
+     maior que o traço para não exigir precisão de cirurgião. */
+  .zc-pg-divisor {
+    position: relative;
+    flex-shrink: 0;
+    background: var(--pg-borda);
+    touch-action: none;
+  }
+  .zc-pg-divisor::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+  }
+  .zc-pg-divisor:hover,
+  .zc-pg-divisor[data-arrastando="true"] { background: var(--pg-acento); }
+  .zc-pg-divisor-v { width: 1px; cursor: col-resize; }
+  .zc-pg-divisor-h { height: 1px; cursor: row-resize; }
+
+  /* O CodeMirror precisa de altura explícita para a própria rolagem
+     funcionar; sem isto ele cresce e empurra a página. */
+  .zc-editor { display: flex; min-height: 0; }
+  .zc-editor .cm-editor { width: 100%; height: 100%; }
+  .zc-editor .cm-editor.cm-focused { outline: none; }
+  .zc-editor .cm-scroller { overflow: auto; }
+  .zc-editor .cm-gutters { user-select: none; }
+  /* O lint do CodeMirror sublinha; a bolinha na calha ficaria grande
+     demais na densidade desta tela. */
+  .zc-editor .cm-lint-marker { width: 0.7em; height: 0.7em; }
+
+  /* A barra de símbolos do celular rola de lado sem mostrar trilha. */
+  .zc-barra-teclas {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .zc-barra-teclas::-webkit-scrollbar { display: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   Seleção e linha ativa do editor.
+
+   O CodeMirror traz um tema base cujas regras usam `.cm-editor.cm-dark...`,
+   com especificidade maior que a do tema que montamos em JavaScript. O
+   resultado era a seleção sair no cinza-azulado padrão dele (#233) em vez da
+   cor da paleta — e, sobre um fundo quase preto, isso lê como "não dá para
+   selecionar": o texto marca, mas nada muda na tela.
+
+   Estas regras ganham por especificidade (.zc-pg .zc-editor na frente) e
+   puxam a cor das mesmas variáveis do resto da moldura, então valem para os
+   nove temas sem repetição.
+   --------------------------------------------------------------------------- */
+.zc-pg .zc-editor .cm-editor .cm-selectionBackground,
+.zc-pg .zc-editor .cm-editor.cm-focused .cm-selectionBackground {
+  background: var(--pg-selecao);
+}
+.zc-pg .zc-editor .cm-editor .cm-content ::selection {
+  background: var(--pg-selecao);
+}
+.zc-pg .zc-editor .cm-editor .cm-activeLine {
+  background: var(--pg-ativo);
+}
+.zc-pg .zc-editor .cm-editor .cm-activeLineGutter {
+  background: var(--pg-ativo);
+  color: var(--pg-texto);
+}
+.zc-pg .zc-editor .cm-editor .cm-searchMatch {
+  background: var(--pg-selecao);
+  outline: 1px solid var(--pg-apagado);
+}
+.zc-pg .zc-editor .cm-editor .cm-searchMatch.cm-searchMatch-selected {
+  background: var(--pg-acento);
+  color: var(--pg-fundo);
+}
+
+/* ---------------------------------------------------------------------------
+   BARRA VIVA — os chips de sequência, Rupees e penas.
+
+   Os gestos de evento (moeda voando, pena caindo, confete) são Web Animations
+   criadas em lib/motion/efeitos.ts. Aqui fica só o que é estado: a fita do
+   odômetro, a troca 2→1 do rupee, o hover e a dica. Nada em laço.
+   --------------------------------------------------------------------------- */
+
+/* 1. Odômetro: cada casa é uma janela de uma linha; a fita de 0 a 9 desliza. */
+.zc-odometro {
+  --zc-casa-altura: 1.18em;
+  line-height: var(--zc-casa-altura);
+}
+.zc-casa {
+  position: relative;
+  display: inline-block;
+  height: var(--zc-casa-altura);
+  overflow: hidden;
+  /* A fita é mais larga que um algarismo só por arredondamento; isto fixa a
+     casa na largura de um dígito tabular. */
+  width: 1ch;
+  text-align: center;
+}
+.zc-fita {
+  position: absolute;
+  inset: 0 auto auto 0;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  transition: transform 780ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.zc-fita > span {
+  display: block;
+  height: var(--zc-casa-altura);
+  line-height: var(--zc-casa-altura);
+}
+/* Casa que não existia (99 → 100): sobe de baixo, no mesmo tempo das outras. */
+.zc-casa-nova {
+  animation: zc-casa-entra 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes zc-casa-entra {
+  from { opacity: 0; transform: translateY(60%); max-width: 0; }
+  to { opacity: 1; transform: translateY(0); max-width: 1ch; }
+}
+
+/* A troca de "duas rupees" para "uma": a de trás vai embora acelerando, a da
+   frente vem para o centro com uma mola. Na volta (1 → 2) o caminho inverte. */
+.zc-rupee-atras {
+  transition: transform 380ms cubic-bezier(0.55, 0, 0.85, 0.35), opacity 300ms ease;
+}
+.zc-rupee-frente {
+  transition: transform 640ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 15. O ícone levanta quando o mouse chega, e uma sombra fica no chão — o
+   mesmo relevo de duas camadas dos botões da trilha, sem moldura. O que
+   levanta é o desenho de dentro; a caixa do ícone fica livre para os gestos
+   de evento, que animam ela. */
+.zc-chip-icone::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: -3px;
+  height: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0;
+  transform: scaleX(0.5);
+  transition: opacity 240ms ease, transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+.zc-chip-icone > * {
+  transition: transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .zc-chip:hover .zc-chip-icone > * {
+    transform: translateY(-3px) rotate(-6deg);
+  }
+  .zc-chip:hover .zc-chip-icone::after {
+    opacity: 0.2;
+    transform: scaleX(1);
+  }
+
+  /* 16. O número vira link para a loja: um sublinhado que cresce da esquerda. */
+  .zc-chip-numero {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 0% 2px;
+    transition: background-size 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .zc-chip-numero:hover {
+    background-size: 100% 2px;
+  }
+}
+
+/* 12. A dica: aparece descendo 4px, rápida — dica lenta parece atraso. */
+.zc-dica {
+  transform: translateX(-50%);
+  animation: zc-dica-entra 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.zc-dica::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: calc(50% + var(--zc-seta, 0px) - 6px);
+  width: 12px;
+  height: 12px;
+  transform: rotate(45deg);
+  background: var(--popover);
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+}
+@keyframes zc-dica-entra {
+  from { opacity: 0; transform: translateX(-50%) translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+/* 13. Os dias da semana entram um depois do outro, da esquerda para hoje. */
+.zc-dia {
+  animation: zc-dia-entra 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes zc-dia-entra {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 18. A faixa "Fixado" desce para dentro do painel. */
+.zc-fixado {
+  animation: zc-fixado-desce 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes zc-fixado-desce {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zc-fita,
+  .zc-rupee-atras,
+  .zc-rupee-frente,
+  .zc-chip-icone > *,
+  .zc-chip-icone::after,
+  .zc-chip-numero {
+    transition: none !important;
+  }
+  .zc-casa-nova,
+  .zc-dica,
+  .zc-dia,
+  .zc-fixado {
+    animation: none !important;
+  }
+  .zc-dica {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Ícones de duas camadas (components/shared/icone-duo.tsx).
+
+   A camada de baixo é o peso "duotone" da Phosphor, que traz junto o próprio
+   traço fino: ele sai, e fica só o corpo translúcido. O traço que aparece é o
+   do peso "bold", por cima. A opacidade de 0,45 foi escolhida numa prancha
+   contra a referência: em 0,3 o corpo sumia no quadradinho cinza; em 0,5
+   começava a competir com o traço.
+
+   No hover só a camada clara acende; o traço e a forma ficam
+   parados.
+   --------------------------------------------------------------------------- */
+.zc-duo-corpo > :not([opacity]) {
+  display: none;
+}
+.zc-duo-corpo [opacity] {
+  opacity: var(--zc-duo-corpo, 0.45);
+  transition: opacity 260ms ease;
+}
+/* A Solar já traz a camada clara com opacity=".5" no próprio desenho; aqui
+   ela só ganha a transição do hover. */
+.zc-duo-solar [opacity] {
+  transition: opacity 260ms ease;
+}
+/* No hover a camada clara acende; o traço e a forma ficam parados. */
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .zc-duo-corpo [opacity],
+  .group:hover .zc-duo-solar [opacity] {
+    opacity: 0.72;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zc-duo-corpo [opacity],
+  .zc-duo-solar [opacity] {
+    transition: none;
+  }
+}

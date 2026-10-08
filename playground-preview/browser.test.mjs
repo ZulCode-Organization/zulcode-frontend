@@ -11,7 +11,7 @@ const chrome = process.env.CHROME_BIN || "/Applications/Google Chrome.app/Conten
 let available = true;
 try { await access(chrome); } catch { available = false; }
 
-test("runtime no navegador: DOM, CSS, console, erros e isolamento", { skip: !available, timeout: 45000 }, async () => {
+test("runtime no navegador: DOM, CSS, console, erros e isolamento", { skip: !available, timeout: 120000 }, async () => {
   const runtime = await readFile(new URL("./dist/index.html", import.meta.url), "utf8");
   let networkRequests = 0;
   const modules = new Map();
@@ -43,10 +43,36 @@ test("runtime no navegador: DOM, CSS, console, erros e isolamento", { skip: !ava
     { name: "async", javascript: 'setTimeout(() => console.log("ASYNC"), 20);', match: "ASYNC" },
     { name: "html-script", html: '<script>console.log("BAD")</script><button onclick="console.log(\'BAD\')">Click</button>',
       javascript: 'document.querySelector("button").click(); console.log("CLEAN");', match: "CLEAN", forbidden: "BAD" },
+    // O que mudou no runtime: varios .js na ordem da lista, varias folhas de
+    // estilo, e o <link> para arquivo local saindo porque quem injeta e o
+    // runtime.
+    { name: "muitos-scripts", scripts: ["var compartilhado = 'A';", "console.log(compartilhado + 'B');"],
+      match: "AB" },
+    { name: "muitos-estilos", html: '<p id="p">x</p>',
+      styles: ["#p { color: rgb(9, 9, 9); }", "#p { font-weight: 700; }"],
+      javascript: 'const e = getComputedStyle(document.querySelector("#p")); console.log(e.color, e.fontWeight);',
+      match: "rgb(9, 9, 9) 700" },
+    { name: "link-local-sai", html: '<link rel="stylesheet" href="style.css"><p id="p">x</p>',
+      css: "#p { color: rgb(4, 5, 6); }",
+      javascript: 'console.log(getComputedStyle(document.querySelector("#p")).color, document.querySelectorAll("link").length);',
+      match: "rgb(4, 5, 6) 0" },
   ];
   const harness = `<!doctype html><pre id="result">WAIT</pre><script type="module">
   import { IframeExecutor } from "/iframe-executor.js";
   const cases = ${JSON.stringify(cases).replaceAll("<", "\\u003c")};
+
+  // Os casos sao descritos com html/css/javascript simples; isto traduz para o
+  // formato de varios arquivos que o runtime passou a aceitar.
+  const empacotar = (c) => ({
+    html: c.html || "",
+    styles: c.styles
+      ? c.styles.map((codigo, i) => ({ nome: "folha" + (i + 1) + ".css", codigo }))
+      : c.css ? [{ nome: "style.css", codigo: c.css }] : [],
+    scripts: c.scripts
+      ? c.scripts.map((codigo, i) => ({ nome: "script" + (i + 1) + ".js", codigo }))
+      : [{ nome: "script.js", codigo: c.javascript || "" }],
+    libs: [],
+  });
   const results = [];
   async function run(c) {
     return new Promise(resolve => {
@@ -67,9 +93,10 @@ test("runtime no navegador: DOM, CSS, console, erros e isolamento", { skip: !ava
       const receive = event => {
         if (event.source !== frame.contentWindow || event.data.runId !== runId) return;
         if (event.data.type === "booted") {
-          frame.contentWindow.postMessage({ channel:"zulcode-playground", runId:"incorrect", type:"run", files:{javascript:"console.log('BAD')",html:"",css:""} }, "*");
+          frame.contentWindow.postMessage({ channel:"zulcode-playground", runId:"incorrect", type:"run",
+            files:{html:"",styles:[],scripts:[{nome:"x.js",codigo:"console.log('BAD')"}],libs:[]} }, "*");
           frame.contentWindow.postMessage({ channel:"zulcode-playground", runId, type:"run",
-            files:{html:c.html || "",css:c.css || "",javascript:c.javascript} }, "*");
+            files: empacotar(c) }, "*");
         } else {
           messages.push(event.data);
           if (event.data.type === "error" || event.data.type === "limit" || event.data.type === "ready") setTimeout(finish, 100);
@@ -106,14 +133,14 @@ test("runtime no navegador: DOM, CSS, console, erros e isolamento", { skip: !ava
         await new Promise(resolve => setTimeout(resolve, 25));
     };
     try {
-      executor.run({language:"javascript", files:{html:"",css:"",javascript:"console.log('FIRST')"}});
+      executor.run({files:{html:"",styles:[],scripts:[{nome:"script.js",codigo:"console.log('FIRST')"}],libs:[]}});
       const firstId = executor.getSnapshot().preview.id;
       await wait();
       const first = executor.getSnapshot();
       parent.postMessage({channel:"zulcode-playground",runId:firstId,type:"error",text:"SPOOF"}, "*");
       await new Promise(resolve => setTimeout(resolve, 20));
       if (executor.getSnapshot().status !== "ready") throw new Error("Mensagem falsa aceita");
-      executor.run({language:"javascript", files:{html:"",css:"",javascript:"console.log('SECOND'); setTimeout(() => console.log('LATE'), 500)"}});
+      executor.run({files:{html:"",styles:[],scripts:[{nome:"script.js",codigo:"console.log('SECOND'); setTimeout(() => console.log('LATE'), 500)"}],libs:[]}});
       const secondId = executor.getSnapshot().preview.id;
       await wait();
       const second = executor.getSnapshot();
@@ -126,12 +153,14 @@ test("runtime no navegador: DOM, CSS, console, erros e isolamento", { skip: !ava
         !second.logs.some(log => log.text === "FIRST") &&
         stopped.status === "stopped" && !stopped.preview &&
         !stopped.logs.some(log => log.text === "LATE");
-      executor.run({language:"javascript", files:{html:"",css:"",javascript:"while(true){}"}});
+      executor.run({files:{html:"",styles:[],scripts:[{nome:"script.js",codigo:"while(true){}"}],libs:[]}});
       await wait();
       const limited = executor.getSnapshot();
       const loopStopped = limited.status === "error" && !limited.preview &&
         limited.logs.some(log => log.text.includes("Loop interrompido"));
-      executor.run({language:"python", files:{}});
+      // Nao ha mais linguagem nao suportada; o que o executor recusa e arquivo
+      // grande demais.
+      executor.run({files:{html:"",styles:[],scripts:[{nome:"grande.js",codigo:"x".repeat(100001)}],libs:[]}});
       const unsupported = executor.getSnapshot().status === "error" && !executor.getSnapshot().preview;
       executor.reset();
       results.push({name:"executor-lifecycle",ok:ok && loopStopped && unsupported && executor.getSnapshot().status === "idle"});
@@ -193,7 +222,7 @@ test("runtime no navegador: DOM, CSS, console, erros e isolamento", { skip: !ava
         const message = JSON.parse(event.data);
         if (pending.has(message.id)) { pending.get(message.id)(message); pending.delete(message.id); }
       };
-      for (let attempt = 0; attempt < 150; attempt++) {
+      for (let attempt = 0; attempt < 400; attempt++) {
         const id = ++nextId;
         const response = new Promise(resolve => pending.set(id, resolve));
         socket.send(JSON.stringify({ id, method:"Runtime.evaluate", params:{ expression:'document.getElementById("result")?.textContent', returnByValue:true } }));

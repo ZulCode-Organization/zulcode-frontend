@@ -34,7 +34,7 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
   };
 
   return (
-    <div className="flex w-[120px] flex-col items-center gap-2">
+    <div className="flex w-[104px] flex-col items-center gap-1.5 sm:w-[120px] sm:gap-2">
       {estado === "atual" && (
         // Balão "Começar" flutuando por cima do nó (animate-float), bem
         // colado nele. Some com uma transição quando o popup abre, e volta
@@ -46,7 +46,7 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
           )}
         >
           <div className="animate-float relative">
-            <span className="block rounded-xl border-2 border-primary bg-card px-4.5 py-2 text-[0.75rem] font-black uppercase tracking-[0.09em] text-primary shadow-sm">
+            <span className="block rounded-xl border-2 border-primary bg-card px-3.5 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.09em] text-primary shadow-sm sm:px-4.5 sm:py-2 sm:text-[0.75rem]">
               Começar
             </span>
             <span
@@ -62,19 +62,19 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
           de verdade em vez de só escurecer. Raio fixo em px (não o token
           --radius, que escala com rem) pra manter a proporção sempre igual —
           arredondado o bastante pra não parecer quadrado, sem virar círculo. */}
-      <div className="relative size-[84px] h-[92px]">
+      <div className="relative size-[72px] h-[80px] sm:size-[84px] sm:h-[92px]">
         {/* Anel só aparece durante o pulso de destaque (voltar pra lição
             atual) — antes ficava sempre visível e virava uma sombra
             esbranquiçada atrás do nó o tempo todo. */}
         {estado === "atual" && highlighted && (
           <span
-            className="absolute left-0 top-0 size-[84px] rounded-[30px] bg-foreground/10 animate-pulse-ring"
+            className="absolute left-0 top-0 size-[72px] rounded-[26px] bg-foreground/10 animate-pulse-ring sm:size-[84px] sm:rounded-[30px]"
             aria-hidden
           />
         )}
 
         <span
-          className={cn("absolute left-[6px] top-[15px] size-[72px] rounded-[26px]", preenchido ? "bg-primary brightness-75" : "bg-border")}
+          className={cn("absolute left-[5px] top-[13px] size-[62px] rounded-[22px] sm:left-[6px] sm:top-[15px] sm:size-[72px] sm:rounded-[26px]", preenchido ? "bg-primary brightness-75" : "bg-border")}
           aria-hidden
         />
 
@@ -85,7 +85,7 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
           aria-disabled={bloqueada}
           onClick={handleClick}
           className={cn(
-            "absolute left-[6px] top-[6px] flex size-[72px] items-center justify-center rounded-[26px] transition-[top] duration-100 active:top-[13px]",
+            "absolute left-[5px] top-[5px] flex size-[62px] items-center justify-center rounded-[22px] transition-[top] duration-100 active:top-[11px] sm:left-[6px] sm:top-[6px] sm:size-[72px] sm:rounded-[26px] sm:active:top-[13px]",
             preenchido && "bg-primary text-primary-foreground",
             estado === "disponivel" && "border-2 border-primary bg-card text-primary",
             bloqueada && "cursor-not-allowed border-2 border-border bg-muted text-muted-foreground/60",
@@ -93,22 +93,22 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
           )}
         >
           {bloqueada ? (
-            <Lock className="size-6" />
+            <Lock className="size-5 sm:size-6" />
           ) : (
-            <CodeXml className="size-7" strokeWidth={2.75} />
+            <CodeXml className="size-6 sm:size-7" strokeWidth={2.75} />
           )}
 
           {estado === "concluida" && (
-            <span className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-amber-400 text-amber-950 ring-[3px] ring-background">
-              <Star className="size-3.5 fill-current" strokeWidth={0} />
+            <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-amber-400 text-amber-950 ring-[3px] ring-background sm:size-6">
+              <Star className="size-3 fill-current sm:size-3.5" strokeWidth={0} />
             </span>
           )}
           {emAndamento && (
             <span
-              className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full text-amber-950 ring-[3px] ring-background"
+              className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full text-amber-950 ring-[3px] ring-background sm:size-6"
               style={{ background: "linear-gradient(to bottom right, #fbbf24 0 50%, #aeb6c1 50% 100%)" }}
             >
-              <Star className="size-3.5 fill-current" strokeWidth={0} />
+              <Star className="size-3 fill-current sm:size-3.5" strokeWidth={0} />
             </span>
           )}
         </button>

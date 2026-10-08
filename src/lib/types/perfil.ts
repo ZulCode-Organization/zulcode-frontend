@@ -47,6 +47,10 @@ export interface PerfilUsuario {
   doubleXpUntil?: string | null;
   /** Vidas restantes (as "penas"). null enquanto a API não devolver o campo. */
   vidas: number | null;
+  /** Teto de penas. Vem de /user/lives; 5 enquanto a API não disser outro. */
+  maxVidas?: number;
+  /** Quando a próxima pena volta. Nulo com as penas cheias ou na conta Pro. */
+  proximaVidaEm?: string | null;
   /** Moedas. null enquanto a API não devolver o campo. */
   moedas: number | null;
   /** XP ganho hoje, lições concluídas hoje e minutos estudados hoje.

@@ -1,7 +1,9 @@
+import type { WebFiles } from "../playground-preview";
+
 export type ExecutionStatus = "idle" | "running" | "ready" | "error" | "stopped";
 export type ConsoleTone = "normal" | "warning" | "error" | "success";
 export type ConsoleEntry = { id: string; tone: ConsoleTone; text: string };
-export type ExecutionRequest = { language: string; files: Record<string, string> };
+export type ExecutionRequest = { files: WebFiles };
 export type PreviewDescriptor = { id: string; url: string };
 export type ExecutionSnapshot = {
   status: ExecutionStatus;
@@ -10,7 +12,6 @@ export type ExecutionSnapshot = {
 };
 export interface PlaygroundExecutor {
   readonly capabilities: {
-    languages: readonly string[];
     visualPreview: boolean;
     hardCancellation: boolean;
     loopChecks: boolean;

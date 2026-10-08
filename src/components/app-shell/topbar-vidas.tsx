@@ -67,7 +67,9 @@ function contagem(alvo: string | null) {
  * tempo passar.
  */
 export function PainelVidas({ onNavegar }: { onNavegar?: () => void }) {
-  const { perfil, retry } = usePerfil();
+  // Silencioso: os chips da barra continuam com o número na tela e animam a
+  // diferença quando a resposta chega, em vez de piscar "…".
+  const { perfil, atualizar } = usePerfil();
   const [estado, setEstado] = useState<EstadoVidas | null>(null);
   const [itens, setItens] = useState<ItemLoja[] | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
@@ -121,7 +123,7 @@ export function PainelVidas({ onNavegar }: { onNavegar?: () => void }) {
       const corpo = await res.json().catch(() => null);
       if (!res.ok) throw new Error(corpo?.message ?? "Não foi possível concluir.");
       setAviso({ texto: corpo?.message ?? "Pronto!", erro: false });
-      await Promise.all([carregar(), Promise.resolve(retry())]);
+      await Promise.all([carregar(), Promise.resolve(atualizar())]);
     } catch (erro) {
       setAviso({ texto: erro instanceof Error ? erro.message : "Tente novamente.", erro: true });
     } finally {

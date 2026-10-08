@@ -152,6 +152,10 @@ interface PerfilState {
   cursosEmAndamento: CursoProgresso[];
   cursosConcluidos: CursoProgresso[];
   retry: () => void;
+  /** Busca de novo sem passar por "carregando": os números da tela continuam
+   *  lá enquanto a resposta não chega, e só trocam quando ela chega. É o que
+   *  deixa a barra animar a diferença em vez de piscar. */
+  atualizar: () => void;
   /** Salva dados do perfil em PUT /user e atualiza a tela e o cache. */
   salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null }) => Promise<ResultadoSalvar>;
 }
@@ -206,16 +210,20 @@ function usePerfilData(): PerfilState {
   const [perfil, setPerfil] = useState<PerfilUsuario | null>(cacheOk ? perfilCache!.perfil : null);
   const [cursos, setCursos] = useState<CursoProgresso[]>(cacheOk ? perfilCache!.cursos : []);
 
-  const load = useCallback(() => {
+  const load = useCallback((silencioso = false) => {
     const token = getToken();
     if (!token) {
-      setLoading(false);
-      setError(true);
+      if (!silencioso) {
+        setLoading(false);
+        setError(true);
+      }
       return;
     }
 
-    setLoading(true);
-    setError(false);
+    if (!silencioso) {
+      setLoading(true);
+      setError(false);
+    }
 
     Promise.all([
       fetchComTimeout(`${API_BASE_URL}/user`, { headers: authHeaders(token) }).then((res) => {
@@ -264,6 +272,8 @@ function usePerfilData(): PerfilState {
           protectedStreakDays: Array.isArray(usuario.protectedStreakDays) ? usuario.protectedStreakDays : [],
           doubleXpUntil: usuario.doubleXpUntil,
           vidas: numeroOuNulo(vidasState?.lives, usuario.hearts, usuario.vidas),
+          maxVidas: typeof vidasState?.maxLives === "number" ? vidasState.maxLives : 5,
+          proximaVidaEm: typeof vidasState?.nextRefillAt === "string" ? vidasState.nextRefillAt : null,
           moedas: numeroOuNulo(usuario.coins, usuario.moedas),
           xpHoje: numeroOuNulo(usuario.xpHoje, usuario.xpToday),
           licoesHoje: numeroOuNulo(usuario.licoesHoje, usuario.lessonsToday),
@@ -274,9 +284,13 @@ function usePerfilData(): PerfilState {
         setPerfil(perfilCarregado);
         setCursos(cursosData);
       })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      // Em silêncio, uma falha não derruba a tela: os números que estão nela
+      // continuam valendo, só não foram renovados.
+      .catch(() => { if (!silencioso) setError(true); })
+      .finally(() => { if (!silencioso) setLoading(false); });
   }, []);
+
+  const atualizar = useCallback(() => load(true), [load]);
 
   useEffect(() => {
     // Já tem cache válido (mesmo token) de uma tela anterior: usa ele e nem
@@ -376,7 +390,7 @@ function usePerfilData(): PerfilState {
     [cursos]
   );
 
-  return { loading, error, perfil, cursosEmAndamento, cursosConcluidos, retry: load, salvarDados };
+  return { loading, error, perfil, cursosEmAndamento, cursosConcluidos, retry: () => load(), atualizar, salvarDados };
 }
 
 const PerfilContext = createContext<PerfilState | null>(null);

@@ -2,7 +2,7 @@
 
 import { ReactNode, RefObject, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { Pin, X } from "lucide-react";
 
 const DURACAO_MS = 220;
 /** Folga do popover pra borda da janela e pro chip que o abriu. */
@@ -42,6 +42,9 @@ interface PopoverProps {
   alinhamento?: "inicio" | "centro" | "fim";
   largura?: number;
   rotulo: string;
+  /** Fixado por segurar o chip: clicar fora não fecha. Só Esc, o X ou o
+   *  próprio chip — o painel fica aberto enquanto a pessoa compara. */
+  fixo?: boolean;
   onClose: () => void;
   children: ReactNode;
 }
@@ -56,7 +59,7 @@ interface PopoverProps {
  * rolagem tem `overflow-x: hidden`, que cortava o painel na lateral. Em
  * posição `fixed` no body ele não depende de nenhum dos dois.
  */
-export function TopbarPopover({ ancora, alinhamento = "centro", largura = 320, rotulo, onClose, children }: PopoverProps) {
+export function TopbarPopover({ ancora, alinhamento = "centro", largura = 320, rotulo, fixo = false, onClose, children }: PopoverProps) {
   const painelRef = useRef<HTMLDivElement>(null);
   const [visivel, setVisivel] = useState(false);
   const [caixa, setCaixa] = useState<{ left: number; top: number; seta: number; alturaMax: number } | null>(null);
@@ -99,6 +102,7 @@ export function TopbarPopover({ ancora, alinhamento = "centro", largura = 320, r
   }, [ancora, alinhamento, largura]);
 
   useEffect(() => {
+    if (fixo) return;
     const fecharFora = (evento: MouseEvent | TouchEvent) => {
       const alvo = evento.target as Node;
       if (painelRef.current?.contains(alvo)) return;
@@ -113,7 +117,7 @@ export function TopbarPopover({ ancora, alinhamento = "centro", largura = 320, r
       document.removeEventListener("mousedown", fecharFora);
       document.removeEventListener("touchstart", fecharFora);
     };
-  }, [ancora, onClose]);
+  }, [ancora, onClose, fixo]);
 
   if (!caixa) return null;
 
@@ -144,7 +148,22 @@ export function TopbarPopover({ ancora, alinhamento = "centro", largura = 320, r
       {/* A rolagem fica aqui dentro, e não no painel, pra setinha não rolar
           junto. O teto de altura é o que impede o painel de passar do pé da
           tela quando a lista é longa. */}
-      <div className="zc-scroll-hidden relative overflow-y-auto" style={{ maxHeight: caixa.alturaMax }}>
+      {fixo && (
+        <div className="zc-fixado flex items-center gap-2 border-b border-border px-4 py-2 text-[0.7rem] font-black uppercase tracking-[0.08em] text-muted-foreground">
+          <Pin className="size-3.5 -rotate-45 fill-current text-primary" />
+          Fixado
+          <span className="font-bold normal-case tracking-normal">· Esc para fechar</span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar painel fixado"
+            className="ml-auto grid size-6 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
+      )}
+      <div className="zc-scroll-hidden relative overflow-y-auto" style={{ maxHeight: caixa.alturaMax - (fixo ? 37 : 0) }}>
         {children}
       </div>
     </div>,

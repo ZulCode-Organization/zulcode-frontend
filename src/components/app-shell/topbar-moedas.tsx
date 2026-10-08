@@ -115,7 +115,9 @@ function BotaoPreco({ preco, ocupado, onClick }: { preco: number; ocupado: boole
  * antigo até a próxima navegação.
  */
 export function PainelMoedas({ moedas, onNavegar }: { moedas: number | null; onNavegar?: () => void }) {
-  const { perfil, retry } = usePerfil();
+  // Silencioso: os chips da barra continuam com o número na tela e animam a
+  // diferença quando a resposta chega, em vez de piscar "…".
+  const { perfil, atualizar } = usePerfil();
   const { metas, resgatar } = useMetasDiarias();
   const [itens, setItens] = useState<ItemLoja[] | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
@@ -165,7 +167,7 @@ export function PainelMoedas({ moedas, onNavegar }: { moedas: number | null; onN
       const corpo = await resposta.json().catch(() => null);
       if (!resposta.ok) throw new Error(corpo?.message ?? "Não foi possível comprar.");
       setAviso({ texto: corpo?.message ?? "Pronto, o benefício já está valendo." });
-      retry();
+      atualizar();
     } catch (erro) {
       setAviso({ texto: erro instanceof Error ? erro.message : "Não foi possível comprar.", erro: true });
     } finally {
@@ -186,7 +188,7 @@ export function PainelMoedas({ moedas, onNavegar }: { moedas: number | null; onN
       if (!resposta.ok) throw new Error(corpo?.message ?? "Não foi possível abrir o barril.");
       setAviso({ texto: corpo?.message ?? "Barril aberto!" });
       setBarril((atual) => (atual ? { ...atual, disponivel: false } : atual));
-      retry();
+      atualizar();
     } catch (erro) {
       setAviso({ texto: erro instanceof Error ? erro.message : "Não foi possível abrir o barril.", erro: true });
     } finally {
@@ -200,7 +202,7 @@ export function PainelMoedas({ moedas, onNavegar }: { moedas: number | null; onN
       const ganho = await resgatar(id);
       if (ganho > 0) {
         setAviso({ texto: `+${ganho} Rupees na conta.` });
-        retry();
+        atualizar();
       }
     } finally {
       setOcupado(null);

@@ -1,11 +1,18 @@
+/** Formato que o preview isolado aceita. Um projeto pode ter vários .css e
+ *  vários .js, e a ordem da lista é a ordem em que eles entram na página. */
+export type ArquivoDoPreview = { nome: string; codigo: string };
+
 export type WebFiles = {
   html: string;
-  css: string;
-  javascript: string;
+  styles: ArquivoDoPreview[];
+  scripts: ArquivoDoPreview[];
+  /** URLs de CDN do catálogo. O runtime revalida o domínio por conta própria. */
+  libs: string[];
 };
 
 export const PLAYGROUND_CHANNEL = "zulcode-playground";
 export const MAX_CODE_LENGTH = 100_000;
+export const MAX_ARQUIVOS_POR_TIPO = 30;
 
 export function previewUrl(parentOrigin: string, runId: string) {
   const configured = process.env.NEXT_PUBLIC_PLAYGROUND_PREVIEW_URL?.trim();

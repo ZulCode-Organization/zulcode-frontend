@@ -89,18 +89,18 @@ export function UnitBanner({ unidade, cor, unidades, onUnidadeClick }: UnitBanne
           onPointerCancel={() => setAfundado(false)}
           onPointerLeave={() => setAfundado(false)}
           className={cn(
-            "relative cursor-pointer px-7 py-5 text-left text-white",
+            "relative cursor-pointer px-5 py-4 text-left text-white sm:px-7 sm:py-5",
             aberto ? "rounded-t-3xl" : "rounded-3xl",
             cor.bg
           )}
           style={{ top: afundado ? AFUNDA : 0, transition: `top ${AFUNDA_MS}ms ease, ${TROCA_DE_COR}` }}
         >
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             <div className="min-w-0 flex-1 basis-50">
-              <p className="text-xs font-black uppercase tracking-[0.08em] opacity-85">
+              <p className="text-[0.65rem] font-black uppercase tracking-[0.08em] opacity-85 sm:text-xs">
                 Seção {unidade.secao} • Unidade {unidade.unidade}
               </p>
-              <h2 className="mt-1 text-xl font-black sm:text-[1.45rem]">{unidade.titulo}</h2>
+              <h2 className="mt-0.5 text-[1.05rem] font-black leading-tight sm:mt-1 sm:text-[1.45rem]">{unidade.titulo}</h2>
             </div>
 
             {/* O guia é outro destino: stopPropagation no clique pra não abrir
@@ -111,13 +111,13 @@ export function UnitBanner({ unidade, cor, unidades, onUnidadeClick }: UnitBanne
               onClick={(evento) => { evento.stopPropagation(); setAberto(v => !v); }}
               onPointerDown={(evento) => evento.stopPropagation()}
               aria-label="Abrir guia do curso"
-              className="zc-press zc-press-shadow flex shrink-0 items-center justify-center rounded-2xl bg-black/15 p-3"
+              className="zc-press zc-press-shadow flex shrink-0 items-center justify-center rounded-2xl bg-black/15 p-2.5 sm:p-3"
             >
               {aberto ? <X className="size-4.5" strokeWidth={2.4} /> : <Menu className="size-4.5" strokeWidth={2.4} />}
             </button>
           </div>
 
-          <div className="mt-3.5 flex items-center gap-3">
+          <div className="mt-3 flex items-center gap-3 sm:mt-3.5">
             <div className="h-2 flex-1 overflow-hidden rounded-md bg-black/20">
               <div
                 className="h-full rounded-md bg-white transition-[width] duration-300"

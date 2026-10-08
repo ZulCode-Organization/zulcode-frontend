@@ -168,6 +168,11 @@ export function SettingsContent() {
           acessorio={<ChevronRight className="size-4 shrink-0 text-destructive/60" />}
         />
       </Grupo>
+
+      {/* A licença da Solar (CC BY 4.0) pede crédito visível. */}
+      <p className="px-1 pb-2 text-center text-[0.7rem] font-semibold leading-relaxed text-muted-foreground/70">
+        Ícones de navegação: Solar, por 480 Design (CC BY 4.0), e Phosphor Icons (MIT).
+      </p>
     </div>
   );
 }

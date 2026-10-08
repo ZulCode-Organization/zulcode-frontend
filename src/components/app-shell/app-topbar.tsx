@@ -1,8 +1,7 @@
 "use client";
 
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { usePerfil } from "@/hooks/use-perfil";
 import { useCursos } from "@/hooks/use-cursos";
 import { cn } from "@/lib/utils";
@@ -11,62 +10,24 @@ import { FaixaCursosMobile, LadrilhoCurso, ListaCursosDesktop, TelaTodosCursos, 
 import { PainelOfensiva } from "./topbar-ofensiva";
 import { PainelMoedas } from "./topbar-moedas";
 import { PainelVidas } from "./topbar-vidas";
-import { PenaDesgastada, PenaInfinita } from "@/components/shared/pena-desgastada";
 import { Rupee } from "@/components/shared/rupee";
 import { sequenciaAtivaHoje } from "@/lib/sequencia";
+import { DIVISOES, divisaoDoXp } from "@/lib/divisoes";
+import { useMudanca } from "@/lib/motion/mudancas";
+import { mostrarSeloDeDivisao } from "@/lib/motion/efeitos";
+import { ChipOfensiva, ChipPenas, ChipRupees } from "./barra-viva/chips-vivos";
 
 type Painel = "curso" | "ofensiva" | "moedas" | "vidas" | "todos-cursos" | null;
 
 /** Ladrilho do curso: retângulo deitado nos dois tamanhos de tela. */
-const CURSO_ALTURA = { mobile: 42, desktop: 44 };
-const CURSO_LARGURA = { mobile: 60, desktop: 64 };
+const CURSO_ALTURA = { mobile: 36, desktop: 44 };
+const CURSO_LARGURA = { mobile: 52, desktop: 64 };
 /** A base sólida atrás do botão. Zero no celular: no ladrilho pequeno a faixa
  * escura pesava demais contra o fundo, então lá ele é chapado. */
 const CURSO_BASE = { mobile: 0, desktop: 3 };
 /** Quanto a face desce ao ser apertada. Independe da base: o retorno ao
  * toque tem que existir nos dois tamanhos, com ou sem peça atrás. */
 const CURSO_AFUNDA = { mobile: 3, desktop: 3 };
-
-interface ChipProps {
-  rotulo: string;
-  cor?: string;
-  aberto: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}
-
-/**
- * Chip de ofensiva, moedas e penas: ícone + número, sem moldura, em qualquer
- * largura. A peça ainda afunda ao ser apertada — o `zc-press` de sempre.
- *
- * O botão de curso não passa por aqui: ele é montado em duas camadas, com
- * base sólida na cor do próprio curso, como o cabeçalho da Jornada.
- */
-function Chip({ rotulo, cor, aberto, onClick, children }: ChipProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={rotulo}
-      aria-label={rotulo}
-      aria-haspopup="dialog"
-      aria-expanded={aberto}
-      className={cn(
-        // Sem moldura em tamanho nenhum: ícone + número, como no celular. A
-        // sombra sólida saiu junto — ela existia pra apoiar o corpo do card, e
-        // sozinha viraria uma barra escura solta embaixo do ícone.
-        "zc-press flex h-11 min-w-0 items-center justify-center gap-1.5 rounded-2xl px-1 text-[1.05rem] font-extrabold transition-colors duration-150",
-        "lg:w-auto lg:gap-2 lg:px-1.5 lg:text-[0.95rem]",
-        // O fundo ao abrir é o que sobrou pra dizer qual painel está aberto,
-        // já que não há mais borda pra acender.
-        aberto && "bg-muted",
-        cor
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 /**
  * Barra de status fixa no topo do conteúdo. A ordem é a da referência —
@@ -79,11 +40,15 @@ function Chip({ rotulo, cor, aberto, onClick, children }: ChipProps) {
  * número ali seria saldo inventado.
  */
 export function AppTopBar() {
-  const { perfil, loading } = usePerfil();
+  const { perfil, loading, atualizar } = usePerfil();
   const { cursos, cursoAtual, selecionarCurso } = useCursos();
   const meusCursos = useMeusCursos(perfil?.id, cursoAtual);
   const ehMobile = useEhMobile();
   const [painel, setPainel] = useState<Painel>(null);
+  // 18. Painel fixado por segurar o chip: não fecha ao clicar fora, para dar
+  // pra comparar com outra coisa da tela.
+  const [fixado, setFixado] = useState(false);
+  const grupoRef = useRef<HTMLDivElement>(null);
   const [cursoAfundado, setCursoAfundado] = useState(false);
   // A faixa de cursos do celular precisa sobreviver ao clique que a fecha:
   // sem isso o React a desmonta na hora e ela some de uma vez, sem recolher.
@@ -124,6 +89,7 @@ export function AppTopBar() {
   const fechar = () => {
     if (ehMobile && painel === "curso") setFaixaRecolhendo(true);
     setPainel(null);
+    setFixado(false);
   };
   const alternar = (alvo: Exclude<Painel, null>) => {
     if (painel === alvo) {
@@ -131,7 +97,13 @@ export function AppTopBar() {
       return;
     }
     setFaixaRecolhendo(false);
+    setFixado(false);
     setPainel(alvo);
+  };
+  const fixar = (alvo: Exclude<Painel, null>) => {
+    setFaixaRecolhendo(false);
+    setPainel(alvo);
+    setFixado(true);
   };
 
   /** `teto` corta o número no chip pra ele não empurrar os vizinhos: acima
@@ -164,6 +136,47 @@ export function AppTopBar() {
   // estudar, e uma chama acesa ali diria o contrario.
   const sequenciaAcesa = sequenciaAtivaHoje(perfil?.streakAtual, perfil?.ultimaAtividade);
 
+  // Voltar para a trilha busca os números de novo, em silêncio. É o que faz a
+  // barra ver as 30 rupees ganhas na lição e animar a diferença — o perfil
+  // estava em cache desde antes da lição.
+  useEffect(() => {
+    if (naTrilha) atualizar();
+  }, [naTrilha, atualizar]);
+
+  // 17. Atalhos: S, R, V e C. Só sem modificador e fora de campo de texto —
+  // ninguém pode perder um "r" digitado porque abriu o painel de rupees.
+  const alternarRef = useRef(alternar);
+  useEffect(() => { alternarRef.current = alternar; });
+  useEffect(() => {
+    if (!naTrilha) return;
+    const mapa: Record<string, Exclude<Painel, null>> = { s: "ofensiva", r: "moedas", v: "vidas", c: "curso" };
+    const aoTeclar = (evento: KeyboardEvent) => {
+      if (evento.ctrlKey || evento.metaKey || evento.altKey || evento.repeat) return;
+      const alvo = evento.target as HTMLElement | null;
+      if (alvo?.closest("input, textarea, select, [contenteditable=''], [contenteditable='true'], [role='dialog']")) return;
+      const destino = mapa[evento.key.toLowerCase()];
+      if (!destino) return;
+      evento.preventDefault();
+      alternarRef.current(destino);
+    };
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+  }, [naTrilha]);
+
+  // 20. Divisão nova: o índice da divisão sobe, e um selo desce de baixo dos
+  // chips. Descer de divisão não acontece (o XP não cai), mas se acontecer não
+  // há o que comemorar.
+  const indiceDaDivisao = typeof perfil?.xp === "number"
+    ? DIVISOES.findIndex((item) => item.id === divisaoDoXp(perfil.xp).id)
+    : null;
+  const mudancaDeDivisao = useMudanca(perfil?.id && naTrilha ? `${perfil.id}:divisao` : null, indiceDaDivisao);
+  useEffect(() => {
+    const ancora = grupoRef.current;
+    if (!mudancaDeDivisao || !ancora || mudancaDeDivisao.para <= mudancaDeDivisao.de) return;
+    const divisao = DIVISOES[mudancaDeDivisao.para];
+    if (divisao) mostrarSeloDeDivisao(ancora, divisao.nome, divisao.cor, 900);
+  }, [mudancaDeDivisao]);
+
   const baseCurso = ehMobile ? CURSO_BASE.mobile : CURSO_BASE.desktop;
   const cursoAltura = ehMobile ? CURSO_ALTURA.mobile : CURSO_ALTURA.desktop;
   const cursoLargura = ehMobile ? CURSO_LARGURA.mobile : CURSO_LARGURA.desktop;
@@ -178,8 +191,18 @@ export function AppTopBar() {
   }
 
   return (
-    <div ref={barraRef} className="sticky top-0 z-20 bg-background px-3 pb-1 pt-3 sm:px-4 sm:pt-4 lg:pb-0 lg:pl-8 lg:pr-5 xl:pr-7">
-      <div className="relative grid grid-cols-4 items-center gap-1 lg:flex lg:items-center lg:justify-end lg:gap-2">
+    <div ref={barraRef} className="sticky top-0 z-20 bg-background px-3 pb-1 pt-2 sm:px-4 sm:pt-4 lg:pb-0 lg:pl-8 lg:pr-5 xl:pr-7">
+      {/* No computador os chips ficam centralizados com o painel da direita, e
+          nao encostados na borda. As larguras sao a area util do painel: ele
+          tem 340px com px-5 (sobram 300) e 410px com px-7 no xl (sobram 354).
+          Como o respiro lateral desta barra ja e o mesmo do painel, uma caixa
+          dessa largura encostada a direita cai exatamente em cima do card.
+
+          O espacamento divide esse orcamento com os chips, que somam 248px:
+          sobram ~17px por vao no lg e ~35px no xl. Dai o gap-3/gap-5 -- com
+          numeros grandes (99999 rupees) os chips crescem, e o que sobra e a
+          margem que impede eles de passarem do card. */}
+      <div ref={grupoRef} className="relative grid grid-cols-4 items-center gap-1 lg:ml-auto lg:flex lg:w-[300px] lg:items-center lg:justify-center lg:gap-3 xl:w-[354px] xl:gap-5">
         {/* 1. Curso atual — era o botão do cabeçalho da Jornada, agora vive
             aqui, coladinho na ofensiva. */}
         <div ref={ancoraCurso} className={cn(celula, "lg:justify-end")}>
@@ -231,42 +254,46 @@ export function AppTopBar() {
 
         {/* 2. Ofensiva */}
         <div ref={ancoraOfensiva} className={celula}>
-          <Chip
-            rotulo={sequenciaAcesa ? "Dias seguidos" : "Estude hoje para manter a sequência"}
-            cor={sequenciaAcesa ? "text-blue-600" : "text-muted-foreground"}
+          <ChipOfensiva
+            contaId={perfil?.id ?? null}
+            carregando={loading || !perfil}
             aberto={painel === "ofensiva"}
-            onClick={() => alternar("ofensiva")}
-          >
-            <ChamaDupla className="size-8 lg:size-7" aceso={sequenciaAcesa} protegido={protecoes > 0} />
-            {valor(perfil?.streakAtual, 1000)}
-          </Chip>
+            aoAbrir={() => alternar("ofensiva")}
+            aoSegurar={() => fixar("ofensiva")}
+            dias={typeof perfil?.streakAtual === "number" ? perfil.streakAtual : null}
+            acesa={sequenciaAcesa}
+            protegido={protecoes > 0}
+            recorde={perfil?.streakRecorde ?? 0}
+            protegidos={perfil?.protectedStreakDays ?? []}
+          />
         </div>
 
-        {/* 3. Moedas */}
+        {/* 3. Rupees */}
         <div ref={ancoraMoedas} className={celula}>
-          <Chip rotulo="Rupees" cor="text-emerald-500" aberto={painel === "moedas"} onClick={() => alternar("moedas")}>
-            <Rupee className="size-7 lg:size-6" />
-            {valor(perfil?.moedas, 99999)}
-          </Chip>
+          <ChipRupees
+            contaId={perfil?.id ?? null}
+            carregando={loading || !perfil}
+            aberto={painel === "moedas"}
+            aoAbrir={() => alternar("moedas")}
+            aoSegurar={() => fixar("moedas")}
+            moedas={typeof perfil?.moedas === "number" ? perfil.moedas : null}
+          />
         </div>
 
         {/* 4. Penas: a marca é uma ave, então a vida do app é uma pena dela. */}
         <div ref={ancoraVidas} className={celula}>
-          <Chip
-            rotulo={perfil?.isPro ? "Penas ilimitadas" : "Penas"}
-            cor={perfil?.isPro ? "text-violet-500" : "text-rose-500"}
+          <ChipPenas
+            contaId={perfil?.id ?? null}
+            carregando={loading || !perfil}
             aberto={painel === "vidas"}
-            onClick={() => alternar("vidas")}
-          >
-            {perfil?.isPro ? (
-              <PenaInfinita className="size-7 lg:size-6" />
-            ) : (
-              <>
-                <PenaDesgastada restantes={perfil?.vidas ?? 5} className="size-7 lg:size-6" />
-                {valor(perfil?.vidas)}
-              </>
-            )}
-          </Chip>
+            aoAbrir={() => alternar("vidas")}
+            aoSegurar={() => fixar("vidas")}
+            vidas={typeof perfil?.vidas === "number" ? perfil.vidas : null}
+            maximo={perfil?.maxVidas ?? 5}
+            proximaEm={perfil?.proximaVidaEm ?? null}
+            pro={!!perfil?.isPro}
+            aoRecarregar={atualizar}
+          />
         </div>
 
         {/* Faixa de cursos do celular: desce de trás da barra, cobrindo o
@@ -338,7 +365,7 @@ export function AppTopBar() {
       )}
 
       {!ehMobile && painel === "ofensiva" && (
-        <TopbarPopover ancora={ancoraOfensiva} rotulo="Ofensiva" largura={380} onClose={fechar}>
+        <TopbarPopover ancora={ancoraOfensiva} rotulo="Ofensiva" largura={380} fixo={fixado} onClose={fechar}>
           <div className="p-4">
             <PainelOfensiva streakAtual={perfil?.streakAtual ?? 0} streakRecorde={perfil?.streakRecorde ?? 0} protecoes={protecoes} diasProtegidos={perfil?.protectedStreakDays ?? []} onNavegar={fechar} />
           </div>
@@ -346,7 +373,7 @@ export function AppTopBar() {
       )}
 
       {!ehMobile && painel === "moedas" && (
-        <TopbarPopover ancora={ancoraMoedas} rotulo="Rupees" largura={320} onClose={fechar}>
+        <TopbarPopover ancora={ancoraMoedas} rotulo="Rupees" largura={320} fixo={fixado} onClose={fechar}>
           <div className="p-4">
             <PainelMoedas moedas={perfil?.moedas ?? null} onNavegar={fechar} />
           </div>
@@ -354,7 +381,7 @@ export function AppTopBar() {
       )}
 
       {!ehMobile && painel === "vidas" && (
-        <TopbarPopover ancora={ancoraVidas} rotulo="Penas" alinhamento="fim" largura={360} onClose={fechar}>
+        <TopbarPopover ancora={ancoraVidas} rotulo="Penas" alinhamento="fim" largura={360} fixo={fixado} onClose={fechar}>
           <div className="p-4">
             <PainelVidas onNavegar={fechar} />
           </div>

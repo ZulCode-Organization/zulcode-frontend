@@ -39,16 +39,30 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
             com duas barras de rolagem lado a lado. A barra de status e os
             cabeçalhos sticky grudam no topo dela, e essa é a única barra de
             rolagem da tela, escondida visualmente (zc-scroll-hidden). */}
-        <div className={cn("zc-scroll-hidden flex-1 overflow-y-auto overflow-x-hidden", fixedContent && "overflow-y-hidden")}>
-          <AppTopBar />
+        {/* Com fixedContent esta coluna vira flex: é o que deixa a área de
+            conteúdo ocupar exatamente a altura que sobra, em vez de depender de
+            um calc() com a altura da barra chutada dentro. */}
+        <div className={cn(
+          "zc-scroll-hidden flex-1 overflow-y-auto overflow-x-hidden",
+          fixedContent && "flex min-h-0 flex-col overflow-y-hidden",
+        )}>
+          {/* Fora da trilha a barra é só um respiro de 16px. Numa ferramenta de
+              tela cheia esses 16px viram uma faixa morta no topo, e ela não tem
+              painel direito para precisar do --zc-topbar-h que a barra publica. */}
+          {!fixedContent && <AppTopBar />}
 
           {/* Sem justify-center: main ocupa todo o espaço que sobra (o
               conteúdo dela fica centralizado por dentro, com sua própria
               largura de leitura), então o painel encosta na borda direita
               de verdade, em vez de ficar centralizado com um vão depois
               dele em telas grandes. */}
-          <div className="flex">
-            <main className={cn("w-full min-w-0 flex-1 px-4 pb-10 lg:px-8", fixedContent && "h-[calc(100dvh-136px)] overflow-hidden pb-0 lg:h-[calc(100dvh-72px)]")}>
+          <div className={cn("flex", fixedContent && "min-h-0 flex-1")}>
+            <main className={cn(
+              "w-full min-w-0 flex-1 px-4 pb-10 lg:px-8",
+              // Sem padding lateral e sem altura fixa: a ferramenta encosta nas
+              // bordas e o que sobra de altura é dela.
+              fixedContent && "min-h-0 overflow-hidden px-0 pb-0 lg:px-0",
+            )}>
               <div className={cn("mx-auto", contentClassName, fixedContent && "h-full min-h-0")}>{children}</div>
             </main>
 

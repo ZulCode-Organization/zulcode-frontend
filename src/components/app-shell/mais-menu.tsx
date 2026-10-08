@@ -103,7 +103,7 @@ export function MaisMenu({ onClose }: MaisMenuProps) {
               "flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-black uppercase tracking-[0.05em] transition-colors duration-150",
               active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/60"
             );
-            const content = <><span className={cn("flex size-9 shrink-0 items-center justify-center rounded-[10px]", active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}><Icon className="size-5" /></span>{item.label}</>;
+            const content = <><span className={cn("flex size-9 shrink-0 items-center justify-center rounded-[10px]", active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}><Icon className="size-[30px]" /></span>{item.label}</>;
             if (item.external) return <a key={item.id} href={item.href} onClick={fechar} className={className}>{content}</a>;
             return (
               <Link

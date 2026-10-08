@@ -1,4 +1,4 @@
-import { MAX_CODE_LENGTH, PLAYGROUND_CHANNEL, previewUrl, type WebFiles } from "../playground-preview";
+import { MAX_ARQUIVOS_POR_TIPO, MAX_CODE_LENGTH, PLAYGROUND_CHANNEL, previewUrl, type WebFiles } from "../playground-preview";
 import type { ConsoleTone, ExecutionRequest, ExecutionSnapshot, PlaygroundExecutor } from "./executor";
 
 const STARTUP_TIMEOUT_MS = 5000;
@@ -6,7 +6,6 @@ const initialSnapshot = (): ExecutionSnapshot => ({ status: "idle", logs: [], pr
 
 export class IframeExecutor implements PlaygroundExecutor {
   readonly capabilities = {
-    languages: ["javascript"] as const,
     visualPreview: true,
     hardCancellation: false,
     loopChecks: true,
@@ -55,14 +54,12 @@ export class IframeExecutor implements PlaygroundExecutor {
     this.invalidate();
     this.update({ status: "running", logs: [], preview: null });
     try {
-      if (!this.capabilities.languages.some(language => language === request.language)) {
-        throw new Error("Este executor suporta somente HTML, CSS e JavaScript.");
-      }
-      const files: WebFiles = {
-        html: request.files.html, css: request.files.css, javascript: request.files.javascript,
-      };
-      if (Object.values(files).some(source => typeof source !== "string" || source.length > MAX_CODE_LENGTH)) {
-        throw new Error("Cada arquivo deve ser texto com até 100.000 caracteres.");
+      const files = request.files;
+      const listas = [files.styles, files.scripts];
+      if (files.html.length > MAX_CODE_LENGTH ||
+          listas.some(lista => lista.length > MAX_ARQUIVOS_POR_TIPO) ||
+          listas.flat().some(arquivo => arquivo.codigo.length > MAX_CODE_LENGTH)) {
+        throw new Error(`Cada arquivo deve ter até 100.000 caracteres, e no máximo ${MAX_ARQUIVOS_POR_TIPO} por tipo.`);
       }
       const id = crypto.randomUUID();
       const url = previewUrl(window.location.origin, id);

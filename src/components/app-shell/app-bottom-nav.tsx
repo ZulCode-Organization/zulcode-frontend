@@ -3,7 +3,7 @@
 import { ReactNode, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MoreHorizontal } from "lucide-react";
+import { DuoMais } from "@/components/shared/icone-duo";
 import { cn } from "@/lib/utils";
 import { bottomNavItems, moreNavItems } from "./nav-items";
 import { MaisMenu } from "./mais-menu";
@@ -81,7 +81,7 @@ export function AppBottomNav() {
           return (
             <div key={item.id} className="flex flex-1 cursor-default justify-center" title={item.label} aria-label={`${item.label} — indisponível`}>
               <Ladrilho ativo={false} desabilitado>
-                <Icon className="size-5" />
+                <Icon className="size-[30px]" />
               </Ladrilho>
             </div>
           );
@@ -97,7 +97,7 @@ export function AppBottomNav() {
             className="group flex flex-1 justify-center"
           >
             <Ladrilho ativo={active}>
-              <Icon className="size-5" />
+              <Icon className="size-[30px]" />
             </Ladrilho>
           </Link>
         );
@@ -113,7 +113,7 @@ export function AppBottomNav() {
         className="group flex flex-1 justify-center"
       >
         <Ladrilho ativo={maisAtivo}>
-          <MoreHorizontal className="size-5" />
+          <DuoMais />
         </Ladrilho>
       </button>
 

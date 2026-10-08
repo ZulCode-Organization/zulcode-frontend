@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "next-themes";
-import { ChevronDown, FolderPlus, LogOut, MoreHorizontal } from "lucide-react";
+import { ChevronDown, FolderPlus, LogOut } from "lucide-react";
+import { DuoMais } from "@/components/shared/icone-duo";
 import { usePerfil } from "@/hooks/use-perfil";
 import { cn } from "@/lib/utils";
 import { adminEntry, adminNavItems, sidebarMoreItems, sidebarNavItems } from "./nav-items";
@@ -81,7 +82,7 @@ function MenuMais() {
           "group flex items-center justify-center rounded-2xl border py-2 text-sm font-black uppercase tracking-[0.05em] transition-colors duration-150",
           "xl:justify-start xl:gap-3 xl:px-4 xl:py-3",
           ativo || aberto
-            ? "border-primary/30 bg-primary/10 text-primary"
+            ? "border-transparent text-primary xl:border-primary/30 xl:bg-primary/10"
             : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
         )}
       >
@@ -91,7 +92,7 @@ function MenuMais() {
             ativo ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:text-foreground"
           )}
         >
-          <MoreHorizontal className="size-5" />
+          <DuoMais />
         </span>
         <span className="hidden xl:inline">Mais</span>
       </button>
@@ -119,7 +120,7 @@ function MenuMais() {
                     selecionado ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                   )}
                 >
-                  <Icon className="size-4.5" />
+                  <Icon className="size-[26px]" />
                 </span>
                 {item.label}
               </>
@@ -173,7 +174,11 @@ export function AppSidebar() {
       "xl:justify-start xl:gap-3 xl:px-4 xl:py-3",
       nested && "rounded-xl text-[0.78rem] xl:ml-5 xl:py-2.5",
       active
-        ? "border-primary/30 bg-primary/10 text-primary"
+        // No trilho de icones o quadrado azul do proprio icone ja marca o item
+        // ativo; a pilula em volta dele vira um halo solto. Da barra larga pra
+        // cima ela volta, porque la ela envolve o icone E o rotulo, que e o
+        // que ela existe pra fazer.
+        ? "border-transparent text-primary xl:border-primary/30 xl:bg-primary/10"
         : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
     );
     const rotulo = <span className="hidden xl:inline">{item.label}</span>;
@@ -187,7 +192,7 @@ export function AppSidebar() {
             : "bg-primary text-primary-foreground"
         )}
       >
-        <Icon className={nested ? "size-4" : "size-5"} />
+        <Icon className={nested ? "size-[24px]" : "size-[30px]"} />
       </span>
     );
 

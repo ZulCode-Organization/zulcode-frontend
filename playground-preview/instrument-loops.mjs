@@ -1,12 +1,23 @@
 // Inserções por posição preservam strings, comentários e as linhas originais.
 export function instrumentLoops(source, parse, guardName) {
-  const tree = parse(source, { ecmaVersion: "latest", sourceType: "script", locations: true });
+  let tree;
+  try {
+    tree = parse(source, { ecmaVersion: "latest", sourceType: "script", locations: true });
+  } catch (error) {
+    if (error instanceof SyntaxError && error.message.includes("'import' and 'export'")) {
+      throw new SyntaxError("Módulos e imports ainda não são suportados. Use JavaScript clássico em script.js.");
+    }
+    throw error;
+  }
   const edits = [];
   const identifiers = new Set();
   const nodes = [tree];
   const loops = new Set(["WhileStatement", "DoWhileStatement", "ForStatement", "ForInStatement", "ForOfStatement"]);
   while (nodes.length) {
     const node = nodes.pop();
+    if (node.type === "ImportExpression") {
+      throw new SyntaxError("Imports dinâmicos ainda não são suportados. Use JavaScript clássico em script.js.");
+    }
     if (node.type === "Identifier") identifiers.add(node.name);
     if (node.type === "WithStatement") {
       throw new SyntaxError("with não é suportado pelo playground com proteção de loops.");

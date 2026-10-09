@@ -1,0 +1,739 @@
+1. Diagnóstico do playground atual
+Tecnologias e arquivos reais
+O frontend usa Next.js 16.2.9, React 19.2.4, TypeScript, Tailwind CSS 4, Lucide e Radix UI. O editor atual é um textarea; Monaco, CodeMirror, Prettier e Sandpack não estão instalados no frontend.
+Os principais arquivos são:
+Arquivo	Responsabilidade atual
+[src/app/playground/page.tsx](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/app/playground/page.tsx)	Editor, arquivos fixos, abas, rascunho, botões e layout.
+[src/hooks/usePlaygroundExecutor.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/hooks/usePlaygroundExecutor.ts)	Integra o executor ao React.
+[src/lib/playground/executor.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/lib/playground/executor.ts)	Contrato de execução e capacidades.
+[src/lib/playground/iframe-executor.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/lib/playground/iframe-executor.ts)	Inicialização, mensagens, console, encerramento e timeout.
+[src/lib/playground-preview.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/lib/playground-preview.ts)	URL do runtime, canal e limite dos arquivos.
+[playground-preview/runtime.js](/Users/gabrielzanelatto/Backup/zulcode-frontend/playground-preview/runtime.js)	Combina HTML/CSS/JS e captura logs e erros.
+[playground-preview/instrument-loops.mjs](/Users/gabrielzanelatto/Backup/zulcode-frontend/playground-preview/instrument-loops.mjs)	Insere verificações nos loops usando Acorn.
+[playground-preview/loop-budget.mjs](/Users/gabrielzanelatto/Backup/zulcode-frontend/playground-preview/loop-budget.mjs)	Controla o orçamento de execução dos loops.
+[playground-preview/build.mjs](/Users/gabrielzanelatto/Backup/zulcode-frontend/playground-preview/build.mjs)	Gera o HTML estático com runtime, parser e CSP.
+[next.config.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/next.config.ts)	Cabeçalhos de proteção da rota do runtime.
+
+
+A identidade visual vem de [globals.css](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/app/globals.css), [layout.tsx](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/app/layout.tsx) e [AppShell](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/components/app-shell/app-shell.tsx). Atualmente, o código usa Geist Mono.
+O Android usa Capacitor e pode carregar a versão hospedada, conforme [capacitor.config.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/capacitor.config.ts).
+Como a execução funciona
+1. A página mantém três textos: HTML, CSS e JavaScript.
+2. Ao executar, envia uma cópia desses textos ao executor.
+3. O executor cria um identificador novo e solicita um iframe novo.
+4. O iframe carrega /playground-runtime/index.html.
+5. Após receber booted, o aplicativo envia os arquivos por postMessage.
+6. O runtime interpreta o HTML, injeta o CSS e carrega o JavaScript instrumentado por uma URL Blob.
+7. Logs e erros voltam para o console do aplicativo.
+O iframe usa:
+sandbox="allow-scripts"
+referrerpolicy="no-referrer"
+Não há allow-same-origin. O executor confere janela de origem, origem opaca "null", canal e identificador da execução. O runtime confere a janela do aplicativo e sua origem exata.
+O destino "*" na mensagem enviada ao iframe é necessário por sua origem opaca; a mensagem é enviada ao contentWindow daquele iframe específico.
+Armazenamento, logs e linguagens
+- O rascunho é salvo em localStorage, após 300 ms, e no evento pagehide.
+- Existe leitura do formato antigo de rascunho.
+- O console captura log, info, debug, warn e error, erros de execução e rejeições de promises.
+- O runtime limita quantidade e tamanho das mensagens.
+- Cada execução começa com console limpo.
+- Mensagens de outro iframe ou identificador são descartadas.
+- Não existe seleção de linguagem atualmente: o hook instancia diretamente IframeExecutor.
+Há um endpoint antigo no backend: [playground.controller.ts](/Users/gabrielzanelatto/Backup/zulcode-backend/src/playground/playground.controller.ts) e [playground.service.ts](/Users/gabrielzanelatto/Backup/zulcode-backend/src/playground/playground.service.ts). Ele faz proxy para um runner Piston configurável, mas não participa da execução atual do playground web. Sua disponibilidade não foi verificada.
+Problemas confirmados pela leitura do código
+Perda e recuperação de trabalho
+- Restaurar o exemplo substitui o código sem confirmação.
+- A chave do rascunho não identifica usuário ou projeto: contas diferentes no mesmo navegador compartilham esse rascunho.
+- Um rascunho inválido pode ser substituído pelo exemplo no salvamento seguinte.
+- Ao navegar internamente antes dos 300 ms, o efeito cancela o salvamento pendente e não faz uma gravação final.
+Edição
+- Não há sintaxe colorida, números de linha, autocomplete, formatação ou Emmet.
+- Não existe estado explícito de cursor, seleção, rolagem e histórico por arquivo.
+- A lista “Arquivos” contém três botões fixos; não é um sistema de arquivos.
+Execução
+- Scripts escritos dentro do HTML são removidos; o JavaScript vem de script.js.
+- Não existe resolvedor para caminhos relativos.
+- Imports estáticos não são suportados pelo fluxo de script clássico.
+- Recursos externos comuns são bloqueados pela CSP.
+- Mensagens do console são textos serializados, sem inspeção interativa de objetos.
+- Os erros não têm um modelo estruturado de arquivo, linha e coluna.
+Interface
+- Painéis têm tamanhos fixos.
+- No celular, o console fica acoplado ao editor e à saída; não possui painel independente.
+- Não há navegação de abas implementada como um conjunto completo de tabs acessíveis.
+Pontos que ainda precisam de reprodução
+Não considero confirmados, sem testes adicionais:
+- Comportamento do desfazer nativo ao alternar arquivos no textarea.
+- Foco e seleção durante trocas de painel no Android WebView.
+- Espaço disponível com teclado virtual aberto.
+- Contraste de todos os elementos nos temas existentes.
+- Comportamento em Safari/iOS.
+- Casos extremos de desmontagem e remontagem do hook.
+A proteção atual de loops é parcial por definição: verifica corpos instrumentados, mas não garante interromper chamadas nativas demoradas, recursão ou scripts gerados dinamicamente.
+2. Arquitetura recomendada e justificativa
+Manteria esta separação:
+```mermaid
+flowchart TD
+    P[Estado do projeto e arquivos] --> E[Editor CodeMirror]
+    E --> P
+    P --> S[Salvamento local]
+    P --> X[Executor existente]
+    X --> I[Preview em iframe]
+    I --> C[Console e diagnóstico]
+```
+O projeto deve conhecer arquivos e conteúdo. O editor deve conhecer cursor, seleção e histórico. O executor deve receber uma cópia do projeto para executar. Essa divisão evita recriar o editor a cada alteração ou misturar edição com código executado.
+Monaco × CodeMirror
+Critério	Monaco	CodeMirror 6
+Integração	Modelos, providers e configuração dos workers de linguagem.	Estado, view e extensões; exige um componente de integração ao React.
+Recursos	Forte base de serviços de linguagem e experiência semelhante ao VS Code.	Recursos configuráveis por extensões; adequado à edição HTML/CSS/JS.
+Tamanho	Mais componentes e serviços a carregar; medir no build real.	Modular: permite selecionar recursos e linguagens.
+Computador	Boa opção para experiência centrada em desktop.	Adequado ao escopo atual.
+Tablet/celular	O projeto declara não oferecer suporte a navegadores móveis.	Minha escolha para validar uma experiência única com toque e teclado virtual.
+Acessibilidade	Possui orientações próprias; integração precisa segui-las.	Possui recursos acessíveis, mas abas, atalhos, foco e painéis continuam responsabilidade do aplicativo.
+
+
+As APIs de modelos e workers do Monaco estão documentadas, assim como sua restrição de suporte móvel. Monaco. O CodeMirror permite configurar funcionalidades por extensões e manter documento, seleção e histórico no estado do editor. Guia CodeMirror, referência.
+Escolha recomendada: CodeMirror 6, carregado apenas na rota do playground e no cliente. Não apresentaria números de bundle antes de medir a configuração escolhida.
+O editor não entrega uma IDE completa. Ainda teremos que integrar arquivos, persistência, execução, preview, atalhos, diagnósticos e layout. Autocomplete básico também não equivale a análise semântica completa entre arquivos.
+Sandpack
+Sua vantagem concreta seria gerenciar projetos JavaScript com vários arquivos, dependências e atualização do bundler no iframe. Documentação Sandpack.
+Não recomendo adotá-lo agora: já existe um runtime simples funcionando, com CSP e proteção de loops próprias. Uma troca exigiria revalidar essas garantias. Reavaliaria Sandpack quando React, pacotes npm ou módulos complexos se tornarem requisitos reais.
+WebContainers e ambientes remotos ficam para depois. Não há necessidade atual comprovada para eles.
+Política de arquivos e recursos
+Para a primeira versão:
+- index.html, style.css e script.js continuam sendo os arquivos de entrada.
+- Referências a esses dois arquivos locais no HTML devem ser reconhecidas, sem carregar recursos da hospedagem nem executar o JavaScript duas vezes.
+- Imagens: permitir inicialmente data:; uploads ficam para uma etapa posterior.
+- Outros caminhos relativos devem produzir diagnóstico claro.
+- Imports e pacotes npm ficam explicitamente fora dessa versão.
+- Recursos externos continuam bloqueados.
+Quando houver arquivos adicionais, será necessário resolver caminhos dentro de um projeto virtual, tratar referências quebradas e decidir como compilar módulos. Apenas concatenar JavaScript não resolve imports, dependências ou ciclos.
+3. Tabela de recursos
+“Pronto” abaixo significa implementado no escopo atual; não significa validado em todos os dispositivos.
+Recurso	Estado	Observação
+Execução HTML/CSS/JS	Pronto	Para os três textos fixos.
+Iframe isolado	Pronto	Sandbox, CSP e protocolo existentes.
+Logs e erros JavaScript	Pronto	Inclui rejeições de promises.
+Encerrar/reiniciar e descartar mensagens antigas	Pronto	Identificador e iframe por execução.
+Proteção de loops	Parcial	Instrumentação, sem limite rígido universal.
+Abas e lista de arquivos	Parcial	Três arquivos fixos.
+Salvamento	Parcial	Um rascunho local, sem separação por conta/projeto.
+Recuperação segura	Quebrado em certos fluxos	Rascunho inválido e salvamento pendente podem ser perdidos.
+Confirmação antes de restaurar	Ausente	O conteúdo é substituído imediatamente.
+Histórico/cursor por arquivo	Ausente	Não há gerenciamento explícito.
+Sintaxe, linhas, indentação e fechamento automático	Ausente	Editor atual é um textarea.
+Autocomplete, snippets, Emmet e formatação	Ausente	Necessitam integração.
+Busca própria do editor	Ausente	Busca do navegador não substitui isso.
+Caminhos relativos e imports	Ausente	Não há resolvedor de projeto.
+Atualização automática opcional	Ausente	Apenas execução manual.
+Painéis redimensionáveis	Ausente	Grid fixo.
+Layout móvel	Parcial	Existe alternância, mas console e teclado precisam melhorar.
+Acessibilidade	Parcial	Há labels e foco no editor; falta validar o fluxo completo.
+Salvamento entre dispositivos	Ausente	Não há persistência de projetos no backend.
+Terminal real	Ausente	Não é necessário nesta fase.
+
+
+4. Plano de implementação por etapas
+Os caminhos novos abaixo são propostas, não arquivos existentes.
+Etapa 1 — Confiabilidade da execução e proteção do rascunho
+Objetivo: preservar o que funciona e corrigir perdas de conteúdo antes da troca do editor.
+- Alterar: src/app/playground/page.tsx, src/lib/playground/iframe-executor.ts, playground-preview/runtime.js, playground-preview/browser.test.mjs.
+- Criar: src/lib/playground/protocol.ts e testes específicos do protocolo/recuperação.
+- Dependências: nenhuma nova.
+- Mudanças: confirmar restauração; preservar rascunho inválido para recuperação; gravar alterações pendentes ao sair; reconhecer os três arquivos de entrada; melhorar diagnóstico de referências não suportadas; validar estritamente o formato das mensagens.
+- Risco: alterar o handshake ou executar scripts duplicados.
+- Conclusão/testes: exemplo atual funciona; referências padrão funcionam uma vez; mensagens antigas/falsas são ignoradas; saída rápida não perde edição; loops continuam interrompidos.
+- Reversão: reverter apenas essa etapa, preservando as chaves e cópias antigas do rascunho.
+Etapa 2 — Estado de projeto e salvamento separado da página
+Objetivo: representar os três arquivos com IDs estáveis e separar persistência de apresentação.
+- Alterar: src/app/playground/page.tsx; adaptar a entrada do executor somente onde necessário.
+- Criar: src/lib/playground/project.ts, src/lib/playground/project-storage.ts e src/hooks/usePlaygroundProject.ts.
+- Dependências: nenhuma nova inicialmente.
+- Modelo: versão do formato, ID do projeto, proprietário local, arquivos com ID/caminho/linguagem/conteúdo, arquivo ativo e revisão.
+- Salvamento: estado “salvando/salvo/erro”, separação por conta e migração do rascunho antigo sem apagar a origem. O identificador local organiza dados; não substitui autorização do backend.
+- Risco: migração incorreta ou dois estados divergentes.
+- Conclusão/testes: recarregar restaura conteúdo; trocar conta não mistura projetos; falha de armazenamento mantém o texto em memória e permite exportação.
+- Reversão: retornar ao formato anterior a partir da cópia preservada, sem remover dados novos.
+Etapa 3 — Editor CodeMirror e estado por arquivo
+Objetivo: substituir o textarea preservando conteúdo, execução e rascunho.
+- Alterar: src/app/playground/page.tsx, package.json, package-lock.json.
+- Criar: src/components/playground/code-editor.tsx, src/lib/playground/editor-extensions.ts e src/lib/playground/editor-sessions.ts.
+- Dependências: @codemirror/state, view, commands, language, autocomplete, search, lang-html, lang-css e lang-javascript.
+- Recursos: cores, números de linha, indentação, correspondência/fechamento de delimitadores, fechamento de tags, busca e autocomplete básico adequado ao arquivo.
+- Estado: um EditorState por ID de arquivo; preservar seleção, histórico e rolagem durante a sessão. Não recriar a view a cada tecla.
+- Risco: perder histórico por sincronização excessiva com React ou deixar listeners após desmontagem.
+- Conclusão/testes: editar A, alternar para B, voltar e desfazer em A não altera B; testar montagem, limpeza, composição de texto e teclado virtual.
+- Reversão: restaurar o componente de textarea, mantendo o mesmo estado de projeto.
+Etapa 4 — Snippets, formatação e execução automática opcional
+Objetivo: melhorar produtividade sem tornar o comportamento imprevisível.
+- Alterar: componente do editor, extensões, página e scripts de dependências.
+- Criar: src/lib/playground/snippets.ts, src/lib/playground/format-code.ts e, se necessário, worker de formatação.
+- Dependência: prettier, carregado sob demanda com parsers HTML, CSS e JavaScript. No navegador, os plugins precisam ser fornecidos explicitamente. Prettier.
+- Snippets: começar com ! para um documento HTML e exemplos pedagógicos. Não prometer Emmet completo; o plugin consultado se apresenta como WIP. Plugin Emmet.
+- Atalhos: executar com Ctrl/Cmd+Enter, buscar com Ctrl/Cmd+F e salvar com Ctrl/Cmd+S. Expansão não deve aprisionar a tecla Tab.
+- Atualização automática: desativada por padrão, com debounce e uso da revisão mais recente.
+- Conclusão/testes: formatação desfazível; sintaxe inválida mantém o original; snippet posiciona o cursor corretamente; execução automática não aplica uma revisão antiga.
+- Reversão: desativar esses comandos e o modo automático, preservando execução manual.
+Etapa 5 — Workspace, acessibilidade e telas menores
+Objetivo: organizar a experiência de IDE mantendo a identidade do Zulcode.
+- Alterar: página; globals.css apenas se necessário. Ajustar AppShell somente se os testes demonstrarem problema de altura.
+- Criar: componentes de workspace, arquivos, abas, console e preview em src/components/playground/.
+- Dependência proposta: react-resizable-panels, após validar a API e o comportamento acessível da versão escolhida.
+- Desktop: arquivos, abas, editor, preview e console com painéis redimensionáveis.
+- Celular: alternância independente entre editor, preview e console; arquivos acessíveis sem ocupar permanentemente a tela.
+- Acessibilidade: teclado, foco visível, retorno de foco após diálogos, contraste e anúncios de erros sem leitura excessiva dos logs.
+- Fonte: avaliar JetBrains Mono somente no playground, com fallback monoespaçado e ligaturas
+
+
+
+
+Recomendo evoluir o playground atual com CodeMirror 6, preservando o executor em iframe e começando pelos três arquivos existentes. A execução já tem uma base utilizável; o maior trabalho agora está na edição, no estado do projeto e na recuperação de alterações.
+Nesta análise não alterei arquivos, instalei dependências nem modifiquei o banco. Executei os quatro testes existentes de instrumentação de loops: todos passaram. Os testes de navegador e o build não foram reexecutados nesta rodada.
+1. Diagnóstico do playground atual
+Tecnologias e arquivos envolvidos
+O frontend utiliza Next.js 16.2.9, React 19.2.4, TypeScript, Tailwind CSS 4, Lucide e next-themes. Há integração Android com Capacitor. Nenhum editor profissional está instalado: a edição usa um textarea.
+Os arquivos principais são:
+Arquivo existente	Responsabilidade
+[src/app/playground/page.tsx](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/app/playground/page.tsx)	Interface, arquivos fixos, edição e rascunho local
+[src/hooks/usePlaygroundExecutor.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/hooks/usePlaygroundExecutor.ts)	Integração do executor com React
+[src/lib/playground/executor.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/lib/playground/executor.ts)	Contrato de execução, capacidades, estados e logs
+[src/lib/playground/iframe-executor.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/lib/playground/iframe-executor.ts)	Inicialização, mensagens, timeout e encerramento
+[src/lib/playground-preview.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/lib/playground-preview.ts)	URL do runtime e limites dos arquivos
+[playground-preview/runtime.js](/Users/gabrielzanelatto/Backup/zulcode-frontend/playground-preview/runtime.js)	Montagem do documento, execução e captura do console
+[playground-preview/build.mjs](/Users/gabrielzanelatto/Backup/zulcode-frontend/playground-preview/build.mjs)	Geração do runtime estático e da CSP
+[playground-preview/instrument-loops.mjs](/Users/gabrielzanelatto/Backup/zulcode-frontend/playground-preview/instrument-loops.mjs)	Inserção das verificações de loops usando Acorn
+[playground-preview/loop-budget.mjs](/Users/gabrielzanelatto/Backup/zulcode-frontend/playground-preview/loop-budget.mjs)	Orçamento de iterações e duração
+[next.config.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/next.config.ts)	Cabeçalhos de isolamento da rota do runtime
+[src/app/globals.css](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/app/globals.css)	Tema, tipografia e seleção de texto
+[src/components/app-shell/app-shell.tsx](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/components/app-shell/app-shell.tsx)	Estrutura e altura disponível da página
+
+
+Existem ainda playground-preview/browser.test.mjs, playground-preview/loops.test.mjs, playground-preview/vercel.json e PLAYGROUND_WEB.md.
+No backend, [src/playground/playground.service.ts](/Users/gabrielzanelatto/Backup/zulcode-backend/src/playground/playground.service.ts) implementa um proxy para um runner Piston, com controller e DTO na mesma pasta. O playground web atual não chama esse serviço. A disponibilidade desse runner não foi verificada.
+Como a execução funciona
+O fluxo atual é:
+1. A página mantém três textos: HTML, CSS e JavaScript.
+2. Executar envia uma cópia desses textos ao IframeExecutor.
+3. O executor cria um identificador e uma URL de preview.
+4. React renderiza o iframe, que carrega o bootstrap estático.
+5. O runtime envia booted; o aplicativo responde com os arquivos por postMessage.
+6. O runtime analisa o HTML, adiciona o CSS e executa o JavaScript instrumentado por uma URL Blob.
+7. Logs e erros retornam ao aplicativo.
+O iframe utiliza sandbox="allow-scripts" sem allow-same-origin. No projeto principal, a resposta HTTP também aplica sandbox e frame-ancestors 'self'.
+As mensagens são verificadas nos dois sentidos:
+- Aplicativo: janela do iframe, origem opaca "null", canal e identificador da execução.
+- Runtime: janela do pai, origem esperada, canal, identificador e arquivos.
+- O envio ao iframe usa "*" porque sua origem é opaca; o destinatário é a janela específica do iframe.
+- O retorno ao aplicativo utiliza a origem exata.
+Isso fornece isolamento de DOM e armazenamento. Não equivale a isolamento de processo nem a um limite rígido de CPU.
+Logs, salvamento e linguagens
+O console captura log, info, debug, warn, error, erros de execução e rejeições de promises. Os valores são convertidos em texto; não há objetos expansíveis nem navegação para a linha do editor.
+O rascunho é salvo em localStorage, após 300 ms, na chave zulcode:playground-web-draft:v1. Existe recuperação do formato anterior.
+Não há troca de linguagem atualmente. O contrato permite outros executores, mas o hook instancia diretamente IframeExecutor, que aceita apenas JavaScript com HTML/CSS.
+Problemas confirmados
+- Restaurar exemplo descarta o código sem confirmação.
+- O rascunho usa uma chave compartilhada entre contas do mesmo navegador.
+- Uma navegação interna antes do debounce pode perder a última edição: o cleanup cancela o timer sem realizar um salvamento final.
+- Um rascunho inválido pode acabar substituído pelo exemplo padrão no próximo salvamento, sem preservar uma cópia recuperável.
+- Não existe estado de cursor, seleção e histórico de desfazer separado por arquivo.
+- Não existe resolução de arquivos virtuais. Os nomes index.html, style.css e script.js são rótulos da interface.
+- Scripts no HTML são removidos; links de stylesheet não são resolvidos para os arquivos editados. Imports estáticos não são aceitos pelo parser em modo script.
+- Não há árvore real, CRUD de arquivos, projetos nomeados ou salvamento no servidor.
+Não encontrei uma falha confirmada na execução básica de HTML/CSS/JS. As referências a arquivos e imports são funcionalidades incompletas, e não uma falha do fluxo atual de injeção dos três textos.
+Pontos que ainda precisam de reprodução
+- Comportamento do histórico nativo do textarea durante trocas de arquivo.
+- Seleção, teclado virtual e altura dos painéis em Android WebView e Safari móvel.
+- Experiência com leitores de tela e contraste das cores.
+- Desempenho com arquivos próximos do limite de 100.000 caracteres.
+Os testes existentes de navegador exercitam runtime e executor; não cobrem toda a página React, autenticação, editor ou salvamento.
+2. Arquitetura recomendada e justificativa
+A arquitetura proposta se encaixa no código existente:
+```mermaid
+flowchart TD
+    P[Estado do projeto e arquivos] --> E[Editor CodeMirror]
+    P --> S[Salvamento local]
+    P --> R[Preparação da execução]
+    R --> X[Contrato PlaygroundExecutor]
+    X --> I[Executor em iframe]
+    I --> V[Preview]
+    I --> C[Console e erros]
+```
+A separação recomendada é:
+- Projeto: documentos, caminhos, arquivo ativo, abas e alterações.
+- Editor: texto, seleção, histórico, busca e ferramentas de edição.
+- Preparação: valida os recursos suportados e produz a entrada do executor.
+- Executor: executa e fornece estados/resultados.
+- Interface: organiza os painéis e ações.
+- Persistência: salva documentos sem depender dos objetos internos do editor.
+O contrato existente deve ser preservado. Para várias linguagens, será necessário depois acrescentar uma seleção de executores; essa seleção ainda não existe.
+Monaco versus CodeMirror
+Critério	Monaco	CodeMirror 6
+Integração	Exige configurar editor, modelos e workers dos serviços de linguagem	Permite uma integração própria com EditorView e extensões
+Recursos	Modelos por arquivo e serviços de linguagem mais completos, especialmente para JS/TS	Sintaxe, histórico, busca e completions configuráveis; inteligência semântica avançada exige integração
+Tamanho	A configuração precisa considerar editor e workers	Permite escolher os módulos utilizados; tamanho final deve ser medido
+Acessibilidade	Possui orientação específica para integração acessível	Possui mecanismos de acessibilidade; o aplicativo deve configurar foco, rótulos e atalhos
+Computador	Boa opção para uma experiência próxima do VS Code	Adequado para a experiência proposta
+Tablet e celular	O projeto declara que navegadores móveis não são suportados	Melhor candidato para este projeto, sujeito a testes com toque, teclado virtual e WebView
+
+
+A documentação do Monaco explica modelos, workers e a ausência de suporte móvel. Isso pesa contra adotá-lo como editor único do Zulcode. Monaco.
+Minha recomendação é CodeMirror 6, pela possibilidade de uma configuração menor e controlada e pelo foco do aplicativo em dispositivos móveis. O tamanho deve ser comparado em builds equivalentes, sem assumir números genéricos de bundle. Configuração modular.
+Cada arquivo deve manter seu próprio EditorState, incluindo seleção e histórico. Trocar apenas o texto de uma única instância perderia parte dessa vantagem. Estado do CodeMirror.
+O que o editor não entrega sozinho
+Precisaremos integrar:
+- Abas e árvore de arquivos.
+- Salvamento e recuperação.
+- Execução, preview e console.
+- Estado por arquivo e descarte seguro.
+- Formatação e snippets.
+- Resolução de imports e recursos.
+- Autocomplete entre arquivos e informações semânticas mais avançadas.
+Colorir sintaxe não significa oferecer autocomplete completo de uma IDE. Na primeira versão, proponho sugestões de HTML/CSS e completions básicas de JavaScript, incluindo APIs selecionadas para ensino.
+Sandpack
+Sua vantagem concreta seria trazer gerenciamento de arquivos, dependências e bundling para projetos JavaScript mais complexos. Ele mantém um bundler no iframe e permite atualizar o projeto. Sandpack Client.
+Não recomendo adotá-lo agora: os três arquivos simples não justificam substituir o runtime já existente. Essa troca também exigiria reavaliar CSP, hospedagem e proteção de loops.
+WebContainers e ambientes remotos podem esperar até existir uma necessidade de Node.js, pacotes ou compiladores.
+3. Tabela de recursos
+“Pronto” significa implementado no fluxo atual, não validado em todos os dispositivos.
+Recurso	Estado	Observação
+HTML/CSS/JS com preview	Pronto	Três textos combinados pelo runtime
+Iframe isolado	Pronto	Sandbox mínimo e CSP
+Console e erros de JavaScript	Pronto	Texto limitado; sem inspeção de objetos
+Reinício, encerramento e mensagens antigas	Pronto	Identificador novo por execução
+Proteção de loops	Parcial	Loops instrumentados; sem garantia para todo código
+Rascunho local	Parcial	Falta isolamento por conta e recuperação mais segura
+Confirmação de descarte	Ausente	Restaurar exemplo perde alterações imediatamente
+Abas e arquivos	Parcial	Três entradas fixas
+Estado de edição por arquivo	Ausente	Sem cursor/histórico independentes
+Sintaxe, números de linha e indentação	Ausente	Editor atual é textarea
+Autocomplete e fechamento automático	Ausente	Precisam do novo editor
+Snippets/Emmet, incluindo !	Ausente	Integração adicional
+Busca e formatação	Ausente	Apenas Executar possui atalho próprio
+Caminhos, imagens e imports	Parcial	Imagens data:; sem sistema de arquivos virtual
+Atualização automática	Ausente	Execução manual
+Painéis redimensionáveis	Ausente	Grid com proporções fixas
+Interface móvel	Parcial	Alterna Arquivos/Editor/Saída; console não é painel independente
+Projetos salvos no servidor	Ausente	Nenhum modelo de projeto identificado no Prisma
+
+
+4. Plano de implementação por etapas
+Os caminhos novos abaixo são propostas, ainda não existem.
+Etapa 1 — Consolidar execução e evitar perda de código
+Objetivo: manter o preview funcionando e tornar explícito o que ele suporta.
+- Alterar: src/app/playground/page.tsx, src/lib/playground/iframe-executor.ts, playground-preview/runtime.js, playground-preview/browser.test.mjs e PLAYGROUND_WEB.md.
+- Criar: src/lib/playground/protocol.ts, centralizando tipos e validação das mensagens.
+- Dependências: nenhuma.
+- Entrega: confirmação ao restaurar; salvar antes de desmontar; preservar rascunho inválido; mensagens com tipos estritos; diagnóstico para recursos não suportados.
+- Conclusão/testes: os cenários existentes continuam passando; mensagens incorretas e antigas são ignoradas; restauração cancelada preserva o código; navegação rápida não perde a edição.
+- Risco: mudar a composição do documento ou protocolo. Manter os exemplos atuais como regressão.
+- Reversão: reverter somente o commit da etapa; preservar o formato e a cópia do rascunho anterior.
+Nesta etapa, reconhecer referências aos três arquivos conhecidos deve evitar carregamentos reais e duplicação da injeção. Qualquer outro caminho precisa ter comportamento explícito.
+Etapa 2 — Separar projeto e persistência da página
+Objetivo: preparar os três arquivos para o editor profissional.
+- Alterar: src/app/playground/page.tsx e documentação.
+- Criar: src/lib/playground/project.ts, project-storage.ts e src/hooks/usePlaygroundProject.ts.
+- Dependências: nenhuma.
+- Entrega: arquivos com ID estável, caminho, linguagem e conteúdo; arquivo ativo; versão do formato; estado de salvamento.
+- Persistência: chave por conta e projeto, migração do rascunho anterior sem apagá-lo antes da validação. O ID da conta serve para organização local, não como autorização.
+- Conclusão/testes: recuperação após recarregar, troca de conta, armazenamento indisponível, dados inválidos e migração.
+- Risco: sobrescrever rascunhos ou misturar contas. Usar gravação versionada e conservar o legado.
+- Reversão: retornar ao leitor antigo mantendo as duas versões do armazenamento.
+Etapa 3 — Integrar CodeMirror
+Objetivo: substituir o textarea sem mudar a execução.
+- Alterar: src/app/playground/page.tsx, package.json, package-lock.json.
+- Criar: src/components/playground/code-editor.tsx e arquivos de configuração em src/lib/playground/editor/.
+- Dependências: @codemirror/state, view, language, commands, search, autocomplete, lang-html, lang-css e lang-javascript.
+- Entrega: cores, números de linha, indentação, fechamento de delimitadores/tags, autocomplete básico, busca e atalhos.
+- Estado: um EditorState por ID de arquivo; preservar seleção, desfazer/refazer e posição de rolagem durante a sessão.
+- Conclusão/testes: alternar arquivos sem misturar histórico; digitar sem perder foco; Executar usar o texto mais recente; copiar/colar, acentos e composição funcionarem.
+- Risco: recriar o editor a cada mudança de React e apagar histórico. Atualizar por transações e limpar instâncias corretamente.
+- Reversão: restaurar o componente de edição anterior; os documentos continuam no modelo da etapa 2.
+O histórico de desfazer após fechar o aplicativo fica fora da primeira versão.
+Etapa 4 — Snippets, formatação e atualização opcional
+Objetivo: completar as ferramentas de edição.
+- Alterar: componente do editor, configurações de extensões e página.
+- Criar: src/lib/playground/editor/snippets.ts e format.ts.
+- Dependências: prettier, com os parsers necessários carregados sob demanda. No navegador os plugins precisam ser fornecidos explicitamente. Prettier.
+- Entrega: snippet ! para estrutura HTML, snippets básicos, botão Formatar e atualização automática opcional com debounce.
+- Autocomplete: distinguir sugestões básicas de análises semânticas; não prometer resolução de tipos/imports entre arquivos.
+- Conclusão/testes: formatação reversível por Undo; código inválido preservado; snippets com posições de cursor; atualização automática usa a última revisão e não dispara em sequência descontrolada.
+- Risco: mudanças inesperadas de texto e conflito com Tab. Começar por comandos explícitos; manter atualização automática desligada por padrão.
+- Reversão: retirar as extensões e o modo automático, preservando editor e documentos.
+Emmet completo pode entrar depois de uma avaliação específica. O plugin consultado se apresenta como WIP; para !, um snippet pequeno atende a necessidade inicial. Plugin Emmet.
+Etapa 5 — Organizar a interface como workspace
+Objetivo: melhorar desktop e dispositivos menores sem mudar a identidade do app.
+- Alterar: página; ajustar globals.css e AppShell somente onde testes mostrarem necessidade.
+- Criar: workspace.tsx, file-tabs.tsx, file-tree.tsx, preview-panel.tsx e console-panel.tsx em src/components/playground/.
+- Dependências: avaliar react-resizable-panels para divisores; aproveitar o Radix já instalado para confirmações.
+- Entrega: arquivos/abas/editor/preview/console; painéis redimensionáveis no desktop; editor, preview e console como painéis móveis independentes.
+- Visual: manter cores e tema existentes. Avaliar JetBrains Mono apenas no código; Geist Mono já está configurada. JetBrains Mono é disponibilizada para uso em interfaces de código. Fonte.
+- Conclusão/testes: foco visível, operação por teclado, divisores acessíveis, zoom de 200%, contraste, teclado virtual e orientação.
+- Risco: ocultar controles ou prender o foco. Tab deve permitir sair do editor; atalhos precisam ser documentados.
+- Reversão: voltar ao grid atual sem alterar projeto, editor e executor.
+O console continua sendo console JavaScript. Não haverá terminal decorativo.
+Etapa 6 — Vários projetos, CRUD e arquivos adicionais
+Objetivo: expandir depois de estabilizar a versão com três arquivos.
+- Alterar: modelo/persistência, árvore, abas e preparação da execução.
+- Criar: project-actions.ts, resource-resolver.ts e testes correspondentes.
+- Dependências: nenhuma para CRUD básico; avaliar bundler somente quando módulos forem aprovados.
+- Entrega: criar, renomear e excluir arquivos/projetos; confirmações; exportação/importação de projeto; limites de tamanho.
+- Conclusão/testes: IDs preservados ao renomear, caminhos únicos, exclusão do arquivo ativo, recuperação e referências inválidas diagnosticadas.
+- Risco: oferecer arquivos que o runtime não consegue executar. O CRUD deve entrar junto com a política de recursos.
+- Reversão: desabilitar os comandos novos, mantendo os projetos gravados e uma forma de exportá-los.
+Política de caminhos, imagens e imports
+Para a primeira versão:
+- index.html, style.css e script.js são os arquivos conhecidos.
+- Referências a esses CSS/JS devem ser reconhecidas e resolvidas internamente, sem buscar no domínio do aplicativo.
+- Imagens: somente data: inicialmente.
+- Outros caminhos, scripts externos, chamadas de rede e imports: não suportados, com diagnóstico claro.
+- JavaScript permanece clássico; não há npm nem módulos entre arquivos.
+Para a etapa 6, o resolver deve trabalhar com um manifesto virtual, impedir acesso fora do projeto e gerenciar recursos internos e URLs Blob. Imports exigem uma decisão específica de bundling, instrumentação de todos os arquivos e localização dos erros. Não devem ser implementados por substituições de strings.
+5. Escopo da primeira versão utilizável
+A versão inicial evoluída termina nas etapas 1 a 5:
+- Três arquivos fixos e abas.
+- CodeMirror com edição assistida, busca e snippets básicos.
+- Cursor e histórico por arquivo durante a sessão.
+- Formatação explícita.
+- Preview isolado, console e proteção atual de loops.
+- Execução manual e atualização automática opcional.
+- Salvamento local por conta, recuperação e confirmação de descarte.
+- Layout adaptado a desktop e celular.
+A proteção de loops continua cooperativa: verifica os cinco tipos instrumentados, com orçamento de iterações/tempo. Recursão, chamadas nativas demoradas e código gerado dinamicamente não ficam necessariamente cobertos.
+A verificação deve incluir:
+- Chrome, Edge e Firefox em desktop.
+- Safari no macOS.
+- Chrome Android e o Android WebView usado pelo Capacitor.
+- Safari em iPhone e iPad.
+- Teclado físico/virtual, copiar/colar, composição de caracteres e leitores de tela.
+Esses são alvos de teste; a compatibilidade só deve ser declarada depois dos resultados.
+6. Melhorias futuras que podem esperar
+- CRUD de arquivos e vários projetos.
+- Assets internos e imports entre módulos.
+- Autocomplete semântico entre arquivos.
+- Salvamento em conta e sincronização entre dispositivos.
+- Python e outros executores.
+- Sandpack, WebContainers, npm ou ambientes remotos.
+- Debugger, breakpoints e colaboração.
+A primeira etapa recomendada é a etapa 1, principalmente para evitar perda de código antes de trocar o editor. Ela envolve a página, o executor, o runtime, os testes existentes, a documentação e o novo protocol.ts.
+Aguardo sua próxima instrução para implementar somente a etapa escolhida.
+
+
+
+
+
+
+Recomendo evoluir o playground atual com CodeMirror 6, preservando o executor em iframe e começando pelos três arquivos existentes. A execução já tem uma base utilizável; o maior trabalho agora está na edição, no estado do projeto e na recuperação de alterações.
+Nesta análise não alterei arquivos, instalei dependências nem modifiquei o banco. Executei os quatro testes existentes de instrumentação de loops: todos passaram. Os testes de navegador e o build não foram reexecutados nesta rodada.
+1. Diagnóstico do playground atual
+Tecnologias e arquivos envolvidos
+O frontend utiliza Next.js 16.2.9, React 19.2.4, TypeScript, Tailwind CSS 4, Lucide e next-themes. Há integração Android com Capacitor. Nenhum editor profissional está instalado: a edição usa um textarea.
+Os arquivos principais são:
+Arquivo existente	Responsabilidade
+[src/app/playground/page.tsx](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/app/playground/page.tsx)	Interface, arquivos fixos, edição e rascunho local
+[src/hooks/usePlaygroundExecutor.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/hooks/usePlaygroundExecutor.ts)	Integração do executor com React
+[src/lib/playground/executor.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/lib/playground/executor.ts)	Contrato de execução, capacidades, estados e logs
+[src/lib/playground/iframe-executor.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/lib/playground/iframe-executor.ts)	Inicialização, mensagens, timeout e encerramento
+[src/lib/playground-preview.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/lib/playground-preview.ts)	URL do runtime e limites dos arquivos
+[playground-preview/runtime.js](/Users/gabrielzanelatto/Backup/zulcode-frontend/playground-preview/runtime.js)	Montagem do documento, execução e captura do console
+[playground-preview/build.mjs](/Users/gabrielzanelatto/Backup/zulcode-frontend/playground-preview/build.mjs)	Geração do runtime estático e da CSP
+[playground-preview/instrument-loops.mjs](/Users/gabrielzanelatto/Backup/zulcode-frontend/playground-preview/instrument-loops.mjs)	Inserção das verificações de loops usando Acorn
+[playground-preview/loop-budget.mjs](/Users/gabrielzanelatto/Backup/zulcode-frontend/playground-preview/loop-budget.mjs)	Orçamento de iterações e duração
+[next.config.ts](/Users/gabrielzanelatto/Backup/zulcode-frontend/next.config.ts)	Cabeçalhos de isolamento da rota do runtime
+[src/app/globals.css](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/app/globals.css)	Tema, tipografia e seleção de texto
+[src/components/app-shell/app-shell.tsx](/Users/gabrielzanelatto/Backup/zulcode-frontend/src/components/app-shell/app-shell.tsx)	Estrutura e altura disponível da página
+
+
+Existem ainda playground-preview/browser.test.mjs, playground-preview/loops.test.mjs, playground-preview/vercel.json e PLAYGROUND_WEB.md.
+No backend, [src/playground/playground.service.ts](/Users/gabrielzanelatto/Backup/zulcode-backend/src/playground/playground.service.ts) implementa um proxy para um runner Piston, com controller e DTO na mesma pasta. O playground web atual não chama esse serviço. A disponibilidade desse runner não foi verificada.
+Como a execução funciona
+O fluxo atual é:
+1. A página mantém três textos: HTML, CSS e JavaScript.
+2. Executar envia uma cópia desses textos ao IframeExecutor.
+3. O executor cria um identificador e uma URL de preview.
+4. React renderiza o iframe, que carrega o bootstrap estático.
+5. O runtime envia booted; o aplicativo responde com os arquivos por postMessage.
+6. O runtime analisa o HTML, adiciona o CSS e executa o JavaScript instrumentado por uma URL Blob.
+7. Logs e erros retornam ao aplicativo.
+O iframe utiliza sandbox="allow-scripts" sem allow-same-origin. No projeto principal, a resposta HTTP também aplica sandbox e frame-ancestors 'self'.
+As mensagens são verificadas nos dois sentidos:
+- Aplicativo: janela do iframe, origem opaca "null", canal e identificador da execução.
+- Runtime: janela do pai, origem esperada, canal, identificador e arquivos.
+- O envio ao iframe usa "*" porque sua origem é opaca; o destinatário é a janela específica do iframe.
+- O retorno ao aplicativo utiliza a origem exata.
+Isso fornece isolamento de DOM e armazenamento. Não equivale a isolamento de processo nem a um limite rígido de CPU.
+Logs, salvamento e linguagens
+O console captura log, info, debug, warn, error, erros de execução e rejeições de promises. Os valores são convertidos em texto; não há objetos expansíveis nem navegação para a linha do editor.
+O rascunho é salvo em localStorage, após 300 ms, na chave zulcode:playground-web-draft:v1. Existe recuperação do formato anterior.
+Não há troca de linguagem atualmente. O contrato permite outros executores, mas o hook instancia diretamente IframeExecutor, que aceita apenas JavaScript com HTML/CSS.
+Problemas confirmados
+- Restaurar exemplo descarta o código sem confirmação.
+- O rascunho usa uma chave compartilhada entre contas do mesmo navegador.
+- Uma navegação interna antes do debounce pode perder a última edição: o cleanup cancela o timer sem realizar um salvamento final.
+- Um rascunho inválido pode acabar substituído pelo exemplo padrão no próximo salvamento, sem preservar uma cópia recuperável.
+- Não existe estado de cursor, seleção e histórico de desfazer separado por arquivo.
+- Não existe resolução de arquivos virtuais. Os nomes index.html, style.css e script.js são rótulos da interface.
+- Scripts no HTML são removidos; links de stylesheet não são resolvidos para os arquivos editados. Imports estáticos não são aceitos pelo parser em modo script.
+- Não há árvore real, CRUD de arquivos, projetos nomeados ou salvamento no servidor.
+Não encontrei uma falha confirmada na execução básica de HTML/CSS/JS. As referências a arquivos e imports são funcionalidades incompletas, e não uma falha do fluxo atual de injeção dos três textos.
+Pontos que ainda precisam de reprodução
+- Comportamento do histórico nativo do textarea durante trocas de arquivo.
+- Seleção, teclado virtual e altura dos painéis em Android WebView e Safari móvel.
+- Experiência com leitores de tela e contraste das cores.
+- Desempenho com arquivos próximos do limite de 100.000 caracteres.
+Os testes existentes de navegador exercitam runtime e executor; não cobrem toda a página React, autenticação, editor ou salvamento.
+2. Arquitetura recomendada e justificativa
+A arquitetura proposta se encaixa no código existente:
+```mermaid
+flowchart TD
+    P[Estado do projeto e arquivos] --> E[Editor CodeMirror]
+    P --> S[Salvamento local]
+    P --> R[Preparação da execução]
+    R --> X[Contrato PlaygroundExecutor]
+    X --> I[Executor em iframe]
+    I --> V[Preview]
+    I --> C[Console e erros]
+```
+A separação recomendada é:
+- Projeto: documentos, caminhos, arquivo ativo, abas e alterações.
+- Editor: texto, seleção, histórico, busca e ferramentas de edição.
+- Preparação: valida os recursos suportados e produz a entrada do executor.
+- Executor: executa e fornece estados/resultados.
+- Interface: organiza os painéis e ações.
+- Persistência: salva documentos sem depender dos objetos internos do editor.
+O contrato existente deve ser preservado. Para várias linguagens, será necessário depois acrescentar uma seleção de executores; essa seleção ainda não existe.
+Monaco versus CodeMirror
+Critério	Monaco	CodeMirror 6
+Integração	Exige configurar editor, modelos e workers dos serviços de linguagem	Permite uma integração própria com EditorView e extensões
+Recursos	Modelos por arquivo e serviços de linguagem mais completos, especialmente para JS/TS	Sintaxe, histórico, busca e completions configuráveis; inteligência semântica avançada exige integração
+Tamanho	A configuração precisa considerar editor e workers	Permite escolher os módulos utilizados; tamanho final deve ser medido
+Acessibilidade	Possui orientação específica para integração acessível	Possui mecanismos de acessibilidade; o aplicativo deve configurar foco, rótulos e atalhos
+Computador	Boa opção para uma experiência próxima do VS Code	Adequado para a experiência proposta
+Tablet e celular	O projeto declara que navegadores móveis não são suportados	Melhor candidato para este projeto, sujeito a testes com toque, teclado virtual e WebView
+
+
+A documentação do Monaco explica modelos, workers e a ausência de suporte móvel. Isso pesa contra adotá-lo como editor único do Zulcode. Monaco.
+Minha recomendação é CodeMirror 6, pela possibilidade de uma configuração menor e controlada e pelo foco do aplicativo em dispositivos móveis. O tamanho deve ser comparado em builds equivalentes, sem assumir números genéricos de bundle. Configuração modular.
+Cada arquivo deve manter seu próprio EditorState, incluindo seleção e histórico. Trocar apenas o texto de uma única instância perderia parte dessa vantagem. Estado do CodeMirror.
+O que o editor não entrega sozinho
+Precisaremos integrar:
+- Abas e árvore de arquivos.
+- Salvamento e recuperação.
+- Execução, preview e console.
+- Estado por arquivo e descarte seguro.
+- Formatação e snippets.
+- Resolução de imports e recursos.
+- Autocomplete entre arquivos e informações semânticas mais avançadas.
+Colorir sintaxe não significa oferecer autocomplete completo de uma IDE. Na primeira versão, proponho sugestões de HTML/CSS e completions básicas de JavaScript, incluindo APIs selecionadas para ensino.
+Sandpack
+Sua vantagem concreta seria trazer gerenciamento de arquivos, dependências e bundling para projetos JavaScript mais complexos. Ele mantém um bundler no iframe e permite atualizar o projeto. Sandpack Client.
+Não recomendo adotá-lo agora: os três arquivos simples não justificam substituir o runtime já existente. Essa troca também exigiria reavaliar CSP, hospedagem e proteção de loops.
+WebContainers e ambientes remotos podem esperar até existir uma necessidade de Node.js, pacotes ou compiladores.
+3. Tabela de recursos
+“Pronto” significa implementado no fluxo atual, não validado em todos os dispositivos.
+Recurso	Estado	Observação
+HTML/CSS/JS com preview	Pronto	Três textos combinados pelo runtime
+Iframe isolado	Pronto	Sandbox mínimo e CSP
+Console e erros de JavaScript	Pronto	Texto limitado; sem inspeção de objetos
+Reinício, encerramento e mensagens antigas	Pronto	Identificador novo por execução
+Proteção de loops	Parcial	Loops instrumentados; sem garantia para todo código
+Rascunho local	Parcial	Falta isolamento por conta e recuperação mais segura
+Confirmação de descarte	Ausente	Restaurar exemplo perde alterações imediatamente
+Abas e arquivos	Parcial	Três entradas fixas
+Estado de edição por arquivo	Ausente	Sem cursor/histórico independentes
+Sintaxe, números de linha e indentação	Ausente	Editor atual é textarea
+Autocomplete e fechamento automático	Ausente	Precisam do novo editor
+Snippets/Emmet, incluindo !	Ausente	Integração adicional
+Busca e formatação	Ausente	Apenas Executar possui atalho próprio
+Caminhos, imagens e imports	Parcial	Imagens data:; sem sistema de arquivos virtual
+Atualização automática	Ausente	Execução manual
+Painéis redimensionáveis	Ausente	Grid com proporções fixas
+Interface móvel	Parcial	Alterna Arquivos/Editor/Saída; console não é painel independente
+Projetos salvos no servidor	Ausente	Nenhum modelo de projeto identificado no Prisma
+
+
+4. Plano de implementação por etapas
+Os caminhos novos abaixo são propostas, ainda não existem.
+Etapa 1 — Consolidar execução e evitar perda de código
+Objetivo: manter o preview funcionando e tornar explícito o que ele suporta.
+- Alterar: src/app/playground/page.tsx, src/lib/playground/iframe-executor.ts, playground-preview/runtime.js, playground-preview/browser.test.mjs e PLAYGROUND_WEB.md.
+- Criar: src/lib/playground/protocol.ts, centralizando tipos e validação das mensagens.
+- Dependências: nenhuma.
+- Entrega: confirmação ao restaurar; salvar antes de desmontar; preservar rascunho inválido; mensagens com tipos estritos; diagnóstico para recursos não suportados.
+- Conclusão/testes: os cenários existentes continuam passando; mensagens incorretas e antigas são ignoradas; restauração cancelada preserva o código; navegação rápida não perde a edição.
+- Risco: mudar a composição do documento ou protocolo. Manter os exemplos atuais como regressão.
+- Reversão: reverter somente o commit da etapa; preservar o formato e a cópia do rascunho anterior.
+Nesta etapa, reconhecer referências aos três arquivos conhecidos deve evitar carregamentos reais e duplicação da injeção. Qualquer outro caminho precisa ter comportamento explícito.
+Etapa 2 — Separar projeto e persistência da página
+Objetivo: preparar os três arquivos para o editor profissional.
+- Alterar: src/app/playground/page.tsx e documentação.
+- Criar: src/lib/playground/project.ts, project-storage.ts e src/hooks/usePlaygroundProject.ts.
+- Dependências: nenhuma.
+- Entrega: arquivos com ID estável, caminho, linguagem e conteúdo; arquivo ativo; versão do formato; estado de salvamento.
+- Persistência: chave por conta e projeto, migração do rascunho anterior sem apagá-lo antes da validação. O ID da conta serve para organização local, não como autorização.
+- Conclusão/testes: recuperação após recarregar, troca de conta, armazenamento indisponível, dados inválidos e migração.
+- Risco: sobrescrever rascunhos ou misturar contas. Usar gravação versionada e conservar o legado.
+- Reversão: retornar ao leitor antigo mantendo as duas versões do armazenamento.
+Etapa 3 — Integrar CodeMirror
+Objetivo: substituir o textarea sem mudar a execução.
+- Alterar: src/app/playground/page.tsx, package.json, package-lock.json.
+- Criar: src/components/playground/code-editor.tsx e arquivos de configuração em src/lib/playground/editor/.
+- Dependências: @codemirror/state, view, language, commands, search, autocomplete, lang-html, lang-css e lang-javascript.
+- Entrega: cores, números de linha, indentação, fechamento de delimitadores/tags, autocomplete básico, busca e atalhos.
+- Estado: um EditorState por ID de arquivo; preservar seleção, desfazer/refazer e posição de rolagem durante a sessão.
+- Conclusão/testes: alternar arquivos sem misturar histórico; digitar sem perder foco; Executar usar o texto mais recente; copiar/colar, acentos e composição funcionarem.
+- Risco: recriar o editor a cada mudança de React e apagar histórico. Atualizar por transações e limpar instâncias corretamente.
+- Reversão: restaurar o componente de edição anterior; os documentos continuam no modelo da etapa 2.
+O histórico de desfazer após fechar o aplicativo fica fora da primeira versão.
+Etapa 4 — Snippets, formatação e atualização opcional
+Objetivo: completar as ferramentas de edição.
+- Alterar: componente do editor, configurações de extensões e página.
+- Criar: src/lib/playground/editor/snippets.ts e format.ts.
+- Dependências: prettier, com os parsers necessários carregados sob demanda. No navegador os plugins precisam ser fornecidos explicitamente. Prettier.
+- Entrega: snippet ! para estrutura HTML, snippets básicos, botão Formatar e atualização automática opcional com debounce.
+- Autocomplete: distinguir sugestões básicas de análises semânticas; não prometer resolução de tipos/imports entre arquivos.
+- Conclusão/testes: formatação reversível por Undo; código inválido preservado; snippets com posições de cursor; atualização automática usa a última revisão e não dispara em sequência descontrolada.
+- Risco: mudanças inesperadas de texto e conflito com Tab. Começar por comandos explícitos; manter atualização automática desligada por padrão.
+- Reversão: retirar as extensões e o modo automático, preservando editor e documentos.
+Emmet completo pode entrar depois de uma avaliação específica. O plugin consultado se apresenta como WIP; para !, um snippet pequeno atende a necessidade inicial. Plugin Emmet.
+Etapa 5 — Organizar a interface como workspace
+Objetivo: melhorar desktop e dispositivos menores sem mudar a identidade do app.
+- Alterar: página; ajustar globals.css e AppShell somente onde testes mostrarem necessidade.
+- Criar: workspace.tsx, file-tabs.tsx, file-tree.tsx, preview-panel.tsx e console-panel.tsx em src/components/playground/.
+- Dependências: avaliar react-resizable-panels para divisores; aproveitar o Radix já instalado para confirmações.
+- Entrega: arquivos/abas/editor/preview/console; painéis redimensionáveis no desktop; editor, preview e console como painéis móveis independentes.
+- Visual: manter cores e tema existentes. Avaliar JetBrains Mono apenas no código; Geist Mono já está configurada. JetBrains Mono é disponibilizada para uso em interfaces de código. Fonte.
+- Conclusão/testes: foco visível, operação por teclado, divisores acessíveis, zoom de 200%, contraste, teclado virtual e orientação.
+- Risco: ocultar controles ou prender o foco. Tab deve permitir sair do editor; atalhos precisam ser documentados.
+- Reversão: voltar ao grid atual sem alterar projeto, editor e executor.
+O console continua sendo console JavaScript. Não haverá terminal decorativo.
+Etapa 6 — Vários projetos, CRUD e arquivos adicionais
+Objetivo: expandir depois de estabilizar a versão com três arquivos.
+- Alterar: modelo/persistência, árvore, abas e preparação da execução.
+- Criar: project-actions.ts, resource-resolver.ts e testes correspondentes.
+- Dependências: nenhuma para CRUD básico; avaliar bundler somente quando módulos forem aprovados.
+- Entrega: criar, renomear e excluir arquivos/projetos; confirmações; exportação/importação de projeto; limites de tamanho.
+- Conclusão/testes: IDs preservados ao renomear, caminhos únicos, exclusão do arquivo ativo, recuperação e referências inválidas diagnosticadas.
+- Risco: oferecer arquivos que o runtime não consegue executar. O CRUD deve entrar junto com a política de recursos.
+- Reversão: desabilitar os comandos novos, mantendo os projetos gravados e uma forma de exportá-los.
+Política de caminhos, imagens e imports
+Para a primeira versão:
+- index.html, style.css e script.js são os arquivos conhecidos.
+- Referências a esses CSS/JS devem ser reconhecidas e resolvidas internamente, sem buscar no domínio do aplicativo.
+- Imagens: somente data: inicialmente.
+- Outros caminhos, scripts externos, chamadas de rede e imports: não suportados, com diagnóstico claro.
+- JavaScript permanece clássico; não há npm nem módulos entre arquivos.
+Para a etapa 6, o resolver deve trabalhar com um manifesto virtual, impedir acesso fora do projeto e gerenciar recursos internos e URLs Blob. Imports exigem uma decisão específica de bundling, instrumentação de todos os arquivos e localização dos erros. Não devem ser implementados por substituições de strings.
+5. Escopo da primeira versão utilizável
+A versão inicial evoluída termina nas etapas 1 a 5:
+- Três arquivos fixos e abas.
+- CodeMirror com edição assistida, busca e snippets básicos.
+- Cursor e histórico por arquivo durante a sessão.
+- Formatação explícita.
+- Preview isolado, console e proteção atual de loops.
+- Execução manual e atualização automática opcional.
+- Salvamento local por conta, recuperação e confirmação de descarte.
+- Layout adaptado a desktop e celular.
+A proteção de loops continua cooperativa: verifica os cinco tipos instrumentados, com orçamento de iterações/tempo. Recursão, chamadas nativas demoradas e código gerado dinamicamente não ficam necessariamente cobertos.
+A verificação deve incluir:
+- Chrome, Edge e Firefox em desktop.
+- Safari no macOS.
+- Chrome Android e o Android WebView usado pelo Capacitor.
+- Safari em iPhone e iPad.
+- Teclado físico/virtual, copiar/colar, composição de caracteres e leitores de tela.
+Esses são alvos de teste; a compatibilidade só deve ser declarada depois dos resultados.
+6. Melhorias futuras que podem esperar
+- CRUD de arquivos e vários projetos.
+- Assets internos e imports entre módulos.
+- Autocomplete semântico entre arquivos.
+- Salvamento em conta e sincronização entre dispositivos.
+- Python e outros executores.
+- Sandpack, WebContainers, npm ou ambientes remotos.
+- Debugger, breakpoints e colaboração.
+A primeira etapa recomendada é a etapa 1, principalmente para evitar perda de código antes de trocar o editor. Ela envolve a página, o executor, o runtime, os testes existentes, a documentação e o novo protocol.ts.
+Aguardo sua próxima instrução para implementar somente a etapa escolhida.
+
+
+Wednesday 8:03 PM
+
+
+
+
+
+
+
+
+resumindo tudo isso seria um interpretador de codigo
+
+
+
+
+
+
+
+Wednesday 8:53 PM
+
+
+
+
+
+
+Não exatamente: seria um playground com experiência de IDE, onde você escreve, organiza e executa código.
+O CodeMirror é o editor, o iframe isola o preview e o motor JavaScript do navegador executa o código. Nós integramos essas partes; não estamos criando um interpretador próprio.
+
+
+
+
+
+
+Não exatamente: seria um playground com experiência de IDE, onde você escreve, organiza e executa código.
+O CodeMirror é o editor, o iframe isola o preview e o motor JavaScript do navegador executa o código. Nós integramos essas partes; não estamos criando um interpretador próprio.
+
+
+Wednesday 8:53 PM
+
+
+
+
+
+
+
+
+entendi certo Vamos continuaer com o plano
+
+
+
+
+
+
+
+Wednesday 8:54 PM
+
+
+
+
+
+
+Worked for 12m 28s
+
+
+Etapa 1 implementada no playground:
+- Confirmação antes de restaurar o exemplo.
+- Salvamento da última edição ao sair ou navegar.
+- Backup e download de rascunhos inválidos.
+- Validação rigorosa das mensagens do iframe.
+- Diagnósticos para imports e recursos não suportados.
+Build, TypeScript, ESLint e testes passaram, incluindo a tela no Chrome e a proteção de loops.
+[Todos os códigos alterados — patch completo](/private/tmp/zulcode-playground-etapa1.patch) · [Documentação](/Users/gabrielzanelatto/Backup/zulcode-frontend/PLAYGROUND_WEB.md)
+A hospedagem continua no mesmo projeto da Vercel.
+
+
+
+
+
+
+Etapa 1 implementada no playground:
+- Confirmação antes de restaurar o exemplo.
+- Salvamento da última edição ao sair ou navegar.
+- Backup e download de rascunhos inválidos.
+- Validação rigorosa das mensagens do iframe.
+- Diagnósticos para imports e recursos não suportados.
+Build, TypeScript, ESLint e testes passaram, incluindo a tela no Chrome e a proteção de loops.

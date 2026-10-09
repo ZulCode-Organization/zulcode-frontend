@@ -5,6 +5,15 @@ O aplicativo controla o editor; um iframe com sandbox="allow-scripts" executa os
 ## Desenvolvimento
 Execute npm run dev. O predev gera public/playground-runtime/index.html; nenhum segundo servidor é necessário. Rodar ou Ctrl/Cmd+Enter recria o preview. Encerrar remove o iframe. Os rascunhos ficam no navegador.
 
+## Etapa 1: proteção do trabalho e recursos suportados
+Restaurar o exemplo solicita confirmação quando HTML, CSS ou JavaScript foram alterados. Cancelar mantém os arquivos e o preview. O salvamento usa a última edição ao desmontar a página na navegação interna, no evento pagehide e quando a página fica oculta, além do intervalo de 300 ms durante a edição.
+
+Rascunhos inválidos são copiados integralmente para uma chave exclusiva de recuperação no localStorage antes de qualquer substituição. A tela permite baixar o conteúdo original. Se a cópia não puder ser gravada e conferida, o salvamento automático fica pausado para preservar o original. Não existe sincronização com a conta nesta etapa: os rascunhos permanecem neste navegador.
+
+O runtime aceita os três arquivos fixos. Referências HTML a style.css e script.js, incluindo ./ e /, usam o conteúdo dos editores sem solicitar esses arquivos pela rede. JavaScript embutido no HTML é removido com aviso; imports estáticos, dinâmicos e scripts de módulo são rejeitados com diagnóstico. Outros arquivos de script e stylesheet, imagens externas e srcset geram erro. Imagens data:image/ são permitidas. Links para outras páginas perdem o href; recursos bloqueados pela CSP geram aviso no console.
+
+O protocolo compartilhado valida chaves, tipos, identificador da execução, tamanho dos arquivos, tipo de evento e tom de cada mensagem. Não aceita propriedades adicionais. As verificações de janela, origem e sessão continuam no executor e no runtime.
+
 ## Produção na Vercel: mesmo projeto e domínio
 Publique o frontend no projeto já existente, com Build Command **npm run build**. O prebuild gera public/playground-runtime/index.html e o Next.js publica esse arquivo no mesmo deploy.
 O preview usa automaticamente https://app.zulcode.com/playground-runtime/index.html. Não é necessário segundo projeto, servidor ou configuração DNS.
@@ -36,18 +45,23 @@ Arquivos têm limite de 100.000 caracteres e o console limita mensagens e tamanh
 O backend não participa da execução. Não execute código do aluno no processo Node do aplicativo.
 Valide também em Android WebView antes de liberar a versão móvel.
 
-Para testar: npm run build; node --test playground-preview/loops.test.mjs playground-preview/browser.test.mjs (Chrome instalado ou CHROME_BIN definido).
+Para testar: npm run build; node --test playground-preview/stage1.test.mjs playground-preview/loops.test.mjs playground-preview/browser.test.mjs (Chrome instalado ou CHROME_BIN definido).
+
+Para testar a tela real, inicie o frontend local com npm run start -- --port 3097 e execute PLAYGROUND_TEST_URL=http://127.0.0.1:3097 node --test playground-preview/page.test.mjs. Use uma instância local: o teste utiliza uma credencial fictícia em um perfil temporário do Chrome. Ele verifica recuperação de rascunho inválido, cancelar/confirmar restauração e navegar imediatamente após editar. Sem PLAYGROUND_TEST_URL esse teste é explicitamente pulado.
 
 ## Arquivos da implementação
 - [Página do playground](src/app/playground/page.tsx): editor, rascunho, console e ciclo de execução.
-- [Configuração da URL](src/lib/playground-preview.ts): validação e protocolo.
+- [Configuração da URL](src/lib/playground-preview.ts): URL e constantes compartilhadas.
+- [Protocolo compartilhado](playground-preview/protocol.mjs) e [tipos do aplicativo](src/lib/playground/protocol.ts): validação das mensagens do runtime e do executor.
+- [Proteção de rascunhos](src/lib/playground/draft-safety.ts) e [testes da etapa 1](playground-preview/stage1.test.mjs): recuperação, preservação e confirmação de restauração.
+- [Teste da tela](playground-preview/page.test.mjs): navegação e edição no frontend de produção local.
 - [Runtime](playground-preview/runtime.js): DOM, CSS, JavaScript e mensagens.
 - [Instrumentação de loops](playground-preview/instrument-loops.mjs), [orçamento](playground-preview/loop-budget.mjs) e [testes de loops](playground-preview/loops.test.mjs): prevenção de travamento por loops instrumentados.
 - [Build estático](playground-preview/build.mjs): CSP, HTML e cabeçalhos para outras hospedagens.
 - [Contrato de execução](src/lib/playground/executor.ts), [executor iframe](src/lib/playground/iframe-executor.ts) e [hook React](src/hooks/usePlaygroundExecutor.ts): camada de execução separada.
 - [Cabeçalhos no aplicativo](next.config.ts): sandbox e incorporação na mesma origem.
 - [Configuração Vercel](playground-preview/vercel.json): publicação externa opcional.
-- [Testes Chrome](playground-preview/browser.test.mjs): quinze cenários de integração, incluindo ciclo de vida do executor.
+- [Testes Chrome](playground-preview/browser.test.mjs): 23 cenários de integração, incluindo ciclo de vida do executor.
 - [Scripts npm](package.json): geração antes do desenvolvimento e build.
 - [Gitignore principal](.gitignore) e [Gitignore do preview](playground-preview/.gitignore): arquivos gerados.
 - Este documento: configuração e limites.

@@ -274,7 +274,9 @@ function Bloquear({ pessoa, aoFechar, concluir }: Props) {
 
 function RestaurarOfensiva({ pessoa, aoFechar, concluir }: Props) {
   const calendario = useDados<Calendario>(`/admin/pessoas/${pessoa.id}/calendario`);
-  const [valor, setValor] = useState(String(Math.max(pessoa.currentStreak, pessoa.longestStreak)));
+  const maior = Math.max(pessoa.currentStreak, pessoa.longestStreak);
+  const [valor, setValor] = useState(maior ? String(maior) : "");
+  const n = Math.trunc(Number(valor));
   const [dias, setDias] = useState<Set<string>>(new Set());
   const { enviando, erro, enviar } = useEnvio();
   return (
@@ -287,16 +289,16 @@ function RestaurarOfensiva({ pessoa, aoFechar, concluir }: Props) {
       rodape={
         <>
           <Botao variante="fantasma" onClick={aoFechar}>Cancelar</Botao>
-          <Botao variante="primario" disabled={!(Number(valor) >= 1)} carregando={enviando} onClick={() => enviar(async () => {
-            await pedir(`/admin/pessoas/${pessoa.id}/ofensiva`, { method: "POST", json: { valor: Math.trunc(Number(valor)), diasProtegidos: [...dias] } });
-            concluir(`Ofensiva restaurada para ${valor} dias.`);
+          <Botao variante="primario" disabled={!(n >= 1)} carregando={enviando} onClick={() => enviar(async () => {
+            await pedir(`/admin/pessoas/${pessoa.id}/ofensiva`, { method: "POST", json: { valor: n, diasProtegidos: [...dias] } });
+            concluir(`Ofensiva restaurada para ${n} ${n === 1 ? "dia" : "dias"}.`);
           })}>Restaurar</Botao>
         </>
       }
     >
       <div className="space-y-4">
         <Rotulo texto="Ofensiva de quantos dias" dica={`Hoje: ${pessoa.currentStreak} · maior já feita: ${pessoa.longestStreak}`}>
-          <Entrada inputMode="numeric" value={valor} onChange={(e) => setValor(e.target.value.replace(/\D/g, ""))} className="w-32" />
+          <Entrada inputMode="numeric" value={valor} onChange={(e) => setValor(e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, ""))} placeholder="0" className="w-32" />
         </Rotulo>
         <div>
           <p className="mb-2 text-xs font-bold text-muted-foreground">Dias a proteger (os últimos 30). Dias em azul já têm estudo.</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { Dialog } from "radix-ui";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -112,5 +112,60 @@ export function ConfirmarDigitando({
         {erro && <p role="alert" className="font-bold text-rose-600 dark:text-rose-400">{erro}</p>}
       </div>
     </Dialogo>
+  );
+}
+
+// ── Pergunta de sim ou não ───────────────────────────────────────────────
+
+type Pergunta = { titulo: string; texto?: ReactNode; sim: string; perigoso: boolean; responder: (sim: boolean) => void };
+
+let pergunta: Pergunta | null = null;
+const ouvintes = new Set<() => void>();
+const trocar = (nova: Pergunta | null) => {
+  pergunta = nova;
+  ouvintes.forEach((f) => f());
+};
+
+/**
+ * O `window.confirm` do administrativo: abre o diálogo da casa e devolve a
+ * resposta. Uso: `if (!(await perguntar({ titulo: "Apagar?" }))) return;`.
+ * Fechar com Esc ou clicar fora conta como "não".
+ */
+export function perguntar({ titulo, texto, sim = "Confirmar", perigoso = false }: { titulo: string; texto?: ReactNode; sim?: string; perigoso?: boolean }) {
+  pergunta?.responder(false);
+  return new Promise<boolean>((resolver) => {
+    trocar({
+      titulo, texto, sim, perigoso,
+      responder: (r) => {
+        trocar(null);
+        resolver(r);
+      },
+    });
+  });
+}
+
+export function Perguntas() {
+  const p = useSyncExternalStore(
+    (f) => {
+      ouvintes.add(f);
+      return () => ouvintes.delete(f);
+    },
+    () => pergunta,
+    () => null,
+  );
+  return (
+    <Dialogo
+      aberto={Boolean(p)}
+      aoFechar={() => p?.responder(false)}
+      titulo={p?.titulo ?? ""}
+      descricao={p?.texto}
+      largura="max-w-md"
+      rodape={
+        <>
+          <Botao variante="fantasma" onClick={() => p?.responder(false)}>Cancelar</Botao>
+          <Botao variante={p?.perigoso ? "perigo" : "primario"} onClick={() => p?.responder(true)} autoFocus>{p?.sim}</Botao>
+        </>
+      }
+    />
   );
 }

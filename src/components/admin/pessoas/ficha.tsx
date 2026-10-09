@@ -10,6 +10,7 @@ import {
 import { Pagina } from "../shell";
 import { AreaDeTexto, AvatarPequeno, Botao, Cartao, Erro, Esqueleto, Segmentado, Selo, Vazio } from "../ui";
 import { avisar } from "../avisos";
+import { perguntar } from "../dialogo";
 import { CalendarioDeEstudo } from "./calendario";
 import { AcoesDaFicha, exportarDados, type AcaoDaFicha } from "./acoes-da-ficha";
 import { invalidar, pedir, useDados } from "@/lib/admin/api";
@@ -351,7 +352,7 @@ function AcoesDaEquipe({ id }: { id: string }) {
   const [estornando, setEstornando] = useState<string | null>(null);
 
   const estornar = async (a: AcaoDaEquipe) => {
-    if (!window.confirm(`Estornar "${resumoDoAjuste(a.dados)}"? Se a pessoa já gastou, o estorno leva só o que sobrou.`)) return;
+    if (!(await perguntar({ titulo: "Estornar o ajuste?", texto: <>Desfaz <b className="text-foreground">{resumoDoAjuste(a.dados)}</b>. Se a pessoa já gastou, o estorno leva só o que sobrou.</>, sim: "Estornar" }))) return;
     setEstornando(a.id);
     try {
       await pedir(`/admin/acoes/${a.id}/estornar`, { method: "POST" });
@@ -472,8 +473,8 @@ function Anotacoes({ id }: { id: string }) {
                 type="button"
                 className="opacity-0 transition-opacity hover:text-rose-500 group-hover:opacity-100 focus:opacity-100"
                 onClick={async () => {
-                  if (!window.confirm("Apagar esta anotação?")) return;
-                  await pedir(`/admin/notas/${n.id}`, { method: "DELETE" }).catch(() => null);
+                  if (!(await perguntar({ titulo: "Apagar esta anotação?", sim: "Apagar", perigoso: true }))) return;
+                  await pedir(`/admin/notas/${n.id}`, { method: "DELETE" }).catch((e: unknown) => avisar(e instanceof Error ? e.message : "Não foi possível apagar.", { tom: "erro" }));
                   invalidar(chave);
                 }}
               >

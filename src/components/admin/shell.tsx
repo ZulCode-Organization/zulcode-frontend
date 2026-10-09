@@ -8,7 +8,7 @@ import { PerfilProvider, usePerfil } from "@/hooks/use-perfil";
 import { cn } from "@/lib/utils";
 import { Avisos } from "./avisos";
 import { Paleta } from "./paleta";
-import { Dialogo } from "./dialogo";
+import { Dialogo, Perguntas } from "./dialogo";
 import { Atalho } from "./ui";
 import { SECOES } from "./secoes";
 
@@ -223,6 +223,7 @@ function Casca({ children }: { children: ReactNode }) {
         <p className="mt-4 text-xs text-muted-foreground">O editor de aula tem atalhos próprios, mostrados dentro dele.</p>
       </Dialogo>
       <Avisos />
+      <Perguntas />
     </div>
   );
 }

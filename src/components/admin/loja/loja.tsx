@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import { CircleDollarSign, Feather, HeartPulse, Pencil, Plus, ShieldCheck, ShoppingBag, Trash2, Zap } from "lucide-react";
 import { Pagina } from "../shell";
 import { AreaDeTexto, Botao, Cabecalho, Entrada, Erro, Escolha, Esqueleto, Interruptor, Rotulo, Segmentado, Selo, Vazio } from "../ui";
-import { Dialogo } from "../dialogo";
+import { Dialogo, perguntar } from "../dialogo";
 import { apagarComDesfazer, avisar } from "../avisos";
 import { GasOfensiva } from "@/components/shared/gas-ofensiva";
 import { Rupee } from "@/components/shared/rupee";
@@ -333,8 +333,8 @@ function Cosmeticos({ aoEditar }: { aoEditar: (c: Cosmetico) => void }) {
                   tamanho="sm"
                   variante="fantasma"
                   icone={<Trash2 className="size-3.5" />}
-                  onClick={() => {
-                    if (c.vendas > 0 && !window.confirm(`${c.vendas} pessoas compraram "${c.name}" e perdem o item se ele for apagado. Para só tirar da loja, desligue em vez de apagar. Apagar mesmo assim?`)) return;
+                  onClick={async () => {
+                    if (c.vendas > 0 && !(await perguntar({ titulo: `Apagar "${c.name}"?`, texto: `${numero(c.vendas)} ${c.vendas === 1 ? "pessoa comprou e perde" : "pessoas compraram e perdem"} o item. Para só tirar da loja, desligue em vez de apagar.`, sim: "Apagar mesmo assim", perigoso: true }))) return;
                     const antes = dados;
                     apagarComDesfazer({
                       texto: `"${c.name}" apagado.`,

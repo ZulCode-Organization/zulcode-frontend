@@ -1154,9 +1154,12 @@ select,
 /* Diálogos e avisos: entram rápido e assentam, sem quicar. É ferramenta de
    trabalho; o movimento só confirma que algo abriu. */
 @keyframes zc-adm-veu { from { opacity: 0; } to { opacity: 1; } }
+/* Só o deslocamento extra: quem centraliza é o -translate-1/2 do Tailwind (a
+   propriedade translate), que se soma ao transform. Repetir o -50% aqui
+   jogava a janela meia largura para cima e para a esquerda. */
 @keyframes zc-adm-janela {
-  from { opacity: 0; transform: translate(-50%, calc(-50% + 8px)) scale(0.98); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
 }
 @keyframes zc-adm-aviso {
   from { opacity: 0; transform: translateY(8px); }

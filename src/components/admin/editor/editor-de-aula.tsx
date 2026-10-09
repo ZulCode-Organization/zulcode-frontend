@@ -8,7 +8,7 @@ import {
   AlertTriangle, ArrowLeft, Check, ClipboardPaste, CloudOff, Download, FileUp, Keyboard, Loader2, MoreHorizontal, Play, RotateCcw, Rocket, Undo2,
 } from "lucide-react";
 import { Botao, Erro, Esqueleto, Atalho } from "../ui";
-import { Dialogo } from "../dialogo";
+import { Dialogo, perguntar } from "../dialogo";
 import { avisar } from "../avisos";
 import { Trilho } from "./trilho";
 import { Palco } from "./palco";
@@ -18,6 +18,7 @@ import { ColarPerguntas } from "./colar";
 import { arquivoDaAula, conferir, converterTipo, lerArquivoDaAula, novaQuestao, novoId, ordenadas } from "./regras";
 import { ErroDaApi, invalidar, pedir, salvarArquivo, useDados } from "@/lib/admin/api";
 import { relativo } from "@/lib/admin/formato";
+import { slugDe } from "@/lib/admin/imagem";
 import { cn } from "@/lib/utils";
 import type { AulaNoEditor, QuestaoDoRascunho, RascunhoDaAula, TipoDeQuestao } from "@/lib/admin/tipos";
 
@@ -264,7 +265,7 @@ function Editor({ inicial, aoRecomecar }: { inicial: AulaNoEditor; aoRecomecar: 
   };
 
   const descartar = async () => {
-    if (!window.confirm("Descartar todas as alterações não publicadas? A aula volta a ser a que os alunos veem.")) return;
+    if (!(await perguntar({ titulo: "Descartar o rascunho?", texto: "Todas as alterações não publicadas se perdem. A aula volta a ser a que os alunos veem.", sim: "Descartar", perigoso: true }))) return;
     try {
       await pedir(`/admin/conteudo/aulas/${aula.id}/rascunho`, { method: "DELETE" });
       invalidar(`/admin/conteudo/cursos/${aula.cursoId}/arvore`);
@@ -284,7 +285,7 @@ function Editor({ inicial, aoRecomecar }: { inicial: AulaNoEditor; aoRecomecar: 
       if (!arquivo) return;
       try {
         const nova = lerArquivoDaAula(await arquivo.text());
-        if (!window.confirm(`Trocar o conteúdo desta aula por "${nova.titulo}" (${nova.questoes.length} questões)? Dá para desfazer com Ctrl+Z.`)) return;
+        if (!(await perguntar({ titulo: "Importar a aula?", texto: <>O conteúdo desta aula vira <b className="text-foreground">{nova.titulo.trim() || "uma aula sem título"}</b> ({nova.questoes.length} {nova.questoes.length === 1 ? "questão" : "questões"}), no rascunho. Dá para desfazer com Ctrl+Z.</>, sim: "Importar" }))) return;
         mudar(() => nova);
         const primeira = ordenadas(nova)[0];
         setSelecao(primeira ? { tipo: "questao", id: primeira.id } : { tipo: "introducao" });
@@ -403,7 +404,7 @@ function Editor({ inicial, aoRecomecar }: { inicial: AulaNoEditor; aoRecomecar: 
           <DropdownMenu.Portal>
             <DropdownMenu.Content align="end" sideOffset={6} className="zc-adm-entra z-50 min-w-56 rounded-xl border bg-popover p-1 shadow-xl">
               <DropdownMenu.Item className={menuItem} onSelect={() => setColar(true)}><ClipboardPaste className="size-4" /> Colar perguntas em texto</DropdownMenu.Item>
-              <DropdownMenu.Item className={menuItem} onSelect={() => salvarArquivo(new Blob([arquivoDaAula(rascunho)], { type: "application/json" }), `aula-${rascunho.titulo.trim().toLowerCase().replace(/\W+/g, "-") || aula.id}.json`)}>
+              <DropdownMenu.Item className={menuItem} onSelect={() => salvarArquivo(new Blob([arquivoDaAula(rascunho)], { type: "application/json" }), `aula-${slugDe(rascunho.titulo) || aula.id}.json`)}>
                 <Download className="size-4" /> Exportar aula (arquivo)
               </DropdownMenu.Item>
               <DropdownMenu.Item className={menuItem} onSelect={importar}><FileUp className="size-4" /> Importar aula (arquivo)</DropdownMenu.Item>

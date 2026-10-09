@@ -9,7 +9,7 @@ import {
 import { Pagina } from "../shell";
 import { AvatarPequeno, Botao, Cabecalho, Cartao, Entrada, Erro, Escolha, Esqueleto, Rotulo, Selo, Vazio } from "../ui";
 import { avisar } from "../avisos";
-import { Dialogo } from "../dialogo";
+import { Dialogo, perguntar } from "../dialogo";
 import { AcoesEmLote } from "./lote";
 import { baixar, invalidar, pedir, query, useDados } from "@/lib/admin/api";
 import { data, numero, relativo } from "@/lib/admin/formato";
@@ -98,8 +98,8 @@ export function ListaDePessoas() {
   };
 
   const apagarSegmento = async (s: Segmento) => {
-    if (!window.confirm(`Apagar o segmento "${s.name}"?`)) return;
-    await pedir(`/admin/segmentos/${s.id}`, { method: "DELETE" }).catch(() => null);
+    if (!(await perguntar({ titulo: `Apagar o segmento "${s.name}"?`, texto: "Só o atalho some; as pessoas e os filtros continuam como estão.", sim: "Apagar", perigoso: true }))) return;
+    await pedir(`/admin/segmentos/${s.id}`, { method: "DELETE" }).catch((e: unknown) => avisar(e instanceof Error ? e.message : "Não foi possível apagar.", { tom: "erro" }));
     invalidar("/admin/segmentos");
   };
 

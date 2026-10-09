@@ -237,7 +237,7 @@ function Completar({ q, aoMudar }: { q: QuestaoDoRascunho; aoMudar: MudarQuestao
             {certo?.trim() || "espaço"}
           </span>
         </div>
-        <CampoDeCodigo valor={q.codigoDepois ?? ""} aoMudar={(v) => aoMudar(q.id, (x) => ({ ...x, codigoDepois: v }), "depois")} rotulo="Código depois do espaço" placeholder=';\nconsole.log(nome);' linhas={2} />
+        <CampoDeCodigo valor={q.codigoDepois ?? ""} aoMudar={(v) => aoMudar(q.id, (x) => ({ ...x, codigoDepois: v }), "depois")} rotulo="Código depois do espaço" placeholder={";\nconsole.log(nome);"} linhas={2} />
       </div>
       <div>
         <p className="mb-2 text-xs font-bold text-muted-foreground">Os blocos para encaixar (a certa e as que confundem)</p>

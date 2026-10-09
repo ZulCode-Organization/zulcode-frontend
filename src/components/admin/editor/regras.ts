@@ -159,15 +159,56 @@ export function arquivoDaAula(r: RascunhoDaAula) {
   return JSON.stringify({ formato: "zulcode-aula", versao: 1, aula: r }, null, 2);
 }
 
-export function lerArquivoDaAula(texto: string): RascunhoDaAula {
+const texto = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max) : "");
+const textos = (v: unknown, quantos: number, max: number) =>
+  Array.isArray(v) ? v.filter((x): x is string => typeof x === "string").slice(0, quantos).map((x) => x.slice(0, max)) : undefined;
+
+/**
+ * Lê uma aula exportada. O arquivo pode ter sido mexido à mão, então cada campo
+ * é conferido (com os mesmos limites do servidor) e o que faltar ganha o padrão
+ * de uma questão nova do mesmo tipo: o editor nunca recebe um formato que não
+ * sabe desenhar.
+ */
+export function lerArquivoDaAula(conteudo: string): RascunhoDaAula {
   let dados: unknown;
   try {
-    dados = JSON.parse(texto);
+    dados = JSON.parse(conteudo);
   } catch {
     throw new Error("O arquivo não é um JSON válido.");
   }
-  const d = dados as { formato?: string; aula?: RascunhoDaAula };
+  const d = dados as { formato?: string; aula?: Record<string, unknown> };
   if (d?.formato !== "zulcode-aula" || !d.aula || !Array.isArray(d.aula.questoes)) throw new Error("Este arquivo não é uma aula exportada do ZulCode.");
-  // Ids novos: importar a mesma aula duas vezes não pode criar duas questões com o mesmo id.
-  return { ...d.aula, questoes: d.aula.questoes.map((q) => ({ ...q, id: novoId() })) };
+  const a = d.aula;
+  const etapas = Math.max(1, Math.min(MAX_ETAPAS, Math.trunc(Number(a.etapas)) || 2));
+
+  return {
+    titulo: texto(a.titulo, 200),
+    xp: Math.max(0, Math.min(1000, Math.trunc(Number(a.xp)) || 0)),
+    etapas,
+    introducao: (Array.isArray(a.introducao) ? a.introducao.slice(0, 30) : []).map((bruto) => {
+      const s = (bruto ?? {}) as Record<string, unknown>;
+      const codigo = texto(s.codigo, 5000);
+      return { titulo: texto(s.titulo, 200), texto: texto(s.texto, 5000), ...(codigo && { codigo }) };
+    }),
+    // Ids sempre novos (novaQuestao): importar a mesma aula duas vezes não pode
+    // criar duas questões com o mesmo id.
+    questoes: (a.questoes as unknown[]).slice(0, 200).map((bruta) => {
+      const q = (bruta ?? {}) as Record<string, unknown>;
+      const tipo = TIPOS.some((t) => t.tipo === q.tipo) ? (q.tipo as TipoDeQuestao) : "MULTIPLE_CHOICE";
+      const base = novaQuestao(tipo, Math.max(1, Math.min(etapas, Math.trunc(Number(q.etapa)) || 1)));
+      const nova: QuestaoDoRascunho = { ...base, enunciado: texto(q.enunciado, 2000) };
+      if (base.alternativas) nova.alternativas = textos(q.alternativas, 6, 500) ?? base.alternativas;
+      if (base.blocos) nova.blocos = textos(q.blocos, 8, 300) ?? base.blocos;
+      if (base.correta !== undefined && typeof q.correta === "number") nova.correta = Math.trunc(q.correta);
+      if (base.verdadeiro !== undefined && typeof q.verdadeiro === "boolean") nova.verdadeiro = q.verdadeiro;
+      if (base.codigoAntes !== undefined) nova.codigoAntes = texto(q.codigoAntes, 5000);
+      if (base.codigoDepois !== undefined) nova.codigoDepois = texto(q.codigoDepois, 5000);
+      if (base.codigoInicial !== undefined) nova.codigoInicial = texto(q.codigoInicial, 10000);
+      if (base.resultadoEsperado !== undefined) nova.resultadoEsperado = texto(q.resultadoEsperado, 2000);
+      if (base.dica !== undefined || typeof q.dica === "string") nova.dica = texto(q.dica, 1000);
+      const codigo = texto(q.codigo, 5000);
+      if (codigo) nova.codigo = codigo;
+      return nova;
+    }),
+  };
 }

@@ -275,8 +275,8 @@ export function ArvoreDoCurso({ cursoId }: { cursoId: string }) {
       <header className={cn("mb-5 flex flex-wrap items-start gap-4 transition-opacity", atualizando && "opacity-80")}>
         <EscolhaDeLogo valor={a.logoUrl} nome={a.nome} aoMudar={(v) => editarCurso({ logoUrl: v }, "Logo atualizada.")} />
         <div className="min-w-0 flex-1">
-          <TextoEditavel valor={a.nome} aoSalvar={(v) => editarCurso({ nome: v })} className="text-[1.5rem] font-black" rotulo="Nome do curso" />
-          <TextoEditavel valor={a.descricao ?? ""} aoSalvar={(v) => editarCurso({ descricao: v })} vazio="Adicionar uma descrição…" className="text-sm text-muted-foreground" rotulo="Descrição" />
+          <TextoEditavel valor={a.nome} aoSalvar={(v) => editarCurso({ nome: v })} className="flex w-fit text-[1.5rem] font-black" rotulo="Nome do curso" />
+          <TextoEditavel valor={a.descricao ?? ""} aoSalvar={(v) => editarCurso({ descricao: v })} vazio="Adicionar uma descrição…" className="flex w-fit text-sm text-muted-foreground" rotulo="Descrição" />
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span className="font-mono">/{a.slug}</span>
             <span className="inline-flex items-center gap-1"><UsersRound className="size-3" />{numero(a.alunos)} alunos</span>

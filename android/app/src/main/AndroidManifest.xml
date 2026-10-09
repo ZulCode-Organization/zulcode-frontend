@@ -20,6 +20,20 @@
             </intent-filter>
         </activity>
 
+        <!-- O widget da ofensiva. exported fica true porque quem o desenha na
+             tela inicial é o lançador, que é outro aplicativo. -->
+        <receiver
+            android:name=".widget.WidgetDaOfensiva"
+            android:label="@string/widget_ofensiva_nome"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_ofensiva_info" />
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

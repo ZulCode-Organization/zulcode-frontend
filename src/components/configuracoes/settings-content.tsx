@@ -9,6 +9,7 @@ import { limparPerfilCache, usePerfil } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
 import { limparSeguidos } from "@/hooks/use-seguir";
 import { limparCursosCache } from "@/hooks/use-cursos";
+import { limparWidgetDaOfensiva } from "@/lib/widget-ofensiva";
 import { ativarNotificacoesNativas } from "@/lib/push-notifications";
 import { cn } from "@/lib/utils";
 
@@ -95,6 +96,7 @@ export function SettingsContent() {
 
   const sair = () => {
     localStorage.removeItem("accessToken");
+    void limparWidgetDaOfensiva();
     limparPerfilCache();
     limparTrilhaCache();
     limparSeguidos();

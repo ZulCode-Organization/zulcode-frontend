@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  updatePeriodMillis fica em zero de propósito: quem avisa que os números
+  mudaram é o app, quando carrega o perfil. Um relógio do sistema aqui
+  acordaria o widget de hora em hora para redesenhar o mesmo retrato.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="110dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="0"
+    android:initialLayout="@layout/widget_ofensiva"
+    android:previewLayout="@layout/widget_ofensiva"
+    android:description="@string/widget_ofensiva_descricao"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen" />

@@ -21,6 +21,8 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-        assertEquals("com.getcapacitor.app", appContext.getPackageName());
+        // O molde do Capacitor vinha com o pacote dele, e o teste falhava desde
+        // sempre. O app é com.zul.code.
+        assertEquals("com.zul.code", appContext.getPackageName());
     }
 }

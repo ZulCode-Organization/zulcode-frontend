@@ -4,6 +4,8 @@ import { CSSProperties, ReactNode, createContext, useCallback, useContext, useEf
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { calcularProgressoNivel } from "@/lib/leveling";
 import { CursoProgresso, PerfilUsuario } from "@/lib/types/perfil";
+import { sequenciaAtivaHoje } from "@/lib/sequencia";
+import { atualizarWidgetDaOfensiva } from "@/lib/widget-ofensiva";
 
 function gerarIniciais(nome: string): string {
   const iniciais = nome
@@ -281,6 +283,14 @@ function usePerfilData(): PerfilState {
           conquistas: Array.isArray(usuario.achievements) ? usuario.achievements : [],
         };
         perfilCache = { token, perfil: perfilCarregado, cursos: cursosData };
+        // O widget da tela inicial do Android desenha o que a barra de cima
+        // mostra. Daqui ele é avisado em qualquer tela, inclusive nas que não
+        // têm barra — e fora do app nada acontece.
+        void atualizarWidgetDaOfensiva({
+          dias: perfilCarregado.streakAtual,
+          acesa: sequenciaAtivaHoje(perfilCarregado.streakAtual, perfilCarregado.ultimaAtividade),
+          protegida: (perfilCarregado.streakFreezes ?? 0) > 0,
+        });
         setPerfil(perfilCarregado);
         setCursos(cursosData);
       })

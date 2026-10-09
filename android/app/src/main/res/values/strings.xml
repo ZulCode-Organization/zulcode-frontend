@@ -4,4 +4,6 @@
     <string name="title_activity_main">ZulCode</string>
     <string name="package_name">com.zul.code</string>
     <string name="custom_url_scheme">com.zul.code</string>
+    <string name="widget_ofensiva_nome">Ofensiva</string>
+    <string name="widget_ofensiva_descricao">Sua sequência de dias seguidos, na tela inicial.</string>
 </resources>

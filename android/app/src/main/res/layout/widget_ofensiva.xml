@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  O widget inteiro é uma imagem pintada pelo WidgetDaOfensiva. Esta tela só
+  carrega o bitmap: é o que permite a chama de duas cores e a tipografia do
+  app, que os componentes prontos de widget não dariam.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/widget_imagem"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:contentDescription="@string/widget_ofensiva_nome" />
+</FrameLayout>

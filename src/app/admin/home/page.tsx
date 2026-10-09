@@ -1,2 +1,6 @@
-import { AdminDashboard } from "@/components/admin/admin-page";
-export default function Page() { return <AdminDashboard />; }
+import { redirect } from "next/navigation";
+
+/** Endereço do administrativo antigo: quem tinha o link salvo cai na visão geral. */
+export default function Page() {
+  redirect("/admin/visao");
+}

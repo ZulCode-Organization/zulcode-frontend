@@ -1,5 +1,5 @@
-import { AdminGuard } from "@/components/admin/admin-guard";
+import { CascaDoAdmin } from "@/components/admin/shell";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <AdminGuard>{children}</AdminGuard>;
+  return <CascaDoAdmin>{children}</CascaDoAdmin>;
 }

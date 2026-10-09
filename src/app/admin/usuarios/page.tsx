@@ -1,2 +1,6 @@
-import { AdminUsers } from "@/components/admin/admin-usuarios";
-export default function Page() { return <AdminUsers />; }
+import { redirect } from "next/navigation";
+
+/** Endereço do administrativo antigo: a lista de usuários virou "Pessoas". */
+export default function Page() {
+  redirect("/admin/pessoas");
+}

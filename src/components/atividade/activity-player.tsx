@@ -31,6 +31,13 @@ interface ActivityPlayerProps {
   aoErrar?: () => Promise<{ lives: number; isUnlimited?: boolean } | null>;
   vidas: number;
   vidasIlimitadas?: boolean;
+  /** Avisado na primeira resposta de cada pergunta (certa ou errada). É o
+   * histórico que mostra no administrativo quais questões derrubam as
+   * pessoas; a repescagem não conta, senão toda questão errada pareceria
+   * acertada na segunda. */
+  aoResponder?: (perguntaId: string, correto: boolean) => void;
+  /** O que "Sair" faz. Sem ele, volta para a trilha; a prévia do editor fecha. */
+  aoSair?: () => void;
 }
 
 type Fase = "introducao" | "quiz" | "concluida" | "sem-penas";
@@ -104,7 +111,7 @@ function MoldeAtividade({ progresso, vidas, vidasIlimitadas, onSair, children, r
  * /lessons/:id/complete — nas outras, continua sendo só uma celebração
  * visual com o xp mockado da lição.
  */
-export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, aoErrar, vidas: vidasIniciais, vidasIlimitadas = false }: ActivityPlayerProps) {
+export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, aoErrar, vidas: vidasIniciais, vidasIlimitadas = false, aoResponder, aoSair }: ActivityPlayerProps) {
   const router = useRouter();
   const { introducao, perguntas } = atividade;
   const totalPassos = introducao.length + perguntas.length;
@@ -129,7 +136,8 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   const jaMarcouLocalRef = useRef(false);
   const penalizouQuestaoRef = useRef(false);
 
-  const sair = () => router.push("/home");
+  const sair = () => (aoSair ? aoSair() : router.push("/home"));
+  const respondidasRef = useRef<Set<string>>(new Set());
 
   // Dispara uma única vez por visita à tela, no instante em que a lição
   // termina — mesmo se der "Revisar lição" e concluir de novo, não reenvia
@@ -252,6 +260,10 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   const aplicarResultado = (ok: boolean) => {
     setVerificado(true);
     setCorreto(ok);
+    if (aoResponder && !respondidasRef.current.has(pergunta.id)) {
+      respondidasRef.current.add(pergunta.id);
+      aoResponder(pergunta.id, ok);
+    }
     if (!ok && !penalizouQuestaoRef.current) {
       penalizouQuestaoRef.current = true;
       aoErrar?.().then((estado) => {

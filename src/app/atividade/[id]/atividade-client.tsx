@@ -124,7 +124,7 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
 
   return <ActivityPlayer atividade={atividade} licao={licao} aoConcluir={(acertos, total) => etapaAtual < totalEtapas
     ? (totalEtapas === 2 ? completarEtapaTeorica(id) : completarEtapa(id, etapaAtual))
-    : completarLicaoReal(id, Math.round((acertos / total) * 100))} aoErrar={() => consumirPena(livesState)} vidas={livesState.lives} vidasIlimitadas={livesState.isUnlimited} />;
+    : completarLicaoReal(id, Math.round((acertos / total) * 100))} aoErrar={() => consumirPena(livesState, id)} aoResponder={(perguntaId, correto) => registrarResposta(id, perguntaId, correto)} vidas={livesState.lives} vidasIlimitadas={livesState.isUnlimited} />;
 }
 
 function SemPenas() {
@@ -132,11 +132,30 @@ function SemPenas() {
   return <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center"><span className="flex size-20 items-center justify-center rounded-[28px] bg-rose-500/10 text-rose-500"><Feather className="size-10" /></span><h1 className="mt-6 text-3xl font-black">Sem penas para começar</h1><p className="mt-3 max-w-md text-muted-foreground">Você precisa ter ao menos uma pena para iniciar uma aula. A próxima pena será recuperada em até uma hora.</p><button type="button" onClick={() => router.push("/home")} className="mt-7 rounded-2xl bg-primary px-7 py-3.5 text-sm font-black text-primary-foreground">Voltar para a jornada</button></div>;
 }
 
-async function consumirPena(atual: { lives: number; isUnlimited?: boolean }): Promise<{ lives: number; isUnlimited?: boolean } | null> {
+/**
+ * Registra a resposta para as estatísticas do administrativo. Sem esperar e
+ * sem tratar falha: é histórico, não pode atrasar nem atrapalhar a aula.
+ */
+function registrarResposta(licaoId: string, exerciseId: string, correct: boolean) {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return;
+  void fetchComTimeout(`${API_BASE_URL}/lessons/${licaoId}/respostas`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ exerciseId, correct }),
+  }).catch(() => undefined);
+}
+
+async function consumirPena(atual: { lives: number; isUnlimited?: boolean }, licaoId: string): Promise<{ lives: number; isUnlimited?: boolean } | null> {
   const token = localStorage.getItem("accessToken");
   if (!token) return null;
   try {
-    const res = await fetchComTimeout(`${API_BASE_URL}/user/lives/use`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    // A aula vai junto: é o que deixa o administrativo saber onde as penas são gastas.
+    const res = await fetchComTimeout(`${API_BASE_URL}/user/lives/use`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ lessonId: licaoId }),
+    });
     if (!res.ok) return { lives: 0 };
     // The request is persisted by the offline queue; retain the local count so
     // the lesson cannot grant a free retry while the device is disconnected.

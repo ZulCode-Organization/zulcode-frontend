@@ -52,9 +52,13 @@ export function atividadeDaApi(lesson: ApiLesson, stage: string): Atividade {
     }
 
     const options = asStrings(content.options);
+    const codigo = typeof content.code === "string" && content.code.trim() ? content.code : undefined;
     return {
       id: exercise.id,
-      tipo: "alternativa",
+      // Com um trecho de código, a pergunta vira "o que este código faz?": o
+      // jogador mostra o código acima das alternativas.
+      tipo: codigo ? "logica" : "alternativa",
+      ...(codigo && { codigo }),
       enunciado: exercise.prompt,
       alternativas: options.map((texto, index) => ({ id: String(index), texto })),
       respostaCorretaId: options.includes(correctAnswer) ? String(options.indexOf(correctAnswer)) : correctAnswer,

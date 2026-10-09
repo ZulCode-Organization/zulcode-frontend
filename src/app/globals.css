@@ -1110,3 +1110,66 @@ select,
     transition: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Administrativo: cores dos gráficos.
+
+   Três séries no máximo por gráfico, nesta ordem (azul, laranja, verde-água) —
+   a ordem é o que mantém o par vizinho distinguível para daltônicos; foi
+   validada contra o fundo do cartão do app nos dois temas. O escuro tem os
+   próprios degraus, e não a versão invertida do claro.
+
+   A rampa sequencial (mapa de calor) é uma cor só: do claro ao escuro no
+   tema claro, do apagado ao aceso no escuro. "Sem dado" é a cor da grade.
+   --------------------------------------------------------------------------- */
+:root {
+  --viz-1: #2a78d6;
+  --viz-2: #eb6834;
+  --viz-3: #1baf7a;
+  --viz-grade: #e8edf3;
+  --viz-mira: #9aa6b4;
+  --viz-vazio: #eef2f6;
+  --viz-seq-1: #cde2fb;
+  --viz-seq-2: #9ec5f4;
+  --viz-seq-3: #6da7ec;
+  --viz-seq-4: #3987e5;
+  --viz-seq-5: #256abf;
+  --viz-seq-6: #104281;
+}
+.dark {
+  --viz-1: #3987e5;
+  --viz-2: #d95926;
+  --viz-3: #199e70;
+  --viz-grade: #222932;
+  --viz-mira: #5d6774;
+  --viz-vazio: #1b2128;
+  --viz-seq-1: #17304f;
+  --viz-seq-2: #184f95;
+  --viz-seq-3: #1c5cab;
+  --viz-seq-4: #2a78d6;
+  --viz-seq-5: #5598e7;
+  --viz-seq-6: #9ec5f4;
+}
+
+/* Diálogos e avisos: entram rápido e assentam, sem quicar. É ferramenta de
+   trabalho; o movimento só confirma que algo abriu. */
+@keyframes zc-adm-veu { from { opacity: 0; } to { opacity: 1; } }
+@keyframes zc-adm-janela {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 8px)) scale(0.98); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes zc-adm-aviso {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.zc-adm-veu { animation: zc-adm-veu 0.16s ease-out both; }
+.zc-adm-janela { animation: zc-adm-janela 0.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.zc-adm-aviso { animation: zc-adm-aviso 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* A questão que entra no editor desliza de leve; a que se arrasta ganha sombra. */
+@keyframes zc-adm-entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.zc-adm-entra { animation: zc-adm-entra 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .zc-adm-veu, .zc-adm-janela, .zc-adm-aviso, .zc-adm-entra { animation: none; }
+}

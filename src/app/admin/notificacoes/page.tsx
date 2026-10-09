@@ -1,2 +1,10 @@
 import { AdminNotifications } from "@/components/admin/admin-notificacoes";
-export default function Page() { return <AdminNotifications />; }
+import { Pagina } from "@/components/admin/shell";
+
+export default function Page() {
+  return (
+    <Pagina>
+      <AdminNotifications />
+    </Pagina>
+  );
+}

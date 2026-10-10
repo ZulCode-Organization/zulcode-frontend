@@ -1,9 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "next-themes";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { OfflineSyncProvider } from "@/components/offline/offline-sync-provider";
+import { Abertura } from "@/components/abertura/abertura";
+import { BarrasDoSistema } from "@/components/abertura/barras-do-sistema";
+import { LANG_DO_HTML } from "@/i18n/idiomas";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -21,10 +26,32 @@ export const metadata: Metadata = {
   description: "Aprenda programação de forma gamificada",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+/**
+ * `viewportFit: "cover"` é o que faz o app ocupar a tela inteira do celular.
+ * Sem isto o Android encolhe a página para fora das barras do sistema e pinta
+ * o que sobra com a cor da janela — as duas faixas cinzas, em cima e embaixo.
+ * Com isto o fundo do app passa por baixo delas, e as medidas das barras
+ * chegam ao CSS em `env(safe-area-inset-*)`. São essas medidas que afastam o
+ * conteúdo do relógio e dos botões, somadas ao espaçamento que cada barra do
+ * app já tinha — procure por `safe-area-inset` para ver onde.
+ *
+ * `themeColor` é a cor que o sistema usa nas bordas da janela, uma por tema.
+ */
+export const viewport: Viewport = {
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f8fc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f1115" },
+  ],
+};
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // A língua vem do cookie (ver src/i18n/request.ts). O `lang` certo faz o
+  // leitor de tela pronunciar e o teclado corrigir na língua da pessoa.
+  const idioma = await getLocale();
   return (
     <html
-      lang="en"
+      lang={LANG_DO_HTML[idioma]}
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
       suppressHydrationWarning
     >
@@ -35,7 +62,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           enableSystem
           disableTransitionOnChange
         >
-          <OfflineSyncProvider>{children}</OfflineSyncProvider>
+          <NextIntlClientProvider>
+            <BarrasDoSistema />
+            <OfflineSyncProvider>{children}</OfflineSyncProvider>
+            <Abertura />
+          </NextIntlClientProvider>
         </ThemeProvider>
       </body>
     </html>

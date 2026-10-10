@@ -54,7 +54,7 @@ export function MaisMenu({ onClose }: MaisMenuProps) {
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
-    // Mesmo cuidado do AccountPanel: sem limpar esses caches em memória, a
+    // Mesmo cuidado das Configurações: sem limpar esses caches em memória, a
     // próxima conta logada nesse navegador veria por um instante o
     // perfil/trilha da conta anterior.
     limparPerfilCache();

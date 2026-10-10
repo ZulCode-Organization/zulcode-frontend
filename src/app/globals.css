@@ -1176,3 +1176,187 @@ select,
 @media (prefers-reduced-motion: reduce) {
   .zc-adm-veu, .zc-adm-janela, .zc-adm-aviso, .zc-adm-entra { animation: none; }
 }
+
+/* ---------------------------------------------------------------------------
+   A abertura do app
+   ---------------------------------------------------------------------------
+   Fundo do tema, o Zul entra com um pulo e o nome se escreve ao lado dele.
+   Fica por cima de tudo (inclusive das barras do sistema, que neste momento
+   são transparentes), e sai desbotando para a tela que já carregou por baixo.
+   --------------------------------------------------------------------------- */
+.zc-abertura {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--background);
+}
+.zc-abertura-saindo {
+  animation: zc-abertura-sai var(--zc-abertura-saida, 320ms) ease-in both;
+}
+@keyframes zc-abertura-sai { to { opacity: 0; } }
+
+/* A marca inteira nasce centrada; quando o nome cresce ao lado, o ícone é
+   empurrado para a esquerda sozinho, porque o conjunto continua centralizado. */
+.zc-abertura-marca {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1.5rem;
+}
+.zc-abertura-icone {
+  width: clamp(80px, 22vw, 112px);
+  height: auto;
+  animation: zc-abertura-icone 620ms cubic-bezier(0.22, 1.3, 0.36, 1) both;
+}
+@keyframes zc-abertura-icone {
+  0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: none; }
+}
+
+/* A máscara que escreve o nome: a largura vai de zero ao tamanho do texto, e
+   o `ch` acompanha a fonte — não é um número em pixels que desalinha quando o
+   corpo do texto muda. */
+.zc-abertura-nome {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 0;
+  font-size: clamp(2rem, 9vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  color: var(--foreground);
+  animation: zc-abertura-nome 560ms cubic-bezier(0.16, 1, 0.3, 1) 380ms both;
+}
+@keyframes zc-abertura-nome {
+  from { max-width: 0; }
+  to { max-width: 8ch; }
+}
+/* O texto entra inteiro e parado por baixo da máscara: se ele também
+   deslizasse, as letras chegariam espremidas na borda. */
+.zc-abertura-nome > span {
+  display: block;
+  padding-right: 0.12em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zc-abertura-icone { animation: zc-abertura-surge 200ms ease-out both; }
+  .zc-abertura-nome { animation: zc-abertura-surge 200ms ease-out 80ms both; max-width: 8ch; }
+  @keyframes zc-abertura-surge { from { opacity: 0; } to { opacity: 1; } }
+}
+
+/* ---------------------------------------------------------------------------
+   Comemorações em tela cheia (ofensiva, divisão, conquista)
+   ---------------------------------------------------------------------------
+   A peça do meio (chama, escudo, troféu) nasce pequena e salta; depois o número
+   rola, os textos sobem e o botão aparece por último, quando a pessoa já viu a
+   festa. A cor de cada tela entra por --zc-com-cor.
+   --------------------------------------------------------------------------- */
+.zc-com {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+  padding: calc(1rem + env(safe-area-inset-top)) 1.25rem calc(1.25rem + env(safe-area-inset-bottom));
+  animation: zc-com-entra 260ms ease-out both;
+}
+@keyframes zc-com-entra { from { opacity: 0; } to { opacity: 1; } }
+
+.zc-com-brilho {
+  position: absolute;
+  inset: -35%;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, var(--zc-com-cor) 0%, transparent 72%);
+  opacity: 0.3;
+  animation: zc-com-brilho 2.4s ease-in-out 600ms infinite alternate;
+}
+@keyframes zc-com-brilho {
+  from { opacity: 0.22; transform: scale(0.92); }
+  to { opacity: 0.48; transform: scale(1.06); }
+}
+
+.zc-com-nasce { animation: zc-com-nasce 820ms cubic-bezier(0.2, 1.4, 0.35, 1) 120ms both; }
+@keyframes zc-com-nasce {
+  0% { opacity: 0; transform: translateY(40px) scale(0.2); }
+  55% { opacity: 1; transform: translateY(-6px) scale(1.16); }
+  78% { transform: scale(0.95); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* A chama continua viva depois de nascer: estica e balança na base. */
+.zc-com-tremula { transform-origin: 50% 90%; animation: zc-com-tremula 1.5s ease-in-out 950ms infinite alternate; }
+@keyframes zc-com-tremula {
+  0% { transform: scaleY(1) skewX(0deg); }
+  35% { transform: scaleY(1.05) skewX(-2.5deg); }
+  70% { transform: scaleY(0.98) skewX(2deg); }
+  100% { transform: scaleY(1.03) skewX(-1deg); }
+}
+
+.zc-com-brasa {
+  position: absolute;
+  bottom: 22%;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--zc-com-cor);
+  opacity: 0;
+  animation: zc-com-brasa 1.6s ease-out var(--atraso, 0ms) infinite;
+}
+@keyframes zc-com-brasa {
+  0% { opacity: 0; transform: translate(0, 0) scale(1); }
+  15% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(var(--deriva, 0px), -150px) scale(0.3); }
+}
+
+/* O número antigo sobe e o novo entra por baixo, como um contador mecânico. */
+.zc-com-rolo { display: inline-block; height: 1em; overflow: hidden; line-height: 1; vertical-align: bottom; }
+.zc-com-rolo > span { display: flex; flex-direction: column; animation: zc-com-rola 520ms cubic-bezier(0.3, 1.5, 0.5, 1) 700ms both; }
+@keyframes zc-com-rola { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+
+.zc-com-sobe { animation: zc-com-sobe 420ms cubic-bezier(0.16, 1, 0.3, 1) var(--atraso, 0ms) both; }
+@keyframes zc-com-sobe { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+.zc-com-hoje { animation: zc-com-hoje 520ms cubic-bezier(0.2, 1.6, 0.4, 1) 1050ms both; }
+@keyframes zc-com-hoje {
+  0% { transform: scale(0.4); opacity: 0.3; }
+  60% { transform: scale(1.22); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Raios girando atrás do troféu e do escudo, e um brilho que atravessa a peça. */
+.zc-com-raios {
+  position: absolute;
+  inset: -55%;
+  border-radius: 9999px;
+  background: repeating-conic-gradient(from 0deg, var(--zc-com-cor) 0deg 10deg, transparent 10deg 30deg);
+  opacity: 0.2;
+  -webkit-mask-image: radial-gradient(closest-side, #000 35%, transparent 75%);
+  mask-image: radial-gradient(closest-side, #000 35%, transparent 75%);
+  animation: zc-com-gira 18s linear infinite;
+}
+@keyframes zc-com-gira { to { transform: rotate(1turn); } }
+
+.zc-com-varre { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.zc-com-varre::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -60%;
+  width: 40%;
+  transform: skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: zc-com-varre 1.1s ease-in-out 900ms both;
+}
+@keyframes zc-com-varre { to { left: 130%; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .zc-com, .zc-com-brilho, .zc-com-nasce, .zc-com-tremula, .zc-com-sobe, .zc-com-hoje, .zc-com-raios { animation: none; }
+  .zc-com-rolo > span { animation: none; transform: translateY(-50%); }
+  .zc-com-brasa, .zc-com-varre::after { display: none; }
+}

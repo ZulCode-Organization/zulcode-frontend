@@ -20,6 +20,7 @@ import { usePerfil } from "@/hooks/use-perfil";
 import { GasOfensiva } from "@/components/shared/gas-ofensiva";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
+import { reagir } from "@/lib/reacoes";
 import { Rupee } from "@/components/shared/rupee";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
 import { cn } from "@/lib/utils";
@@ -182,6 +183,7 @@ function Store() {
     const data = await send(item.id, `${API_BASE_URL}/user/zulcoins/spend`, {
       itemId: item.id,
     });
+    if (data) reagir("compra");
     if (data)
       setNotice({
         title: "Power-up ativado",
@@ -203,6 +205,7 @@ function Store() {
         item.owned ? "equip" : "buy"
       }`
     );
+    if (data) reagir(item.owned ? "toque" : "compra");
     if (data)
       setNotice({
         title: item.owned ? "Item em uso" : "Item comprado",

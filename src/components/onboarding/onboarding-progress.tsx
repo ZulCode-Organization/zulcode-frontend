@@ -27,7 +27,7 @@ export function OnboardingProgress({
   return (
     <div
       className={cn(
-        "sticky top-0 z-10 flex items-center gap-3 border-b border-border/60 bg-background/80 px-4 py-3 backdrop-blur-md lg:px-8 lg:py-4",
+        "sticky top-0 z-10 flex items-center gap-3 border-b border-border/60 bg-background/80 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur-md lg:px-8 lg:pb-4 lg:pt-[calc(1rem+env(safe-area-inset-top))]",
         className
       )}
     >

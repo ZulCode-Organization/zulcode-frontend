@@ -16,6 +16,10 @@ export interface PerfilUsuario {
   statusId?: string | null;
   themeColor?: string | null;
   themeMode?: "light" | "dark" | null;
+  /** Língua salva na conta. Nula enquanto a pessoa nunca escolheu. */
+  idioma?: "pt" | "en" | null;
+  /** Minutos de estudo por dia que contam como meta cumprida. */
+  metaDiaria?: number;
   xp: number;
   nivel: number;
   nivelLabel: string;

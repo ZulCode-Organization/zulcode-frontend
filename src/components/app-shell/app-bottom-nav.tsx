@@ -69,7 +69,7 @@ export function AppBottomNav() {
   return (
     // O pb extra abre espaço pra base que assoma embaixo de cada ladrilho:
     // sem ele a peça de trás ficaria cortada pela borda da barra.
-    <nav className="sticky bottom-0 z-20 flex items-center justify-around border-t border-border bg-background/95 px-1 pb-3 pt-2 backdrop-blur-md lg:hidden">
+    <nav className="sticky bottom-0 z-20 flex items-center justify-around border-t border-border bg-background/95 px-1 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2 backdrop-blur-md lg:hidden">
       {bottomNavItems.map((item) => {
         const Icon = item.icon;
         const active = item.href ? pathname === item.href : false;

@@ -8,6 +8,7 @@ import { limparPerfilCache } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
 import { ActivityPlayer } from "@/components/atividade/activity-player";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
+import type { ResultadoDaLicao } from "@/lib/types/comemoracao";
 import { atividadeDaApi, ApiLesson } from "@/lib/course-content";
 import { LicaoTrilha } from "@/lib/types/trilha";
 
@@ -17,7 +18,7 @@ function AtividadeEmConstrucao() {
   const router = useRouter();
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <div className="px-4 py-4 lg:px-8">
+      <div className="px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] lg:px-8">
         <button
           type="button"
           onClick={() => router.push("/home")}
@@ -46,7 +47,7 @@ function AtividadeEmConstrucao() {
  * caches de perfil e trilha em memória depois — sem isso, a
  * topbar/sidebar e a Jornada continuariam mostrando o estado antigo até
  * um reload de página de verdade. */
-async function completarLicaoReal(id: string, score: number): Promise<{ xpEarned: number } | null> {
+async function completarLicaoReal(id: string, score: number): Promise<ResultadoDaLicao | null> {
   const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
   if (!token) return null;
 
@@ -58,7 +59,7 @@ async function completarLicaoReal(id: string, score: number): Promise<{ xpEarned
     });
     if (!res.ok) return null;
 
-    const dados: { xpEarned: number } = await res.json();
+    const dados: ResultadoDaLicao = await res.json();
     limparPerfilCache();
     limparTrilhaCache();
     return dados;

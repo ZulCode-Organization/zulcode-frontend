@@ -1,0 +1,64 @@
+{
+  "rotulo": "Conta",
+  "titulo": "Configurações",
+  "subtitulo": "Aparência, língua, estudo, som e avisos do aplicativo.",
+  "grupos": {
+    "aparencia": "Aparência",
+    "idioma": "Língua",
+    "estudo": "Estudo",
+    "som": "Som e vibração",
+    "avisos": "Avisos",
+    "conta": "Conta"
+  },
+  "aparencia": {
+    "titulo": "Tema e paleta",
+    "resumo": "{modo, select, dark {Escuro} other {Claro}} · {personalizada, select, sim {paleta personalizada} other {paleta padrão}}"
+  },
+  "idioma": {
+    "titulo": "Língua do aplicativo",
+    "descricao": "Muda os textos de todo o ZulCode.",
+    "beta": "BETA",
+    "avisoBeta": "O inglês ainda está em teste: algumas partes continuam em português.",
+    "erro": "Não deu para trocar a língua agora. Tente de novo."
+  },
+  "estudo": {
+    "meta": "Meta diária",
+    "descricao": "Quanto estudo por dia completa a sua meta.",
+    "minutos": "{n} min",
+    "nivel": {
+      "5": "Leve",
+      "10": "Regular",
+      "15": "Sério",
+      "30": "Intenso",
+      "60": "Insano"
+    },
+    "erro": "Não deu para salvar a meta. Tente de novo."
+  },
+  "som": {
+    "efeitos": "Efeitos sonoros",
+    "efeitosDescricao": "Sons ao acertar, errar e terminar lições.",
+    "vibracao": "Vibração",
+    "vibracaoDescricao": "Vibra ao responder e nas comemorações."
+  },
+  "avisos": {
+    "titulo": "Notificações",
+    "descricao": "Receba avisos e novidades no seu aparelho.",
+    "ativar": "Ativar",
+    "ativando": "Ativando",
+    "resultado": {
+      "ativado": "Notificações ativadas neste aparelho.",
+      "semApp": "As notificações funcionam no aplicativo ZulCode para Android.",
+      "semPermissao": "Permissão negada. Ative as notificações nas configurações do aparelho.",
+      "sessao": "Sua sessão expirou. Entre de novo.",
+      "falhaAoSalvar": "Não deu para salvar este aparelho para receber avisos.",
+      "falha": "Não deu para ativar as notificações neste aparelho."
+    }
+  },
+  "conta": {
+    "codigo": "Seu código",
+    "codigoDescricao": "É por ele que outras pessoas encontram seu perfil.",
+    "sair": "Sair da conta",
+    "sairDescricao": "Encerra a sessão neste aparelho."
+  },
+  "creditos": "Ícones de navegação: Solar, por 480 Design (CC BY 4.0), e Phosphor Icons (MIT)."
+}

@@ -201,7 +201,7 @@ export function NivelamentoQuiz({ languageSlug, languageName, onFinish }: Nivela
           ou vermelho conforme você responde. Substitui a barra corrida, que
           não dizia como você estava indo. */}
       <header className="sticky top-0 z-10 border-b border-border/60 bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-2xl items-center gap-3 px-4 py-3 lg:py-4">
+        <div className="mx-auto flex w-full max-w-2xl items-center gap-3 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] lg:pb-4 lg:pt-[calc(1rem+env(safe-area-inset-top))]">
           <Button
             type="button"
             variant="ghost"

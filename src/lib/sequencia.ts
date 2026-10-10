@@ -1,3 +1,6 @@
+/** Os dias de sequência que ganham festa: confete na barra e na tela cheia. */
+export const MARCOS_DA_SEQUENCIA = [7, 30, 100, 365];
+
 /**
  * A sequência está acesa hoje?
  *

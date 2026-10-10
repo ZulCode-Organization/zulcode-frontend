@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- O fundo do app (a variável background do globals.css). A janela, a splash e
+         as barras do sistema usam esta cor: se em algum celular o Android
+         reservar a faixa das barras, ela some no fundo em vez de ficar cinza.
+         O tema escuro está em values-night. -->
+    <color name="zc_fundo">#F5F8FC</color>
+
+    <!-- A barra de navegação só aceita ícones escuros do Android 8.1 em diante;
+         antes disso eles são sempre brancos e sumiriam no fundo claro, então
+         ali ela fica preta. A partir do 8.1 vale o fundo do app (values-v27). -->
+    <color name="zc_barra_de_navegacao">#000000</color>
+</resources>

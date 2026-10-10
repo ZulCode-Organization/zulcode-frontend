@@ -15,6 +15,7 @@ import { sequenciaAtivaHoje } from "@/lib/sequencia";
 import { DIVISOES, divisaoDoXp } from "@/lib/divisoes";
 import { useMudanca } from "@/lib/motion/mudancas";
 import { mostrarSeloDeDivisao } from "@/lib/motion/efeitos";
+import { reagir } from "@/lib/reacoes";
 import { ChipOfensiva, ChipPenas, ChipRupees } from "./barra-viva/chips-vivos";
 
 type Painel = "curso" | "ofensiva" | "moedas" | "vidas" | "todos-cursos" | null;
@@ -174,7 +175,11 @@ export function AppTopBar() {
     const ancora = grupoRef.current;
     if (!mudancaDeDivisao || !ancora || mudancaDeDivisao.para <= mudancaDeDivisao.de) return;
     const divisao = DIVISOES[mudancaDeDivisao.para];
-    if (divisao) mostrarSeloDeDivisao(ancora, divisao.nome, divisao.cor, 900);
+    if (!divisao) return;
+    mostrarSeloDeDivisao(ancora, divisao.nome, divisao.cor, 900);
+    // A vinheta entra junto com o selo, que desce depois de 900 ms.
+    const vinheta = setTimeout(() => reagir("nivel"), 900);
+    return () => clearTimeout(vinheta);
   }, [mudancaDeDivisao]);
 
   const baseCurso = ehMobile ? CURSO_BASE.mobile : CURSO_BASE.desktop;
@@ -187,11 +192,11 @@ export function AppTopBar() {
   // --zc-topbar-h continua sendo publicada (agora com a altura menor) e o
   // painel da direita gruda no lugar certo em vez de cair no fallback de 72px.
   if (!naTrilha) {
-    return <div ref={barraRef} className="sticky top-0 z-20 bg-background px-3 pt-3 sm:px-4 sm:pt-4" />;
+    return <div ref={barraRef} className="sticky top-0 z-20 bg-background px-3 pt-[calc(0.75rem+env(safe-area-inset-top))] sm:px-4 sm:pt-[calc(1rem+env(safe-area-inset-top))]" />;
   }
 
   return (
-    <div ref={barraRef} className="sticky top-0 z-20 bg-background px-3 pb-1 pt-2 sm:px-4 sm:pt-4 lg:pb-0 lg:pl-8 lg:pr-5 xl:pr-7">
+    <div ref={barraRef} className="sticky top-0 z-20 bg-background px-3 pb-1 pt-[calc(0.5rem+env(safe-area-inset-top))] sm:px-4 sm:pt-[calc(1rem+env(safe-area-inset-top))] lg:pb-0 lg:pl-8 lg:pr-5 xl:pr-7">
       {/* No computador os chips ficam centralizados com o painel da direita, e
           nao encostados na borda. As larguras sao a area util do painel: ele
           tem 340px com px-5 (sobram 300) e 410px com px-7 no xl (sobram 354).

@@ -1,6 +1,7 @@
 "use client";
 
 import { CSSProperties, ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useSincronizarIdioma } from "@/i18n/use-idioma";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { calcularProgressoNivel } from "@/lib/leveling";
 import { CursoProgresso, PerfilUsuario } from "@/lib/types/perfil";
@@ -159,7 +160,7 @@ interface PerfilState {
    *  deixa a barra animar a diferença em vez de piscar. */
   atualizar: () => void;
   /** Salva dados do perfil em PUT /user e atualiza a tela e o cache. */
-  salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null }) => Promise<ResultadoSalvar>;
+  salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null; idioma?: "pt" | "en"; metaDiaria?: number }) => Promise<ResultadoSalvar>;
 }
 
 /** A API do Nest devolve o motivo em `message`, às vezes como lista (quando
@@ -257,6 +258,8 @@ function usePerfilData(): PerfilState {
           isVerified: usuario.isVerified ?? false,
           themeColor: usuario.themeColor,
           themeMode: usuario.themeMode,
+          idioma: usuario.idioma === "pt" || usuario.idioma === "en" ? usuario.idioma : null,
+          metaDiaria: typeof usuario.dailyGoalMinutes === "number" ? usuario.dailyGoalMinutes : 10,
           iniciais: gerarIniciais(usuario.name),
           xp: usuario.xp,
           nivel: usuario.nivel,
@@ -339,7 +342,7 @@ function usePerfilData(): PerfilState {
   }, [perfil?.themeColor]);
 
   const salvarDados = useCallback(
-    async (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null }): Promise<ResultadoSalvar> => {
+    async (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null; idioma?: "pt" | "en"; metaDiaria?: number }): Promise<ResultadoSalvar> => {
       const token = getToken();
       if (!token) return { ok: false, mensagem: "Sua sessão expirou. Entre de novo." };
 
@@ -354,6 +357,8 @@ function usePerfilData(): PerfilState {
             ...(dados.bannerColor !== undefined ? { bannerColor: dados.bannerColor } : {}),
             ...(dados.themeMode !== undefined ? { themeMode: dados.themeMode } : {}),
             ...(dados.statusId !== undefined ? { statusId: dados.statusId } : {}),
+            ...(dados.idioma !== undefined ? { idioma: dados.idioma } : {}),
+            ...(dados.metaDiaria !== undefined ? { dailyGoalMinutes: dados.metaDiaria } : {}),
           }),
         });
 
@@ -375,6 +380,8 @@ function usePerfilData(): PerfilState {
             bannerColor: corpo?.bannerColor ?? dados.bannerColor ?? atual.bannerColor,
             themeMode: corpo?.themeMode ?? dados.themeMode ?? atual.themeMode,
             statusId: dados.statusId !== undefined ? dados.statusId : corpo?.statusId ?? atual.statusId,
+            idioma: corpo?.idioma ?? dados.idioma ?? atual.idioma,
+            metaDiaria: corpo?.dailyGoalMinutes ?? dados.metaDiaria ?? atual.metaDiaria,
             iniciais: gerarIniciais(nome ?? atual.nome),
           };
           // O cache em memória é o que outras telas leem ao montar — sem
@@ -408,6 +415,7 @@ const PerfilContext = createContext<PerfilState | null>(null);
 /** Busca o perfil (e o progresso de cursos) uma única vez e compartilha entre todas as telas do app shell. */
 export function PerfilProvider({ children }: { children: ReactNode }) {
   const state = usePerfilData();
+  useSincronizarIdioma(state.perfil?.idioma, (idioma) => void state.salvarDados({ idioma }), Boolean(state.perfil));
   return <PerfilContext.Provider value={state}>{children}</PerfilContext.Provider>;
 }
 

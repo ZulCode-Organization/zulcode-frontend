@@ -1,0 +1,64 @@
+{
+  "rotulo": "Account",
+  "titulo": "Settings",
+  "subtitulo": "Appearance, language, study, sound and notifications.",
+  "grupos": {
+    "aparencia": "Appearance",
+    "idioma": "Language",
+    "estudo": "Study",
+    "som": "Sound and vibration",
+    "avisos": "Notifications",
+    "conta": "Account"
+  },
+  "aparencia": {
+    "titulo": "Theme and palette",
+    "resumo": "{modo, select, dark {Dark} other {Light}} · {personalizada, select, sim {custom palette} other {default palette}}"
+  },
+  "idioma": {
+    "titulo": "App language",
+    "descricao": "Changes the text across all of ZulCode.",
+    "beta": "BETA",
+    "avisoBeta": "English is still in testing: some parts are still in Portuguese.",
+    "erro": "Couldn't change the language right now. Try again."
+  },
+  "estudo": {
+    "meta": "Daily goal",
+    "descricao": "How much study per day completes your goal.",
+    "minutos": "{n} min",
+    "nivel": {
+      "5": "Casual",
+      "10": "Regular",
+      "15": "Serious",
+      "30": "Intense",
+      "60": "Insane"
+    },
+    "erro": "Couldn't save your goal. Try again."
+  },
+  "som": {
+    "efeitos": "Sound effects",
+    "efeitosDescricao": "Sounds when you get answers right, wrong and finish lessons.",
+    "vibracao": "Vibration",
+    "vibracaoDescricao": "Vibrates when you answer and when you celebrate."
+  },
+  "avisos": {
+    "titulo": "Notifications",
+    "descricao": "Get reminders and news on your device.",
+    "ativar": "Turn on",
+    "ativando": "Turning on",
+    "resultado": {
+      "ativado": "Notifications are on for this device.",
+      "semApp": "Notifications work in the ZulCode app for Android.",
+      "semPermissao": "Permission denied. Turn notifications on in your device settings.",
+      "sessao": "Your session expired. Please sign in again.",
+      "falhaAoSalvar": "Couldn't save this device to receive notifications.",
+      "falha": "Couldn't turn notifications on for this device."
+    }
+  },
+  "conta": {
+    "codigo": "Your code",
+    "codigoDescricao": "Other people find your profile with it.",
+    "sair": "Sign out",
+    "sairDescricao": "Ends the session on this device."
+  },
+  "creditos": "Navigation icons: Solar, by 480 Design (CC BY 4.0), and Phosphor Icons (MIT)."
+}

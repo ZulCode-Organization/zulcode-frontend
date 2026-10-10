@@ -12,6 +12,8 @@ import {
   apagarChama, estourarConfete, mostrarDiferenca, quicar, receber, saltarChama,
   soltarPena, tremer, vacilarChama, varrerBrilho, voarRupees,
 } from "@/lib/motion/efeitos";
+import { reagir } from "@/lib/reacoes";
+import { MARCOS_DA_SEQUENCIA } from "@/lib/sequencia";
 import { Odometro } from "./odometro";
 import { BarraRecarga } from "./barra-recarga";
 import { Dica, DicaOfensiva, DicaPenas, DicaRupees, useDica } from "./dica";
@@ -168,7 +170,6 @@ type Comum = {
 // ---------------------------------------------------------------------------
 
 /** Marcos que soltam confete. */
-const MARCOS_DA_SEQUENCIA = [7, 30, 100, 365];
 
 export function ChipOfensiva({
   contaId, carregando, aberto, aoAbrir, aoSegurar,
@@ -200,6 +201,7 @@ export function ChipOfensiva({
           : faixa.id === "ciano" ? ["#a5f3fc", "#06b6d4"]
             : ["#7dd3fc", "#3b82f6"];
       saltarChama(alvo, brasas);
+      reagir("ofensiva");
       if (numero.current) mostrarDiferenca(numero.current, `+${mudanca.para - mudanca.de}`, getComputedStyle(numero.current).color, 120);
       const marco = MARCOS_DA_SEQUENCIA.find((dia) => mudanca.de < dia && mudanca.para >= dia);
       if (marco) {
@@ -270,11 +272,14 @@ export function ChipRupees({
     const cor = "#10b981";
     if (diferenca > 0) {
       const { primeira, ultima } = voarRupees(alvo, diferenca);
+      // O "plim" toca quando a primeira rupee encosta no ícone, não quando sai.
+      const plim = setTimeout(() => reagir("rupees"), primeira);
       receber(alvo, primeira, 1);
       if (ultima - primeira > 160) receber(alvo, ultima, 0.45);
       if (texto) mostrarDiferenca(texto, `+${formato(diferenca)}`, cor, primeira);
       const marco = MARCOS_DE_RUPEES.find((valor) => mudanca.de < valor && mudanca.para >= valor);
       if (marco) varrerBrilho(alvo, "#ffffff", ultima + 120);
+      return () => clearTimeout(plim);
     } else {
       // Gastar: o ícone "paga" — encolhe e volta — e o número sai em cinza.
       animar(alvo, [
@@ -340,6 +345,7 @@ export function ChipPenas({
     const diferenca = mudanca.para - mudanca.de;
     if (diferenca < 0) {
       soltarPena(alvo);
+      reagir("perdaDePena");
       if (texto) mostrarDiferenca(texto, `−${-diferenca}`, "#f43f5e", 80);
       if (mudanca.para === 0) tremer(alvo, 160);
     } else {

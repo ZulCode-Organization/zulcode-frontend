@@ -1,0 +1,21 @@
+{
+  "continuar": "Continuar",
+  "ofensiva": {
+    "dias": "{n, plural, one {dia de ofensiva!} other {dias de ofensiva!}}",
+    "comecou": "Sua ofensiva começou! Estude amanhã para ela crescer.",
+    "recomecou": "Ofensiva recomeçada. Desta vez, não deixe o fogo apagar!",
+    "marco": "{n} dias seguidos. Você está pegando fogo!",
+    "protegida": "O gás de ofensiva segurou o dia que faltou. Sua chama continua acesa.",
+    "normal": "Estude amanhã para não perder a sequência.",
+    "semana": "Esta semana"
+  },
+  "divisao": {
+    "rotulo": "Nova divisão",
+    "titulo": "Divisão {nome}!",
+    "texto": "Seu XP te levou para uma divisão acima. Continue subindo."
+  },
+  "conquista": {
+    "rotulo": "Conquista desbloqueada",
+    "recompensa": "+{n} rupees"
+  }
+}

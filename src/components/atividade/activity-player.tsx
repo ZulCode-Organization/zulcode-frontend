@@ -14,6 +14,9 @@ import { ExercicioAlternativa } from "./exercicio-alternativa";
 import { ExercicioCompletar } from "./exercicio-completar";
 import { ExercicioCodigo } from "./exercicio-codigo";
 import { TelaConclusao } from "./tela-conclusao";
+import { prepararReacoes, reagir } from "@/lib/reacoes";
+import { FilaDeComemoracoes } from "@/components/comemoracoes/fila";
+import { comemoracoesDaLicao, type Comemoracao, type ResultadoDaLicao } from "@/lib/types/comemoracao";
 
 interface ActivityPlayerProps {
   atividade: Atividade;
@@ -22,7 +25,7 @@ interface ActivityPlayerProps {
    * fornece decide se isso é uma lição real (chama POST
    * /lessons/:id/complete de verdade) ou não (undefined, mantém o XP só
    * como celebração visual, sem nada persistido). */
-  aoConcluir?: (acertos: number, total: number) => Promise<{ xpEarned: number } | null>;
+  aoConcluir?: (acertos: number, total: number) => Promise<ResultadoDaLicao | null>;
   /** Chamado uma única vez ao concluir, independente de aoConcluir — é o
    * gancho pra marcar progresso local (localStorage) nas lições que não
    * existem no backend, sem misturar isso com XP/rede. */
@@ -40,7 +43,7 @@ interface ActivityPlayerProps {
   aoSair?: () => void;
 }
 
-type Fase = "introducao" | "quiz" | "concluida" | "sem-penas";
+type Fase = "introducao" | "quiz" | "concluida" | "comemorando" | "sem-penas";
 
 interface MoldeAtividadeProps {
   progresso: number;
@@ -61,7 +64,7 @@ interface MoldeAtividadeProps {
 function MoldeAtividade({ progresso, vidas, vidasIlimitadas, onSair, children, rodape }: MoldeAtividadeProps) {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <div className="flex items-center gap-4 px-4 py-4 lg:px-8">
+      <div className="flex items-center gap-4 px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] lg:px-8">
         <button
           type="button"
           onClick={onSair}
@@ -79,7 +82,7 @@ function MoldeAtividade({ progresso, vidas, vidasIlimitadas, onSair, children, r
         <span className="flex shrink-0 items-center gap-1.5 text-sm font-black text-rose-500" title={vidasIlimitadas ? "Penas ilimitadas" : `${vidas} penas restantes`}>{vidasIlimitadas ? <PenaInfinita className="size-8" /> : <><PenaDesgastada restantes={vidas} className="size-8" />{vidas}</>}</span>
       </div>
 
-      <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 pb-4 lg:px-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:px-8">
         <div className="flex flex-1 flex-col">
           <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center">{children}</div>
           {rodape}
@@ -131,8 +134,15 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   const [salvandoXp, setSalvandoXp] = useState(false);
   const [erroSalvarXp, setErroSalvarXp] = useState(false);
   const [vidas, setVidas] = useState(vidasIniciais);
+  // O que o servidor mandou comemorar (ofensiva, divisão, conquistas): as
+  // telas cheias entre o fim da lição e a volta para a trilha.
+  const [comemoracoes, setComemoracoes] = useState<Comemoracao[]>([]);
   const acertos = perguntas.length - errouAlguma.length;
   const jaEnviouRef = useRef(false);
+
+  // Os sons da lição baixam assim que ela abre: o primeiro acerto não pode
+  // chegar atrasado.
+  useEffect(() => prepararReacoes("toque", "acerto", "erro", "licaoConcluida"), []);
   const jaMarcouLocalRef = useRef(false);
   const penalizouQuestaoRef = useRef(false);
 
@@ -152,6 +162,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
       .then((resultado) => {
         if (resultado) {
           setXpConfirmado(resultado.xpEarned);
+          setComemoracoes(comemoracoesDaLicao(resultado));
         } else {
           setErroSalvarXp(true);
         }
@@ -192,6 +203,10 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
     );
   }
 
+  if (fase === "comemorando") {
+    return <FilaDeComemoracoes itens={comemoracoes} aoTerminar={sair} />;
+  }
+
   if (fase === "concluida") {
     return (
       <TelaConclusao
@@ -200,7 +215,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
         acertos={acertos}
         total={perguntas.length}
         onRevisar={reiniciar}
-        onContinuar={sair}
+        onContinuar={() => (comemoracoes.length ? setFase("comemorando") : sair())}
         salvando={salvandoXp}
         erroSalvar={erroSalvarXp}
       />
@@ -258,6 +273,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   const pergunta = perguntas[fila[0]];
 
   const aplicarResultado = (ok: boolean) => {
+    reagir(ok ? "acerto" : "erro");
     setVerificado(true);
     setCorreto(ok);
     if (aoResponder && !respondidasRef.current.has(pergunta.id)) {
@@ -312,6 +328,12 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   };
 
   const podeVerificar = pergunta.tipo !== "codigo" && !!resposta;
+
+  /** Escolher uma opção responde ao toque; tocar de novo na mesma não. */
+  const escolher = (valor: string | null) => {
+    if (valor !== resposta) reagir("toque");
+    setResposta(valor);
+  };
 
   return (
     <MoldeAtividade
@@ -381,7 +403,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
         <ExercicioAlternativa
           pergunta={pergunta}
           selecionada={resposta}
-          onSelecionar={setResposta}
+          onSelecionar={escolher}
           verificado={verificado}
         />
       )}
@@ -390,7 +412,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
         <ExercicioCompletar
           pergunta={pergunta}
           resposta={resposta}
-          onEscolherBloco={setResposta}
+          onEscolherBloco={escolher}
           verificado={verificado}
         />
       )}

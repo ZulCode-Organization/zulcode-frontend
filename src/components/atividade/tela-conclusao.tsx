@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Target, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { reagir } from "@/lib/reacoes";
 
 interface TelaConclusaoProps {
   xp: number;
@@ -60,6 +61,9 @@ function useContador(alvo: number, inicio: number, duracao: number, comecar: boo
 
 export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salvando, erroSalvar, xpBase }: TelaConclusaoProps) {
   const percentual = Math.round((acertos / total) * 100);
+
+  // A vinheta de fim de lição toca uma vez, quando a tela aparece.
+  useEffect(() => reagir("licaoConcluida"), []);
 
   // O backend já entrega o XP dobrado quando o power-up está valendo; aqui só
   // reconhecemos isso comparando com o que a lição vale sem bônus. Nada é
@@ -157,7 +161,7 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salv
         )}
       </div>
 
-      <div className="mx-auto flex w-full max-w-md gap-3 px-4 pb-8">
+      <div className="mx-auto flex w-full max-w-md gap-3 px-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
         <button
           type="button"
           disabled={salvando}

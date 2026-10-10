@@ -212,7 +212,7 @@ export function FluxoPro({ sessao }: { sessao: string | null }) {
       <Cenarios cena={cena} />
       <CampoDeEstrelas dobra={fase === "entrada" || fase === "conferindo" || fase === null} pulso={pulso} />
 
-      <div className="relative z-10 mx-auto flex h-dvh max-w-md flex-col px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:max-w-lg">
+      <div className="relative z-10 mx-auto flex h-dvh max-w-md flex-col px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[calc(0.75rem+env(safe-area-inset-top))] lg:max-w-lg">
         {/* ---------- Topo ---------- */}
         <header className="flex h-12 shrink-0 items-center gap-4">
           <button

@@ -1,3 +1,7 @@
+// O plugin aponta para onde o app decide a língua e carrega os textos.
+const createNextIntlPlugin = require("next-intl/plugin")
+const comTraducoes = createNextIntlPlugin("./src/i18n/request.ts")
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async headers() {
@@ -16,4 +20,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = comTraducoes(nextConfig)

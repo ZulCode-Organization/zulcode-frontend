@@ -1,0 +1,21 @@
+{
+  "continuar": "Continue",
+  "ofensiva": {
+    "dias": "{n, plural, one {day streak!} other {day streak!}}",
+    "comecou": "Your streak has started! Study tomorrow to keep it growing.",
+    "recomecou": "Streak restarted. This time, don't let the flame go out!",
+    "marco": "{n} days in a row. You're on fire!",
+    "protegida": "Your streak freeze covered the day you missed. Your flame is still burning.",
+    "normal": "Study tomorrow so you don't lose your streak.",
+    "semana": "This week"
+  },
+  "divisao": {
+    "rotulo": "New division",
+    "titulo": "{nome} division!",
+    "texto": "Your XP took you up a division. Keep climbing."
+  },
+  "conquista": {
+    "rotulo": "Achievement unlocked",
+    "recompensa": "+{n} rupees"
+  }
+}

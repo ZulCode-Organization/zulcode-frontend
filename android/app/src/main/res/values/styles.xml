@@ -13,10 +13,19 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- O fundo do app atrás de tudo: é o que aparece onde a página ainda
+             não desenhou e em qualquer faixa que o Android reserve para as
+             barras. Com isto nada fica cinza. -->
+        <item name="android:windowBackground">@color/zc_fundo</item>
+        <item name="android:statusBarColor">@color/zc_fundo</item>
+        <item name="android:navigationBarColor">@color/zc_barra_de_navegacao</item>
     </style>
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <!-- A splash do sistema com o mesmo fundo da abertura e do app: são três
+             telas seguidas, e assim parecem uma só. -->
+        <item name="windowSplashScreenBackground">@color/zc_fundo</item>
     </style>
 </resources>

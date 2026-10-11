@@ -11,25 +11,58 @@ import { API_BASE_URL, fetchComTimeout } from "./api-config";
  * Fora do app (navegador) e num APK sem o AdMob, tudo devolve "sem anúncio" e
  * nada aparece.
  *
- * Os ids abaixo são os de teste do Google e valem até o ZulCode ter os dele
- * (NEXT_PUBLIC_ADMOB_RECOMPENSADO e NEXT_PUBLIC_ADMOB_INTERSTICIAL); o id do
- * app fica no APK (ADMOB_APP_ID, em android/app/build.gradle).
+ * Os blocos de anúncio do ZulCode vêm de NEXT_PUBLIC_ADMOB_RECOMPENSADO e
+ * NEXT_PUBLIC_ADMOB_INTERSTICIAL; o id do app fica no APK (ADMOB_APP_ID, em
+ * android/app/build.gradle).
  */
 const TESTE = {
   recompensado: "ca-app-pub-3940256099942544/5224354917",
   intersticial: "ca-app-pub-3940256099942544/1033173712",
 };
-const ID_RECOMPENSADO = process.env.NEXT_PUBLIC_ADMOB_RECOMPENSADO || TESTE.recompensado;
-const ID_INTERSTICIAL = process.env.NEXT_PUBLIC_ADMOB_INTERSTICIAL || TESTE.intersticial;
-const DE_TESTE = !process.env.NEXT_PUBLIC_ADMOB_RECOMPENSADO;
+
+/**
+ * `NEXT_PUBLIC_ADMOB_TESTE=1` troca os blocos do ZulCode pelos de demonstração
+ * do Google. É o que se usa para mexer nos anúncios: eles aparecem sempre (até
+ * numa conta recém-criada, que o Google ainda não liberou), não rendem nada e
+ * não correm risco — ver ou tocar num anúncio de verdade do próprio app conta
+ * como tráfego inválido e suspende a conta do AdMob.
+ *
+ * Em produção isto fica desligado. Para conferir o anúncio de verdade sem
+ * risco, o jeito é pôr o aparelho em NEXT_PUBLIC_ADMOB_APARELHOS_DE_TESTE.
+ */
+const MODO_DE_TESTE = process.env.NEXT_PUBLIC_ADMOB_TESTE === "1";
+const ID_RECOMPENSADO = (!MODO_DE_TESTE && process.env.NEXT_PUBLIC_ADMOB_RECOMPENSADO) || TESTE.recompensado;
+const ID_INTERSTICIAL = (!MODO_DE_TESTE && process.env.NEXT_PUBLIC_ADMOB_INTERSTICIAL) || TESTE.intersticial;
+const deTeste = (id: string) => id.startsWith("ca-app-pub-3940256099942544");
+
+/**
+ * Os aparelhos de quem desenvolve o ZulCode (NEXT_PUBLIC_ADMOB_APARELHOS_DE_TESTE,
+ * separados por vírgula). Neles o Google serve anúncios de teste mesmo com os
+ * ids de verdade, e é assim que se testa sem risco: ver o próprio anúncio real,
+ * ou tocar nele, conta como tráfego inválido e suspende a conta do AdMob.
+ *
+ * O id de cada aparelho sai no logcat na primeira vez que ele pede um anúncio
+ * ("Use ... setTestDeviceIds(Arrays.asList(\"ABC123…\"))"). O emulador já é
+ * um aparelho de teste por conta própria.
+ */
+const APARELHOS_DE_TESTE = (process.env.NEXT_PUBLIC_ADMOB_APARELHOS_DE_TESTE ?? "")
+  .split(",")
+  .map((aparelho) => aparelho.trim())
+  .filter(Boolean);
 
 type ModuloAdMob = typeof import("@capacitor-community/admob");
 let iniciado: Promise<ModuloAdMob | null> | null = null;
+/** Quando não se sabe o que a pessoa consentiu, o anúncio vai sem personalizar. */
+let semPersonalizar = false;
 
 /**
- * O AdMob iniciado, com o consentimento resolvido; `null` fora do app ou num
- * APK sem ele. O formulário de consentimento do Google (GDPR, LGPD) só aparece
- * onde a lei pede, e uma vez: depois ele lembra a escolha.
+ * O AdMob iniciado, com o consentimento resolvido; `null` fora do app, num APK
+ * sem ele e quando o Google diz que não dá para pedir anúncio.
+ *
+ * O formulário de consentimento (GDPR, LGPD) só aparece onde a lei pede, e uma
+ * vez: depois o Google lembra a escolha. Perguntar por ele é um passo à parte
+ * de propósito — sem o formulário configurado no painel do AdMob, ou sem rede,
+ * essa consulta falha, e isso não pode deixar o app inteiro sem anúncio.
  */
 function admob() {
   iniciado ??= (async () => {
@@ -38,10 +71,20 @@ function admob() {
       if (Capacitor.getPlatform() !== "android" || !Capacitor.isPluginAvailable("AdMob")) return null;
       const m = await import("@capacitor-community/admob");
       // Conteúdo para todas as idades com orientação: o ZulCode tem estudantes jovens.
-      await m.AdMob.initialize({ maxAdContentRating: m.MaxAdContentRating.ParentalGuidance });
-      const consentimento = await m.AdMob.requestConsentInfo();
-      if (consentimento.isConsentFormAvailable && consentimento.status === m.AdmobConsentStatus.REQUIRED) {
-        await m.AdMob.showConsentForm();
+      await m.AdMob.initialize({
+        maxAdContentRating: m.MaxAdContentRating.ParentalGuidance,
+        initializeForTesting: APARELHOS_DE_TESTE.length > 0,
+        testingDevices: APARELHOS_DE_TESTE,
+      });
+      try {
+        let consentimento = await m.AdMob.requestConsentInfo();
+        if (consentimento.isConsentFormAvailable && consentimento.status === m.AdmobConsentStatus.REQUIRED) {
+          consentimento = await m.AdMob.showConsentForm();
+        }
+        // A pessoa recusou, ou a lei do país dela não deixa: nada de anúncio.
+        if (!consentimento.canRequestAds) return null;
+      } catch {
+        semPersonalizar = true;
       }
       return m;
     } catch {
@@ -101,7 +144,7 @@ export async function assistirParaGanharPena(): Promise<ResultadoDaPena> {
   const { nonce, usuario } = (await pedido.json()) as { nonce: string; usuario: string };
 
   try {
-    await m.AdMob.prepareRewardVideoAd({ adId: ID_RECOMPENSADO, isTesting: DE_TESTE, ssv: { userId: usuario, customData: nonce } });
+    await m.AdMob.prepareRewardVideoAd({ adId: ID_RECOMPENSADO, isTesting: deTeste(ID_RECOMPENSADO), npa: semPersonalizar, ssv: { userId: usuario, customData: nonce } });
   } catch {
     return { ok: false, motivo: "falha" };
   }
@@ -169,7 +212,7 @@ export async function licaoConcluidaParaAnuncio() {
   const m = await admob();
   if (!m) return;
   try {
-    await m.AdMob.prepareInterstitial({ adId: ID_INTERSTICIAL, isTesting: DE_TESTE });
+    await m.AdMob.prepareInterstitial({ adId: ID_INTERSTICIAL, isTesting: deTeste(ID_INTERSTICIAL), npa: semPersonalizar });
     intersticialPronto = true;
   } catch {
     intersticialPronto = false;

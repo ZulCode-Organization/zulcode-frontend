@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -20,8 +21,8 @@
             </intent-filter>
         </activity>
 
-        <!-- O widget da ofensiva. exported fica true porque quem o desenha na
-             tela inicial é o lançador, que é outro aplicativo. -->
+        <!-- Os widgets. exported fica true porque quem os desenha na tela inicial
+             é o lançador, que é outro aplicativo. -->
         <receiver
             android:name=".widget.WidgetDaOfensiva"
             android:label="@string/widget_ofensiva_nome"
@@ -33,6 +34,64 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_ofensiva_info" />
         </receiver>
+        <receiver
+            android:name=".widget.WidgetDaSemana"
+            android:label="@string/widget_semana_nome"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_semana_info" />
+        </receiver>
+        <receiver
+            android:name=".widget.WidgetDoZul"
+            android:label="@string/widget_zul_nome"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_zul_info" />
+        </receiver>
+
+        <!-- O relógio dos widgets (meia-noite e 20h). Só o próprio app o chama. -->
+        <receiver
+            android:name=".widget.ReceptorDaVirada"
+            android:exported="false" />
+
+
+        <!-- Os avisos do servidor (Firebase) passam por aqui para sair com a cara do
+             ZulCode. Substitui o serviço padrão do plugin de push, removido logo abaixo. -->
+        <service
+            android:name=".avisos.ServicoDePush"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.capacitorjs.plugins.pushnotifications.MessagingService"
+            tools:node="remove" />
+
+        <!-- Os lembretes de estudo: os alarmes e o botão "Mais tarde" chegam aqui.
+             Só o próprio app manda intents para ele. -->
+        <receiver
+            android:name=".avisos.ReceptorDeLembrete"
+            android:exported="false" />
+
+        <!-- Reagenda os lembretes depois que o celular reinicia ou o app é
+             atualizado: o Android esquece os alarmes nessas horas. -->
+        <receiver
+            android:name=".avisos.ReceptorDeInicio"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -41,9 +100,18 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- O id do app no AdMob (anúncios de quem não é PRO), vindo do build.gradle. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
     </application>
 
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Avisos: mostrar notificações (Android 13+ pergunta) e reagendar os
+         lembretes quando o celular liga. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 </manifest>

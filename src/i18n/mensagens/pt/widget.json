@@ -1,0 +1,46 @@
+{
+  "entrar": {
+    "titulo": "ZulCode",
+    "texto": "Toque para entrar"
+  },
+  "rotulos": {
+    "um": "dia seguido",
+    "varios": "dias seguidos",
+    "estudeHoje": "estude hoje",
+    "comeceHoje": "comece hoje"
+  },
+  "unidade": {
+    "um": "dia",
+    "varios": "dias"
+  },
+  "semana": {
+    "iniciais": "D S T Q Q S S"
+  },
+  "meta": {
+    "titulo": "Meta de hoje",
+    "feita": "Meta cumprida!",
+    "minutos": "{feito} de {meta} min"
+  },
+  "zul": {
+    "entrar": "Oi! Entra na sua conta pra eu te acompanhar.",
+    "feito": {
+      "1": "Mandou bem! Sua chama de {diasTexto} está garantida hoje.",
+      "2": "Ofensiva salva! Até amanhã, {nome}.",
+      "3": "Hoje já foi! Amanhã a gente mantém o fogo aceso."
+    },
+    "risco": {
+      "1": "Sua chama de {diasTexto} está esperando. Bora?",
+      "2": "Uma lição rapidinha e a ofensiva de {diasTexto} segue firme.",
+      "3": "{nome}, separei uma lição pra você hoje!"
+    },
+    "noite": {
+      "1": "Corre! Sua ofensiva de {diasTexto} apaga à meia-noite.",
+      "2": "Ainda dá tempo de salvar a chama de {diasTexto}!"
+    },
+    "comecar": {
+      "1": "Que tal começar uma ofensiva hoje?",
+      "2": "Uma lição hoje e a chama acende!",
+      "3": "Bora aprender algo novo, {nome}?"
+    }
+  }
+}

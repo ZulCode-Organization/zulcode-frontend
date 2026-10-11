@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Os nomes dos widgets no seletor, para celulares em inglês. -->
+<resources>
+    <string name="widget_ofensiva_nome">Streak</string>
+    <string name="widget_ofensiva_descricao">Your flame and days in a row.</string>
+    <string name="widget_semana_nome">Weekly streak</string>
+    <string name="widget_semana_descricao">The days you studied this week and today\'s goal.</string>
+    <string name="widget_zul_nome">Zul</string>
+    <string name="widget_zul_descricao">Zul reminds you to study, with a note that changes during the day.</string>
+</resources>

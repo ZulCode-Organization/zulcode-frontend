@@ -8,6 +8,7 @@
     "estudo": "Estudo",
     "som": "Som e vibração",
     "avisos": "Avisos",
+    "widgets": "Widgets",
     "conta": "Conta"
   },
   "aparencia": {
@@ -52,6 +53,48 @@
       "sessao": "Sua sessão expirou. Entre de novo.",
       "falhaAoSalvar": "Não deu para salvar este aparelho para receber avisos.",
       "falha": "Não deu para ativar as notificações neste aparelho."
+    },
+    "ativas": "Ativadas neste aparelho.",
+    "desativadas": "Desativadas. Ative para receber os lembretes do Zul.",
+    "bloqueadas": "Bloqueadas nas configurações do celular. Libere por lá para receber.",
+    "atualizeApp": "Atualize o aplicativo para receber notificações.",
+    "lembrete": {
+      "titulo": "Lembrete de estudo",
+      "descricao": "Todo dia, no horário que você escolher, se ainda não tiver estudado.",
+      "horario": "Horário do lembrete"
+    },
+    "exemplo": {
+      "titulo": "Ver um exemplo",
+      "descricao": "Mostra agora um lembrete como os que você vai receber.",
+      "botao": "Mostrar"
+    }
+  },
+  "widgets": {
+    "descricao": "Sua ofensiva na tela inicial do celular, sem abrir o app.",
+    "tipos": {
+      "ofensiva": {
+        "nome": "Ofensiva",
+        "descricao": "A chama e os dias seguidos."
+      },
+      "semana": {
+        "nome": "Ofensiva da semana",
+        "descricao": "Os últimos 7 dias e a meta de hoje."
+      },
+      "zul": {
+        "nome": "Zul",
+        "descricao": "Um recado do Zul que muda ao longo do dia."
+      }
+    },
+    "adicionar": "Adicionar",
+    "naTela": "Na tela",
+    "comoAdicionar": "Para adicionar, segure um espaço vazio da tela inicial, toque em Widgets e procure o ZulCode.",
+    "estilo": {
+      "titulo": "Visual dos widgets",
+      "descricao": "O automático acompanha o tema claro ou escuro do celular.",
+      "auto": "Automático",
+      "claro": "Claro",
+      "escuro": "Escuro",
+      "azul": "Azul"
     }
   },
   "conta": {

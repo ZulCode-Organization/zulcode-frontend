@@ -4,6 +4,9 @@ const comTraducoes = createNextIntlPlugin("./src/i18n/request.ts")
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Só vale no `next dev`: o emulador do Android enxerga o computador por
+  // 10.0.2.2, e sem isto o Next bloqueia os arquivos pedidos de lá.
+  allowedDevOrigins: ["10.0.2.2"],
   async headers() {
     return [{
       source: "/playground-runtime/:path*",

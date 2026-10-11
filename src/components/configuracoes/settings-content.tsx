@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore, type ReactNode } from "react";
-import { Bell, BellRing, ChevronRight, Languages, Loader2, LogOut, Palette, ShieldCheck, Smartphone, Sun, Target, Volume2 } from "lucide-react";
+import { useState, useSyncExternalStore } from "react";
+import { ChevronRight, Languages, Loader2, LogOut, Palette, ShieldCheck, Smartphone, Target, Volume2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useLocale, useTranslations } from "next-intl";
 import { limparPerfilCache, usePerfil } from "@/hooks/use-perfil";
@@ -11,116 +10,17 @@ import { limparTrilhaCache } from "@/hooks/use-trilha";
 import { limparSeguidos } from "@/hooks/use-seguir";
 import { limparCursosCache } from "@/hooks/use-cursos";
 import { limparWidgetDaOfensiva } from "@/lib/widget-ofensiva";
-import { ativarNotificacoesNativas, type CodigoPush } from "@/lib/push-notifications";
+import { limparAvisos } from "@/lib/avisos";
 import { mudarPreferencia, usePreferencias } from "@/lib/preferencias";
 import { IDIOMAS, NOME_DO_IDIOMA, type Idioma } from "@/i18n/idiomas";
-import { cn } from "@/lib/utils";
+import { Grupo, Linha, LinhaDeEscolha, LinhaInterruptor, Opcao } from "./linhas";
+import { GrupoDeAvisos } from "./avisos";
+import { GrupoDeWidgets } from "./widgets";
 
 const semAssinatura = () => () => {};
 
 /** Os mesmos degraus que o servidor aceita (e as conquistas de constância usam). */
 const METAS = [5, 10, 15, 30, 60] as const;
-
-const classeDaLinha = "flex w-full items-center gap-3.5 border-b border-border px-4 py-4 text-left last:border-0 sm:px-5";
-
-/**
- * Uma linha de configuração.
- *
- * A tela é uma lista de linhas, e não uma grade de cards. Card serve pra
- * conteúdo que se compara lado a lado; ajuste é coisa que se percorre de cima
- * pra baixo procurando um nome. A lista funciona igual no celular e no
- * computador.
- */
-function Linha({
-  Icone, titulo, descricao, cor = "text-primary", href, onClick, acessorio, destaque = false,
-}: {
-  Icone: typeof Sun; titulo: string; descricao: ReactNode; cor?: string; href?: string; onClick?: () => void; acessorio?: ReactNode; destaque?: boolean;
-}) {
-  const conteudo = (
-    <>
-      <IconeDaLinha Icone={Icone} cor={cor} />
-      <Textos titulo={titulo} descricao={descricao} destaque={destaque} />
-      {acessorio ?? <ChevronRight className="size-4 shrink-0 text-muted-foreground" />}
-    </>
-  );
-  const classe = cn(classeDaLinha, "transition-colors duration-150 hover:bg-muted/50");
-  if (href) return <Link href={href} className={classe}>{conteudo}</Link>;
-  if (!onClick) return <div className={classeDaLinha}>{conteudo}</div>;
-  return <button type="button" onClick={onClick} className={classe}>{conteudo}</button>;
-}
-
-function IconeDaLinha({ Icone, cor }: { Icone: typeof Sun; cor: string }) {
-  return (
-    <span className={cn("grid size-10 shrink-0 place-items-center rounded-xl bg-muted", cor)}>
-      <Icone className="size-5" />
-    </span>
-  );
-}
-
-function Textos({ titulo, descricao, destaque = false }: { titulo: ReactNode; descricao: ReactNode; destaque?: boolean }) {
-  return (
-    <span className="min-w-0 flex-1">
-      <span className={cn("block text-[0.92rem] font-black", destaque && "text-destructive")}>{titulo}</span>
-      <span className="mt-0.5 block text-[0.8rem] leading-snug text-muted-foreground">{descricao}</span>
-    </span>
-  );
-}
-
-/**
- * Uma linha que liga e desliga. A linha inteira é o interruptor (é a área que
- * o dedo acerta), e o leitor de tela a anuncia como tal.
- */
-function LinhaInterruptor({ Icone, titulo, descricao, ligado, aoMudar }: { Icone: typeof Sun; titulo: string; descricao: string; ligado: boolean; aoMudar: (v: boolean) => void }) {
-  return (
-    <button type="button" role="switch" aria-checked={ligado} onClick={() => aoMudar(!ligado)} className={cn(classeDaLinha, "transition-colors duration-150 hover:bg-muted/50")}>
-      <IconeDaLinha Icone={Icone} cor="text-primary" />
-      <Textos titulo={titulo} descricao={descricao} />
-      <span aria-hidden className={cn("relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 motion-reduce:transition-none", ligado ? "bg-primary" : "bg-muted-foreground/30")}>
-        <span className={cn("absolute left-0.5 top-0.5 size-6 rounded-full bg-white shadow-sm transition-transform duration-200 motion-reduce:transition-none", ligado && "translate-x-5")} />
-      </span>
-    </button>
-  );
-}
-
-/** Uma linha com opções lado a lado embaixo do título (língua, meta diária). */
-function LinhaDeEscolha({ Icone, titulo, descricao, children }: { Icone: typeof Sun; titulo: string; descricao: ReactNode; children: ReactNode }) {
-  return (
-    <div className="border-b border-border px-4 py-4 last:border-0 sm:px-5">
-      <div className="flex items-center gap-3.5">
-        <IconeDaLinha Icone={Icone} cor="text-primary" />
-        <Textos titulo={titulo} descricao={descricao} />
-      </div>
-      <div className="mt-3.5">{children}</div>
-    </div>
-  );
-}
-
-function Opcao({ ativa, aoEscolher, desabilitada, children }: { ativa: boolean; aoEscolher: () => void; desabilitada?: boolean; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={ativa}
-      disabled={desabilitada}
-      onClick={aoEscolher}
-      className={cn(
-        "flex min-h-12 flex-col items-center justify-center rounded-xl border-2 px-1 py-2 text-center transition-colors duration-150 disabled:opacity-60",
-        ativa ? "border-primary bg-primary/10 text-primary" : "border-border text-foreground hover:border-primary/40",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function Grupo({ titulo, children }: { titulo: string; children: ReactNode }) {
-  return (
-    <section className="mt-6">
-      <h2 className="px-1 text-[0.7rem] font-black uppercase tracking-[0.1em] text-muted-foreground">{titulo}</h2>
-      <div className="mt-2 overflow-hidden rounded-[20px] border border-border bg-card">{children}</div>
-    </section>
-  );
-}
 
 export function SettingsContent() {
   const t = useTranslations("configuracoes");
@@ -134,7 +34,6 @@ export function SettingsContent() {
   // tema de verdade. Sem isso o React acusa texto diferente na hidratação.
   const montado = useSyncExternalStore(semAssinatura, () => true, () => false);
 
-  const [push, setPush] = useState<{ ativando: boolean; codigo: CodigoPush | null }>({ ativando: false, codigo: null });
   const [salvando, setSalvando] = useState<"idioma" | "meta" | null>(null);
   const [erro, setErro] = useState<"idioma" | "meta" | null>(null);
 
@@ -162,15 +61,10 @@ export function SettingsContent() {
     setSalvando(null);
   };
 
-  const ativarPush = async () => {
-    setPush({ ativando: true, codigo: null });
-    const resultado = await ativarNotificacoesNativas();
-    setPush({ ativando: false, codigo: resultado.codigo });
-  };
-
   const sair = () => {
     localStorage.removeItem("accessToken");
     void limparWidgetDaOfensiva();
+    void limparAvisos();
     limparPerfilCache();
     limparTrilhaCache();
     limparSeguidos();
@@ -243,20 +137,9 @@ export function SettingsContent() {
         <LinhaInterruptor Icone={Smartphone} titulo={t("som.vibracao")} descricao={t("som.vibracaoDescricao")} ligado={preferencias.vibracao} aoMudar={(v) => mudarPreferencia("vibracao", v)} />
       </Grupo>
 
-      <Grupo titulo={t("grupos.avisos")}>
-        <Linha
-          Icone={push.ativando ? Loader2 : Bell}
-          titulo={t("avisos.titulo")}
-          descricao={push.codigo ? t(`avisos.resultado.${push.codigo}`) : t("avisos.descricao")}
-          onClick={ativarPush}
-          acessorio={
-            <span className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-[0.7rem] font-black uppercase tracking-[0.06em] text-primary-foreground">
-              {push.ativando ? <Loader2 className="size-3.5 animate-spin" /> : <BellRing className="size-3.5" />}
-              {push.ativando ? t("avisos.ativando") : t("avisos.ativar")}
-            </span>
-          }
-        />
-      </Grupo>
+      <GrupoDeAvisos />
+
+      <GrupoDeWidgets />
 
       <Grupo titulo={t("grupos.conta")}>
         {perfil?.publicCode && (

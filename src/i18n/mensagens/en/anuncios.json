@@ -1,0 +1,14 @@
+{
+  "pena": {
+    "botao": "Watch an ad to get 1 feather",
+    "titulo": "Watch an ad",
+    "descricao": "Watch a short ad and get 1 feather.",
+    "gratis": "Free",
+    "carregando": "Loading ad…",
+    "ganhou": "You got 1 feather!",
+    "cancelado": "The ad was closed before the end, so no feather this time.",
+    "limite": "You've already earned all of today's feathers from ads.",
+    "cheio": "Your feathers are already full.",
+    "falha": "Couldn't load an ad right now. Try again in a bit."
+  }
+}

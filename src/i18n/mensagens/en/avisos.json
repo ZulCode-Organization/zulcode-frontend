@@ -1,0 +1,62 @@
+{
+  "canais": {
+    "lembretes": "Study reminders",
+    "novidades": "News and alerts"
+  },
+  "acoes": {
+    "estudar": "Study now",
+    "depois": "Later"
+  },
+  "rotuloDia": "day streak",
+  "rotuloDias": "day streak",
+  "lembrete": {
+    "1": {
+      "titulo": "Your {dias}-day flame is waiting 🔥",
+      "texto": "One quick lesson keeps it burning."
+    },
+    "2": {
+      "titulo": "Ready to study, {nome}?",
+      "texto": "Zul picked a lesson to keep your {dias}-day streak going."
+    },
+    "3": {
+      "titulo": "Code time!",
+      "texto": "5 minutes today and your {dias}-day streak stays strong."
+    },
+    "4": {
+      "titulo": "Zul is watching your streak 👀",
+      "texto": "{diasTexto} in a row. Don't let the fire go out today."
+    }
+  },
+  "comecar": {
+    "1": {
+      "titulo": "Start a streak today?",
+      "texto": "One lesson today and the flame lights up. Zul is waiting!"
+    },
+    "2": {
+      "titulo": "Time to learn, {nome}!",
+      "texto": "A new lesson is waiting for you on ZulCode."
+    },
+    "3": {
+      "titulo": "How about 5 minutes of code?",
+      "texto": "Small steps, every day. Start now!"
+    }
+  },
+  "risco": {
+    "1": {
+      "titulo": "Your streak is about to end! 🔥",
+      "texto": "2 hours left to keep your {dias}-day streak. One lesson saves it."
+    },
+    "2": {
+      "titulo": "Last call from Zul",
+      "texto": "Your {dias}-day streak ends at midnight. Hurry!"
+    },
+    "3": {
+      "titulo": "There's still time, {nome}!",
+      "texto": "One quick lesson keeps your {dias}-day flame burning."
+    }
+  },
+  "unidade": {
+    "um": "day",
+    "varios": "days"
+  }
+}

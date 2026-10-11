@@ -17,6 +17,8 @@ import { TelaConclusao } from "./tela-conclusao";
 import { prepararReacoes, reagir } from "@/lib/reacoes";
 import { FilaDeComemoracoes } from "@/components/comemoracoes/fila";
 import { comemoracoesDaLicao, type Comemoracao, type ResultadoDaLicao } from "@/lib/types/comemoracao";
+import { PenaPorAnuncio } from "@/components/anuncios/pena-por-anuncio";
+import { licaoConcluidaParaAnuncio, mostrarIntersticialSePronto } from "@/lib/anuncios";
 
 interface ActivityPlayerProps {
   atividade: Atividade;
@@ -34,6 +36,9 @@ interface ActivityPlayerProps {
   aoErrar?: () => Promise<{ lives: number; isUnlimited?: boolean } | null>;
   vidas: number;
   vidasIlimitadas?: boolean;
+  /** Quem não é PRO vê anúncio: o de tela cheia ao sair da lição concluída e o
+   * que devolve uma pena quando elas acabam. A prévia do administrativo não. */
+  comAnuncios?: boolean;
   /** Avisado na primeira resposta de cada pergunta (certa ou errada). É o
    * histórico que mostra no administrativo quais questões derrubam as
    * pessoas; a repescagem não conta, senão toda questão errada pareceria
@@ -114,7 +119,7 @@ function MoldeAtividade({ progresso, vidas, vidasIlimitadas, onSair, children, r
  * /lessons/:id/complete — nas outras, continua sendo só uma celebração
  * visual com o xp mockado da lição.
  */
-export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, aoErrar, vidas: vidasIniciais, vidasIlimitadas = false, aoResponder, aoSair }: ActivityPlayerProps) {
+export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, aoErrar, vidas: vidasIniciais, vidasIlimitadas = false, comAnuncios = false, aoResponder, aoSair }: ActivityPlayerProps) {
   const router = useRouter();
   const { introducao, perguntas } = atividade;
   const totalPassos = introducao.length + perguntas.length;
@@ -147,6 +152,12 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   const penalizouQuestaoRef = useRef(false);
 
   const sair = () => (aoSair ? aoSair() : router.push("/home"));
+  // Ao sair de uma lição concluída — nunca no meio dela — pode vir o anúncio
+  // de tela cheia, se ele já carregou; a volta para a trilha espera ele fechar.
+  const sairDaLicaoConcluida = async () => {
+    if (comAnuncios) await mostrarIntersticialSePronto();
+    sair();
+  };
   const respondidasRef = useRef<Set<string>>(new Set());
 
   // Dispara uma única vez por visita à tela, no instante em que a lição
@@ -175,9 +186,11 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   // local — dispara mesmo em lições sem XP real, é o que libera a próxima
   // lição mockada na trilha.
   useEffect(() => {
-    if (fase !== "concluida" || !onConcluirLocal || jaMarcouLocalRef.current) return;
+    if (fase !== "concluida" || jaMarcouLocalRef.current) return;
     jaMarcouLocalRef.current = true;
-    onConcluirLocal();
+    onConcluirLocal?.();
+    // Conta a lição e, se for a vez do anúncio, já o carrega enquanto a pessoa vê o resultado.
+    if (comAnuncios) void licaoConcluidaParaAnuncio();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fase]);
 
@@ -199,12 +212,22 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
         <h1 className="mt-6 text-3xl font-black">Suas penas acabaram</h1>
         <p className="mt-3 max-w-md text-muted-foreground">Infelizmente não foi dessa vez. Recupere suas penas e tente novamente mais tarde — cada uma volta em uma hora.</p>
         <button type="button" onClick={sair} className="mt-7 rounded-2xl bg-primary px-7 py-3.5 text-sm font-black text-primary-foreground">Voltar para a jornada</button>
+        {/* Com a pena do anúncio, a lição continua de onde parou. */}
+        {comAnuncios && (
+          <PenaPorAnuncio
+            visual="botao"
+            aoGanhar={(novas) => {
+              setVidas(novas);
+              setFase("quiz");
+            }}
+          />
+        )}
       </div>
     );
   }
 
   if (fase === "comemorando") {
-    return <FilaDeComemoracoes itens={comemoracoes} aoTerminar={sair} />;
+    return <FilaDeComemoracoes itens={comemoracoes} aoTerminar={() => void sairDaLicaoConcluida()} />;
   }
 
   if (fase === "concluida") {
@@ -215,7 +238,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
         acertos={acertos}
         total={perguntas.length}
         onRevisar={reiniciar}
-        onContinuar={() => (comemoracoes.length ? setFase("comemorando") : sair())}
+        onContinuar={() => (comemoracoes.length ? setFase("comemorando") : void sairDaLicaoConcluida())}
         salvando={salvandoXp}
         erroSalvar={erroSalvarXp}
       />

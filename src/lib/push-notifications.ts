@@ -1,6 +1,7 @@
 "use client";
 
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
+import { estadoDosAvisos } from "@/lib/avisos";
 
 /**
  * O resultado de ativar as notificações, como código: quem mostra a frase é a
@@ -18,6 +19,11 @@ export async function ativarNotificacoesNativas(): Promise<ResultadoPush> {
   ]);
 
   if (!Capacitor.isNativePlatform()) return { ok: false, codigo: "semApp" };
+  // Chamar o Firebase num APK sem ele configurado (sem google-services.json)
+  // fecha o app na hora. Só segue quando o lado nativo confirma que ele existe;
+  // um APK antigo, sem como confirmar, também fica de fora.
+  const estado = await estadoDosAvisos();
+  if (!estado?.firebase) return { ok: false, codigo: "falha" };
 
   let permissao = await PushNotifications.checkPermissions();
   if (permissao.receive === "prompt") permissao = await PushNotifications.requestPermissions();
@@ -26,9 +32,8 @@ export async function ativarNotificacoesNativas(): Promise<ResultadoPush> {
   const token = localStorage.getItem("accessToken");
   if (!token) return { ok: false, codigo: "sessao" };
 
-  if (Capacitor.getPlatform() === "android") {
-    await PushNotifications.createChannel({ id: "zulcode_alertas", name: "Alertas do ZulCode", description: "Novidades e avisos do ZulCode", importance: 5, visibility: 1, sound: "default", vibration: true });
-  }
+  // Os canais (com os nomes na língua do app) são criados pelo lado nativo,
+  // que também desenha os avisos do servidor: ver android/.../ServicoDePush.
 
   return new Promise((resolve) => {
     const timeout = window.setTimeout(() => resolve({ ok: false, codigo: "falha" }), 12000);

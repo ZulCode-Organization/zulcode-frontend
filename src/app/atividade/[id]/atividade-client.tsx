@@ -7,6 +7,7 @@ import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { limparPerfilCache } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
 import { ActivityPlayer } from "@/components/atividade/activity-player";
+import { PenaPorAnuncio } from "@/components/anuncios/pena-por-anuncio";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import type { ResultadoDaLicao } from "@/lib/types/comemoracao";
 import { atividadeDaApi, ApiLesson } from "@/lib/course-content";
@@ -78,6 +79,8 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
   const [error, setError] = useState(false);
   const [semPenas, setSemPenas] = useState(false);
   const [livesState, setLivesState] = useState<{ lives: number; isUnlimited?: boolean } | null>(null);
+  // Sobe quando um anúncio devolve uma pena: a aula é carregada de novo.
+  const [tentativa, setTentativa] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -104,14 +107,23 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
       })
       .then((data: ApiLesson | null) => { if (data) setLesson(data); })
       .catch(() => setError(true));
-  }, [id]);
+  }, [id, tentativa]);
 
   if (error || (lesson && lesson.exercises.length === 0)) {
     return <AtividadeEmConstrucao />;
   }
 
   if (!lesson || !livesState) {
-    if (semPenas) return <SemPenas />;
+    if (semPenas) {
+      return (
+        <SemPenas
+          aoGanharPena={() => {
+            setSemPenas(false);
+            setTentativa((n) => n + 1);
+          }}
+        />
+      );
+    }
     return <div className="flex min-h-dvh items-center justify-center text-sm font-bold text-muted-foreground">Carregando aula…</div>;
   }
 
@@ -125,12 +137,12 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
 
   return <ActivityPlayer atividade={atividade} licao={licao} aoConcluir={(acertos, total) => etapaAtual < totalEtapas
     ? (totalEtapas === 2 ? completarEtapaTeorica(id) : completarEtapa(id, etapaAtual))
-    : completarLicaoReal(id, Math.round((acertos / total) * 100))} aoErrar={() => consumirPena(livesState, id)} aoResponder={(perguntaId, correto) => registrarResposta(id, perguntaId, correto)} vidas={livesState.lives} vidasIlimitadas={livesState.isUnlimited} />;
+    : completarLicaoReal(id, Math.round((acertos / total) * 100))} aoErrar={() => consumirPena(livesState, id)} aoResponder={(perguntaId, correto) => registrarResposta(id, perguntaId, correto)} vidas={livesState.lives} vidasIlimitadas={livesState.isUnlimited} comAnuncios={!livesState.isUnlimited} />;
 }
 
-function SemPenas() {
+function SemPenas({ aoGanharPena }: { aoGanharPena: () => void }) {
   const router = useRouter();
-  return <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center"><span className="flex size-20 items-center justify-center rounded-[28px] bg-rose-500/10 text-rose-500"><Feather className="size-10" /></span><h1 className="mt-6 text-3xl font-black">Sem penas para começar</h1><p className="mt-3 max-w-md text-muted-foreground">Você precisa ter ao menos uma pena para iniciar uma aula. A próxima pena será recuperada em até uma hora.</p><button type="button" onClick={() => router.push("/home")} className="mt-7 rounded-2xl bg-primary px-7 py-3.5 text-sm font-black text-primary-foreground">Voltar para a jornada</button></div>;
+  return <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center"><span className="flex size-20 items-center justify-center rounded-[28px] bg-rose-500/10 text-rose-500"><Feather className="size-10" /></span><h1 className="mt-6 text-3xl font-black">Sem penas para começar</h1><p className="mt-3 max-w-md text-muted-foreground">Você precisa ter ao menos uma pena para iniciar uma aula. A próxima pena será recuperada em até uma hora.</p><button type="button" onClick={() => router.push("/home")} className="mt-7 rounded-2xl bg-primary px-7 py-3.5 text-sm font-black text-primary-foreground">Voltar para a jornada</button><PenaPorAnuncio visual="botao" aoGanhar={aoGanharPena} /></div>;
 }
 
 /**

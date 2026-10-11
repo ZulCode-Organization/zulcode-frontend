@@ -8,6 +8,7 @@
     "estudo": "Study",
     "som": "Sound and vibration",
     "avisos": "Notifications",
+    "widgets": "Widgets",
     "conta": "Account"
   },
   "aparencia": {
@@ -52,6 +53,48 @@
       "sessao": "Your session expired. Please sign in again.",
       "falhaAoSalvar": "Couldn't save this device to receive notifications.",
       "falha": "Couldn't turn notifications on for this device."
+    },
+    "ativas": "On for this device.",
+    "desativadas": "Off. Turn them on to get Zul's reminders.",
+    "bloqueadas": "Blocked in your phone settings. Allow them there to receive them.",
+    "atualizeApp": "Update the app to receive notifications.",
+    "lembrete": {
+      "titulo": "Study reminder",
+      "descricao": "Every day, at the time you choose, if you haven't studied yet.",
+      "horario": "Reminder time"
+    },
+    "exemplo": {
+      "titulo": "See an example",
+      "descricao": "Shows a reminder right now, just like the ones you'll get.",
+      "botao": "Show"
+    }
+  },
+  "widgets": {
+    "descricao": "Your streak on your phone's home screen, without opening the app.",
+    "tipos": {
+      "ofensiva": {
+        "nome": "Streak",
+        "descricao": "Your flame and days in a row."
+      },
+      "semana": {
+        "nome": "Weekly streak",
+        "descricao": "The last 7 days and today's goal."
+      },
+      "zul": {
+        "nome": "Zul",
+        "descricao": "A note from Zul that changes during the day."
+      }
+    },
+    "adicionar": "Add",
+    "naTela": "On screen",
+    "comoAdicionar": "To add one, touch and hold an empty spot on your home screen, tap Widgets and look for ZulCode.",
+    "estilo": {
+      "titulo": "Widget style",
+      "descricao": "Automatic follows your phone's light or dark theme.",
+      "auto": "Automatic",
+      "claro": "Light",
+      "escuro": "Dark",
+      "azul": "Blue"
     }
   },
   "conta": {

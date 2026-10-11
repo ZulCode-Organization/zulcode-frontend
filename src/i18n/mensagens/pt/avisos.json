@@ -1,0 +1,62 @@
+{
+  "canais": {
+    "lembretes": "Lembretes de estudo",
+    "novidades": "Novidades e avisos"
+  },
+  "acoes": {
+    "estudar": "Estudar agora",
+    "depois": "Mais tarde"
+  },
+  "rotuloDia": "dia de ofensiva",
+  "rotuloDias": "dias de ofensiva",
+  "lembrete": {
+    "1": {
+      "titulo": "Sua chama de {diasTexto} tá esperando 🔥",
+      "texto": "Uma lição rapidinha e ela continua acesa."
+    },
+    "2": {
+      "titulo": "Bora estudar, {nome}?",
+      "texto": "O Zul separou uma lição pra manter sua ofensiva de {diasTexto}."
+    },
+    "3": {
+      "titulo": "Hora do código!",
+      "texto": "5 minutinhos hoje e a ofensiva de {diasTexto} segue firme."
+    },
+    "4": {
+      "titulo": "O Zul tá de olho na sua ofensiva 👀",
+      "texto": "Sua ofensiva está em {diasTexto}. Não deixa o fogo apagar hoje."
+    }
+  },
+  "comecar": {
+    "1": {
+      "titulo": "Bora começar uma ofensiva?",
+      "texto": "Uma lição hoje e a chama acende. O Zul tá esperando!"
+    },
+    "2": {
+      "titulo": "Hora de aprender, {nome}!",
+      "texto": "Tem lição nova te esperando no ZulCode."
+    },
+    "3": {
+      "titulo": "Que tal 5 minutos de código?",
+      "texto": "Pequenos passos, todo dia. Começa agora!"
+    }
+  },
+  "risco": {
+    "1": {
+      "titulo": "Sua ofensiva vai apagar! 🔥",
+      "texto": "Faltam 2 horas para perder sua ofensiva de {diasTexto}. Uma lição salva tudo."
+    },
+    "2": {
+      "titulo": "Último aviso do Zul",
+      "texto": "Sua ofensiva de {diasTexto} acaba à meia-noite. Corre!"
+    },
+    "3": {
+      "titulo": "Ainda dá tempo, {nome}!",
+      "texto": "Uma lição rápida mantém sua chama de {diasTexto} acesa."
+    }
+  },
+  "unidade": {
+    "um": "dia",
+    "varios": "dias"
+  }
+}

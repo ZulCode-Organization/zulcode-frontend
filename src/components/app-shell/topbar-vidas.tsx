@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Feather, Infinity as InfinityIcon, Loader2, ShieldCheck, HeartPulse, type LucideIcon } from "lucide-react";
+import { PenaPorAnuncio } from "@/components/anuncios/pena-por-anuncio";
 import { Rupee } from "@/components/shared/rupee";
 import { SeloPro } from "@/components/shared/selo-pro";
 import { cn } from "@/lib/utils";
@@ -216,6 +217,19 @@ export function PainelVidas({ onNavegar }: { onNavegar?: () => void }) {
             </span>
           </div>
         </Link>
+      )}
+
+      {/* O anúncio que vale uma pena: só para quem não é PRO e tem pena faltando. */}
+      {!ilimitado && !cheio && (
+        <div className="mt-3">
+          <PenaPorAnuncio
+            visual="linha"
+            aoGanhar={() => {
+              void carregar();
+              atualizar();
+            }}
+          />
+        </div>
       )}
 
       {itens === null ? (

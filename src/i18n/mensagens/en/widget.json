@@ -1,0 +1,46 @@
+{
+  "entrar": {
+    "titulo": "ZulCode",
+    "texto": "Tap to sign in"
+  },
+  "rotulos": {
+    "um": "day in a row",
+    "varios": "days in a row",
+    "estudeHoje": "study today",
+    "comeceHoje": "start today"
+  },
+  "unidade": {
+    "um": "day",
+    "varios": "days"
+  },
+  "semana": {
+    "iniciais": "S M T W T F S"
+  },
+  "meta": {
+    "titulo": "Today's goal",
+    "feita": "Goal reached!",
+    "minutos": "{feito} of {meta} min"
+  },
+  "zul": {
+    "entrar": "Hi! Sign in so I can keep you company.",
+    "feito": {
+      "1": "Nice! Your {diasTexto} flame is safe today.",
+      "2": "Streak saved! See you tomorrow, {nome}.",
+      "3": "Done for today! Tomorrow we keep the fire going."
+    },
+    "risco": {
+      "1": "Your {diasTexto} flame is waiting. Ready?",
+      "2": "One quick lesson keeps your {diasTexto} streak going.",
+      "3": "{nome}, I picked a lesson for you today!"
+    },
+    "noite": {
+      "1": "Hurry! Your {diasTexto} streak ends at midnight.",
+      "2": "There's still time to save your {diasTexto} flame!"
+    },
+    "comecar": {
+      "1": "How about starting a streak today?",
+      "2": "One lesson today and the flame lights up!",
+      "3": "Ready to learn something new, {nome}?"
+    }
+  }
+}

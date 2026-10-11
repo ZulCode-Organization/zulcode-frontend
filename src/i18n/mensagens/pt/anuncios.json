@@ -1,0 +1,14 @@
+{
+  "pena": {
+    "botao": "Assistir anúncio e ganhar 1 pena",
+    "titulo": "Assistir um anúncio",
+    "descricao": "Veja um anúncio curto e ganhe 1 pena.",
+    "gratis": "Grátis",
+    "carregando": "Carregando anúncio…",
+    "ganhou": "Você ganhou 1 pena!",
+    "cancelado": "O anúncio foi fechado antes do fim, então a pena não veio.",
+    "limite": "Você já ganhou todas as penas por anúncio de hoje.",
+    "cheio": "Suas penas já estão cheias.",
+    "falha": "Não deu para carregar um anúncio agora. Tente de novo daqui a pouco."
+  }
+}

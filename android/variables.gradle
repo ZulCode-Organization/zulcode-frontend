@@ -13,4 +13,8 @@ ext {
     androidxJunitVersion = '1.3.0'
     androidxEspressoCoreVersion = '3.7.0'
     cordovaAndroidVersion = '14.0.1'
+    // Lido também pelo plugin de push: os dois usam a mesma versão do Firebase.
+    firebaseMessagingVersion = '25.0.1'
+    // O SDK de anúncios numa versão fixa (o plugin do AdMob pediria '25.4.+').
+    playServicesAdsVersion = '25.4.0'
 }

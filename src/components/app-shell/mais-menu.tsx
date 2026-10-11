@@ -10,6 +10,8 @@ import { limparPerfilCache } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
 import { limparSeguidos } from "@/hooks/use-seguir";
 import { limparCursosCache } from "@/hooks/use-cursos";
+import { limparWidgetDaOfensiva } from "@/lib/widget-ofensiva";
+import { limparAvisos } from "@/lib/avisos";
 import { adminEntry, moreNavItems } from "./nav-items";
 import { usePerfil } from "@/hooks/use-perfil";
 
@@ -61,6 +63,9 @@ export function MaisMenu({ onClose }: MaisMenuProps) {
     limparTrilhaCache();
     limparSeguidos();
     limparCursosCache();
+    // O widget e os lembretes do celular são da conta que saiu.
+    void limparWidgetDaOfensiva();
+    void limparAvisos();
     router.replace("/welcome");
   };
 

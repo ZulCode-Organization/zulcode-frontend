@@ -31,3 +31,9 @@ export function sequenciaAtivaHoje(streakAtual?: number | null, ultimaAtividade?
     quando.getDate() === hoje.getDate()
   );
 }
+
+/** aaaa-mm-dd no fuso do celular: é o que o lado nativo (lembretes e widgets) compara com "hoje". */
+export function diaLocal(data: Date) {
+  const doisDigitos = (n: number) => String(n).padStart(2, "0");
+  return `${data.getFullYear()}-${doisDigitos(data.getMonth() + 1)}-${doisDigitos(data.getDate())}`;
+}

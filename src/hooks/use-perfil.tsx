@@ -2,11 +2,11 @@
 
 import { CSSProperties, ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useSincronizarIdioma } from "@/i18n/use-idioma";
+import { useSincronizarAvisos } from "@/hooks/use-avisos";
+import { useSincronizarWidget } from "@/hooks/use-widget";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { calcularProgressoNivel } from "@/lib/leveling";
 import { CursoProgresso, PerfilUsuario } from "@/lib/types/perfil";
-import { sequenciaAtivaHoje } from "@/lib/sequencia";
-import { atualizarWidgetDaOfensiva } from "@/lib/widget-ofensiva";
 
 function gerarIniciais(nome: string): string {
   const iniciais = nome
@@ -286,14 +286,6 @@ function usePerfilData(): PerfilState {
           conquistas: Array.isArray(usuario.achievements) ? usuario.achievements : [],
         };
         perfilCache = { token, perfil: perfilCarregado, cursos: cursosData };
-        // O widget da tela inicial do Android desenha o que a barra de cima
-        // mostra. Daqui ele é avisado em qualquer tela, inclusive nas que não
-        // têm barra — e fora do app nada acontece.
-        void atualizarWidgetDaOfensiva({
-          dias: perfilCarregado.streakAtual,
-          acesa: sequenciaAtivaHoje(perfilCarregado.streakAtual, perfilCarregado.ultimaAtividade),
-          protegida: (perfilCarregado.streakFreezes ?? 0) > 0,
-        });
         setPerfil(perfilCarregado);
         setCursos(cursosData);
       })
@@ -416,6 +408,8 @@ const PerfilContext = createContext<PerfilState | null>(null);
 export function PerfilProvider({ children }: { children: ReactNode }) {
   const state = usePerfilData();
   useSincronizarIdioma(state.perfil?.idioma, (idioma) => void state.salvarDados({ idioma }), Boolean(state.perfil));
+  useSincronizarAvisos(state.perfil);
+  useSincronizarWidget(state.perfil);
   return <PerfilContext.Provider value={state}>{children}</PerfilContext.Provider>;
 }
 

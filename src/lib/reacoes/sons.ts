@@ -3,26 +3,28 @@
 import { lerPreferencias } from "@/lib/preferencias";
 
 /**
- * Os sons do app.
+ * Os sons do app, escolhidos ouvindo pela pessoa que cuida do ZulCode.
  *
- * Vêm de pacotes do Kenney (kenney.nl), domínio público (CC0): uso livre,
- * crédito opcional — damos assim mesmo, nas Configurações. Para trocar um som,
+ * Vêm do Mixkit (licença livre de uso em apps e jogos, sem crédito
+ * obrigatório) e do Kenney (domínio público, CC0). Para trocar um som,
  * substitua o arquivo em /public/sons ou aponte outro aqui.
  *
- * O volume de cada um equaliza os arquivos, que vêm de pacotes diferentes e
- * não têm a mesma altura: sem isso o acerto soaria o dobro do erro.
+ * - `volume` equaliza os arquivos, que não têm a mesma altura: sem isso a
+ *   vinheta da lição sairia na metade do volume do acerto.
+ * - `inicio` (segundos) pula o silêncio que alguns arquivos têm no começo.
+ *   Um toque que demora 100 ms para soar parece atrasado em relação ao dedo.
  */
 const SONS = {
-  toque: { arquivo: "toque.ogg", volume: 0.5 },
-  acerto: { arquivo: "acerto.ogg", volume: 0.6 },
-  erro: { arquivo: "erro.ogg", volume: 0.85 },
-  licaoConcluida: { arquivo: "licao-concluida.ogg", volume: 0.9 },
-  ofensiva: { arquivo: "ofensiva.ogg", volume: 0.8 },
-  rupees: { arquivo: "rupees.ogg", volume: 0.9 },
-  compra: { arquivo: "compra.ogg", volume: 1 },
-  perdaDePena: { arquivo: "perda-de-pena.ogg", volume: 0.8 },
-  conquista: { arquivo: "conquista.ogg", volume: 0.85 },
-  nivel: { arquivo: "nivel.ogg", volume: 0.85 },
+  toque: { arquivo: "toque.mp3", volume: 0.35, inicio: 0.095 },
+  acerto: { arquivo: "acerto.mp3", volume: 0.8, inicio: 0.035 },
+  erro: { arquivo: "erro.mp3", volume: 0.75, inicio: 0 },
+  licaoConcluida: { arquivo: "licao-concluida.mp3", volume: 1.5, inicio: 0 },
+  ofensiva: { arquivo: "ofensiva.ogg", volume: 0.8, inicio: 0 },
+  rupees: { arquivo: "rupees.ogg", volume: 0.9, inicio: 0 },
+  compra: { arquivo: "compra.mp3", volume: 0.85, inicio: 0.095 },
+  perdaDePena: { arquivo: "perda-de-pena.ogg", volume: 0.8, inicio: 0 },
+  conquista: { arquivo: "conquista.mp3", volume: 0.8, inicio: 0.07 },
+  nivel: { arquivo: "nivel.mp3", volume: 1.1, inicio: 0.28 },
 } as const;
 
 export type Som = keyof typeof SONS;
@@ -89,5 +91,5 @@ export async function tocar(som: Som) {
   const ganho = ctx.createGain();
   ganho.gain.value = SONS[som].volume * VOLUME_GERAL;
   fonte.connect(ganho).connect(ctx.destination);
-  fonte.start();
+  fonte.start(0, SONS[som].inicio);
 }

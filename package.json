@@ -15,6 +15,7 @@
     "prebuild": "node playground-preview/build.mjs --app && node scripts/conferir-traducoes.mjs"
   },
   "dependencies": {
+    "@capacitor-community/admob": "8.1.0",
     "@capacitor/android": "^8.4.1",
     "@capacitor/cli": "^8.4.1",
     "@capacitor/core": "^8.4.1",

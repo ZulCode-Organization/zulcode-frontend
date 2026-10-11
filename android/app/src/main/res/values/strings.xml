@@ -4,6 +4,11 @@
     <string name="title_activity_main">ZulCode</string>
     <string name="package_name">com.zul.code</string>
     <string name="custom_url_scheme">com.zul.code</string>
+    <!-- O nome e a descrição de cada widget no seletor do Android. -->
     <string name="widget_ofensiva_nome">Ofensiva</string>
-    <string name="widget_ofensiva_descricao">Sua sequência de dias seguidos, na tela inicial.</string>
+    <string name="widget_ofensiva_descricao">A chama e os dias seguidos de estudo.</string>
+    <string name="widget_semana_nome">Ofensiva da semana</string>
+    <string name="widget_semana_descricao">Os dias da semana em que você estudou e a meta de hoje.</string>
+    <string name="widget_zul_nome">Zul</string>
+    <string name="widget_zul_descricao">O Zul te lembra de estudar, com um recado que muda ao longo do dia.</string>
 </resources>

@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { PerfilUsuario } from "@/lib/types/perfil";
 import { cn } from "@/lib/utils";
 import { SeloVerificado } from "@/components/shared/selo-verificado";
+import { SeloPro } from "@/components/shared/selo-pro";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
 import { usePerfil } from "@/hooks/use-perfil";
 import { LadrilhoCurso } from "@/components/app-shell/topbar-cursos";
@@ -197,6 +198,11 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
           {mostraArteRichard && <ArteDaCapa desktop={ARTE.richard.desktop} mobile={ARTE.richard.mobile} vetor={VETOR_RICHARD} />}
           {mostraArteDev && <ArteDaCapa desktop={ARTE.dev.desktop} mobile={ARTE.dev.mobile} vetor={<svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="#99f6e4" strokeOpacity=".48" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"><path d="m87 55-42 35 42 35m57-70 42 35-42 35m-23-82-20 124"/><path d="M476 145 596 22l65 69 58-91 66 145"/></g><g fill="#5eead4" fillOpacity=".28"><circle cx="596" cy="22" r="12"/><circle cx="661" cy="91" r="12"/><circle cx="719" cy="0" r="12"/></g><g transform="translate(595 110)"><rect width="153" height="42" rx="21" fill="#ccfbf1" fillOpacity=".94"/><text x="22" y="28" fill="#115e59" fontFamily="Arial, sans-serif" fontSize="16" fontWeight="700" letterSpacing="2">BUILD</text><path d="m118 14 13 7-13 7z" fill="#0f766e"/></g></svg>} />}
           {mostraArtePro && <ArteDaCapa desktop={ARTE.pro.desktop} mobile={ARTE.pro.mobile} vetor={<svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><g fill="#fdf4ff" fillOpacity=".28"><circle cx="600" cy="32" r="4"/><circle cx="670" cy="72" r="7"/><circle cx="745" cy="28" r="4"/><circle cx="540" cy="115" r="5"/></g><path d="m627 37 16 34 37 5-27 26 7 37-33-18-33 18 7-37-27-26 37-5z" fill="#fef3c7" fillOpacity=".88"/><path d="M88 137 169 51l65 76 63-96 96 106" fill="none" stroke="#f5d0fe" strokeOpacity=".5" strokeWidth="5"/><g transform="translate(64 32)"><rect width="154" height="44" rx="22" fill="#fdf4ff" fillOpacity=".92"/><text x="25" y="29" fill="#86198f" fontFamily="Arial, sans-serif" fontSize="18" fontWeight="700" letterSpacing="2">PRO</text></g></svg>} />}
+          {/* O selo do PRO no canto da capa. Na capa do PRO ele não vai: a
+              própria arte já tem o "PRO" grande, e seriam dois. */}
+          {perfil.isPro && !mostraArtePro && (
+            <SeloPro className="pointer-events-none absolute right-3 top-3 h-6 rounded-[4px] drop-shadow-md sm:right-4 sm:top-4 sm:h-7" />
+          )}
           {/* Véu com o lápis cobrindo a capa inteira no hover. */}
           {editavel && (
             <span className="pointer-events-none absolute inset-0 grid place-items-center bg-black/25 opacity-0 transition-opacity duration-150 group-hover:opacity-100">

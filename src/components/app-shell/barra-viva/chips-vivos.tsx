@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ChamaDupla, faixaDaChama } from "@/components/shared/chama-dupla";
-import { PenaDesgastada, PenaInfinita } from "@/components/shared/pena-desgastada";
+import { PenaDesgastada } from "@/components/shared/pena-desgastada";
+import { SeloPro } from "@/components/shared/selo-pro";
 import { Rupee } from "@/components/shared/rupee";
 import { useMudanca } from "@/lib/motion/mudancas";
 import { CURVA, animar } from "@/lib/motion/movimento";
@@ -366,8 +367,11 @@ export function ChipPenas({
       destinoDoNumero={pro ? undefined : "/loja"}
       iconeRef={icone}
       numeroRef={numero}
+      // No PRO o lugar da pena é do selo: ele diz "ilimitada" melhor que um
+      // infinito, e é a marca que a pessoa comprou. Sem número ao lado, o chip
+      // fica só com o selo.
       icone={pro
-        ? <PenaInfinita className="size-5.5 lg:size-6" />
+        ? <SeloPro className="h-5.5 rounded-[3px] lg:h-6" />
         : <PenaDesgastada restantes={restantes} maximo={maximo} tremer={false} className="size-5.5 lg:size-6" />}
       numero={pro ? null : carregando ? "…" : vidas === null ? null : (
         <Odometro valor={vidas} anterior={mudanca?.de} versao={mudanca?.id} atraso={80} />

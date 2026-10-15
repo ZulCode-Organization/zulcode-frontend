@@ -192,7 +192,7 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
             // que a arte, e o object-cover comia as laterais. Seguindo a
             // proporcao, a arte aparece inteira em qualquer largura -- e nos
             // 768px da exatamente os mesmos 150px de antes.
-            "relative -mx-4 h-[180px] overflow-hidden rounded-b-[28px] border-b border-border sm:mx-0 sm:h-auto sm:rounded-3xl sm:border sm:aspect-[2304/520]",
+            "relative h-[150px] overflow-hidden rounded-3xl border border-border sm:h-auto sm:aspect-[2304/450]",
             editavel && "group cursor-pointer"
           )}
           style={capaStyle}
@@ -220,7 +220,7 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
       <div className="relative px-1.5">
         {/* As configurações ficam logo abaixo do banner, à direita (só no próprio perfil). */}
         {/* O avatar não é mais clicável: quem edita é o lápis da capa. */}
-        <span className="relative -mt-[52px] flex size-28 items-center justify-center rounded-[32px] border-[6px] border-background bg-primary text-3xl font-black text-primary-foreground" style={{ background: corCapa ?? "#22c55e" }}>
+        <span className="relative -mt-[42px] flex size-24 items-center justify-center rounded-[28px] border-[5px] border-background bg-primary text-3xl font-black text-primary-foreground" style={{ background: corCapa ?? "#22c55e" }}>
           <AvatarIcon id={avatar} />
           <span className={cn("absolute -bottom-1.5 -right-2 z-10 rounded-lg border-[3px] border-background px-2 py-0.5 text-[0.68rem] font-black", seloPerfil.classe)}>
             {seloPerfil.texto}

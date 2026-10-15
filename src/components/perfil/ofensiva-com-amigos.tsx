@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, Hand, Loader2, Plus, UserPlus, X } from "lucide-react";
+import { Check, Loader2, Plus, UserPlus, X } from "lucide-react";
 import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { usePerfil } from "@/hooks/use-perfil";
 import {
-  convidarParaDupla, cutucar, encerrarDupla, listarAmigosNaOfensiva, listarDuplas, responderDupla,
+  convidarParaDupla, encerrarDupla, listarAmigosNaOfensiva, listarDuplas, responderDupla,
   type AmigoNaOfensiva, type Dupla,
 } from "@/lib/ofensiva-amigos";
 import { cn } from "@/lib/utils";
@@ -70,32 +70,27 @@ export function OfensivaComAmigos() {
 
       <div>
         <h2 className="text-[0.78rem] font-black uppercase tracking-[0.1em] text-muted-foreground">Ofensivas dos amigos</h2>
-        <div className="mt-3 flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none]">
+        {/* Como no Duolingo: o avatar redondo e, embaixo, a chama e os dias. Cutucar
+            quem ainda não estudou fica no painel da ofensiva, na barra de cima. */}
+        <div className="mt-4 flex gap-5 overflow-x-auto pb-1 [scrollbar-width:none]">
           {amigos.map((amigo) => (
-            <div key={amigo.id} className="flex w-[68px] shrink-0 flex-col items-center gap-1.5">
-              <Link href={`/perfil/${amigo.id}`} className={cn("rounded-full", amigo.emRisco && "ring-2 ring-orange-400 ring-offset-2 ring-offset-background")}>
-                <UserAvatar iniciais={iniciais(amigo.nome)} avatarId={amigo.avatarId} bannerColor={amigo.bannerColor} size="md" className="[&>div]:rounded-full [&>div]:ring-0" />
-              </Link>
-              <span className={cn("flex items-center gap-0.5 text-[0.85rem] font-black", amigo.ofensiva > 0 ? "text-foreground" : "text-muted-foreground")}>
-                <ChamaDupla className="size-4.5" aceso={amigo.estudouHoje} dias={amigo.ofensiva} />
+            <Link key={amigo.id} href={`/perfil/${amigo.id}`} className="flex shrink-0 flex-col items-center gap-2" aria-label={`${amigo.nome}: ${amigo.ofensiva} dias`}>
+              <UserAvatar
+                iniciais={iniciais(amigo.nome)}
+                avatarId={amigo.avatarId}
+                bannerColor={amigo.bannerColor}
+                size="md"
+                className="[&>div]:size-[72px] [&>div]:rounded-full [&>div]:text-[1.6rem] [&>div]:ring-0"
+              />
+              <span className="flex items-center gap-1 text-[1rem] font-bold text-muted-foreground">
+                <ChamaDupla className="size-5" aceso={amigo.estudouHoje} dias={amigo.ofensiva} />
                 {amigo.ofensiva}
               </span>
-              {amigo.emRisco && (
-                <button
-                  type="button"
-                  disabled={amigo.cutucadoHoje || !!ocupado}
-                  onClick={() => void agir(`cutucar-${amigo.id}`, () => cutucar(amigo.id), `${primeiroNome(amigo.nome)} vai receber seu lembrete.`)}
-                  className="flex items-center gap-1 rounded-lg bg-orange-500/15 px-2 py-1 text-[0.62rem] font-black uppercase text-orange-500 disabled:bg-muted disabled:text-muted-foreground"
-                >
-                  {ocupado === `cutucar-${amigo.id}` ? <Loader2 className="size-3 animate-spin" /> : <Hand className="size-3" />}
-                  {amigo.cutucadoHoje ? "Feito" : "Cutucar"}
-                </button>
-              )}
-            </div>
+            </Link>
           ))}
-          <Link href="/tabela-lideres" className="flex w-[68px] shrink-0 flex-col items-center gap-1.5" aria-label="Encontrar pessoas para seguir">
-            <span className="grid size-12 place-items-center rounded-full border-2 border-dashed border-border text-muted-foreground">
-              <Plus className="size-5" />
+          <Link href="/tabela-lideres" className="flex shrink-0 flex-col items-center gap-2" aria-label="Encontrar pessoas para seguir">
+            <span className="grid size-[72px] place-items-center rounded-full border-[3px] border-dashed border-border text-muted-foreground transition-colors hover:text-foreground">
+              <Plus className="size-8" strokeWidth={2.2} />
             </span>
           </Link>
         </div>

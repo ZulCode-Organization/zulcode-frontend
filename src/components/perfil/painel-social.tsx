@@ -147,6 +147,33 @@ export function AbasSeguidores({ usuarioId }: { usuarioId?: string }) {
  * líderes. Esta parte funciona de verdade. */
 function EncontrarAmigos() {
   const [aberto, setAberto] = useState(false);
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setAberto((v) => !v)}
+        aria-expanded={aberto}
+        className="flex w-full items-center gap-3 rounded-2xl px-2 py-2.5 text-left transition-colors duration-150 hover:bg-muted/60"
+      >
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <Search className="size-4.5" />
+        </span>
+        <span className="min-w-0 flex-1 font-black">Encontrar amigos</span>
+        <ChevronRight className={cn("size-4.5 shrink-0 text-muted-foreground transition-transform duration-150", aberto && "rotate-90")} />
+      </button>
+
+      {aberto && (
+        <div className="animate-fade-in-up mt-2 px-2">
+          <BuscaDeAmigos />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** O campo de busca por nome ou código e os resultados, com o "seguir" em cada um. */
+export function BuscaDeAmigos() {
   const [q, setQ] = useState("");
   const [resultados, setResultados] = useState<Encontrado[]>([]);
   const { perfil } = usePerfil();
@@ -172,55 +199,41 @@ function EncontrarAmigos() {
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => setAberto((v) => !v)}
-        aria-expanded={aberto}
-        className="flex w-full items-center gap-3 rounded-2xl px-2 py-2.5 text-left transition-colors duration-150 hover:bg-muted/60"
-      >
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Search className="size-4.5" />
-        </span>
-        <span className="min-w-0 flex-1 font-black">Encontrar amigos</span>
-        <ChevronRight className={cn("size-4.5 shrink-0 text-muted-foreground transition-transform duration-150", aberto && "rotate-90")} />
-      </button>
-
-      {aberto && (
-        <div className="animate-fade-in-up mt-2 px-2">
-          <input
-            autoFocus
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Nome ou #123456"
-            className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
-          />
-          {q.trim().length >= 2 && !resultados.length && (
-            <p className="mt-3 text-xs text-muted-foreground">Ninguém encontrado com esse nome ou código.</p>
-          )}
-          {resultados.length > 0 && (
-            <div className="mt-2 divide-y divide-border">
-              {resultados.map((user) => (
-                <div key={user.id} className="flex items-center gap-3 py-2.5">
-                  <Link href={`/perfil/${user.id}`} className="flex min-w-0 flex-1 items-center gap-3">
-                    <UserAvatar
-                      iniciais={user.name.slice(0, 2).toUpperCase()}
-                      avatarId={user.avatarId}
-                      bannerColor={user.bannerColor}
-                      size="sm"
-                      className="[&>div]:rounded-full [&>div]:ring-0"
-                    />
-                    <span className="min-w-0">
-                      <b className="block truncate text-sm">{user.name}</b>
-                      <span className="text-xs text-muted-foreground">#{user.publicCode} · Nível {user.level}</span>
-                    </span>
-                  </Link>
-                  {/* Achar alguém e já poder seguir, sem passar pelo perfil: era
-                      o passo que faltava pra busca virar "adicionar". */}
-                  {user.id !== perfil?.id && <BotaoSeguir id={user.id} className="shrink-0 px-3 py-2 text-[0.68rem]" />}
-                </div>
-              ))}
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4.5 -translate-y-1/2 text-muted-foreground" />
+        <input
+          autoFocus
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Buscar por nome ou #123456"
+          className="w-full rounded-2xl border-2 border-border bg-background py-3 pl-10 pr-3 text-sm font-bold outline-none focus:border-primary"
+        />
+      </div>
+      {q.trim().length >= 2 && !resultados.length && (
+        <p className="mt-3 text-xs text-muted-foreground">Ninguém encontrado com esse nome ou código.</p>
+      )}
+      {resultados.length > 0 && (
+        <div className="mt-2 divide-y divide-border">
+          {resultados.map((user) => (
+            <div key={user.id} className="flex items-center gap-3 py-2.5">
+              <Link href={`/perfil/${user.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                <UserAvatar
+                  iniciais={user.name.slice(0, 2).toUpperCase()}
+                  avatarId={user.avatarId}
+                  bannerColor={user.bannerColor}
+                  size="sm"
+                  className="[&>div]:rounded-full [&>div]:ring-0"
+                />
+                <span className="min-w-0">
+                  <b className="block truncate text-sm">{user.name}</b>
+                  <span className="text-xs text-muted-foreground">#{user.publicCode} · Nível {user.level}</span>
+                </span>
+              </Link>
+              {/* Achar alguém e já poder seguir, sem passar pelo perfil: era
+                  o passo que faltava pra busca virar "adicionar". */}
+              {user.id !== perfil?.id && <BotaoSeguir id={user.id} className="shrink-0 px-3 py-2 text-[0.68rem]" />}
             </div>
-          )}
+          ))}
         </div>
       )}
     </div>

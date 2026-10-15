@@ -10,6 +10,7 @@ import { MARCOS_DA_SEQUENCIA } from "@/lib/sequencia";
 import type { OfensivaDoDia } from "@/lib/types/comemoracao";
 import { cn } from "@/lib/utils";
 import { MolduraDeComemoracao } from "./moldura";
+import { BotaoCompartilharOfensiva } from "@/components/shared/botao-compartilhar-ofensiva";
 
 /** A cor de cada faixa da chama, em hexadecimal, para o brilho e as brasas. */
 const COR_DA_FAIXA: Record<FaixaDaChama["id"], string> = { azul: "#3b82f6", ciano: "#06b6d4", dourada: "#f59e0b" };
@@ -134,6 +135,9 @@ export function ComemoracaoOfensiva({ ofensiva, aoContinuar }: { ofensiva: Ofens
       <p className="zc-com-sobe mt-5 max-w-xs text-[0.95rem] leading-snug text-muted-foreground" style={{ "--atraso": "1250ms" } as CSSProperties}>
         {mensagem}
       </p>
+      <div className="zc-com-sobe mt-4" style={{ "--atraso": "1350ms" } as CSSProperties}>
+        <BotaoCompartilharOfensiva dias={depois} className="bg-muted text-foreground hover:bg-muted/70" />
+      </div>
     </MolduraDeComemoracao>
   );
 }

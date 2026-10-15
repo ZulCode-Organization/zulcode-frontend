@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Hand, Users } from "lucide-react";
 import { ChamaDupla } from "@/components/shared/chama-dupla";
+import { BotaoCompartilharOfensiva } from "@/components/shared/botao-compartilhar-ofensiva";
 import { GasOfensiva } from "@/components/shared/gas-ofensiva";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { usePerfil } from "@/hooks/use-perfil";
@@ -119,6 +120,7 @@ function AbaPessoal({ streakAtual, streakRecorde, protecoes, diasProtegidos, onN
           aceso={sequencia > 0}
           protegido={protecoes > 0}
         />
+        <BotaoCompartilharOfensiva dias={sequencia} className="absolute right-3 top-3" />
         <p className="relative text-6xl font-black leading-none text-white">{sequencia}</p>
         <p className="relative mt-1 text-lg font-black text-white">
           {sequencia === 1 ? "dia de ofensiva!" : "dias de ofensiva!"}

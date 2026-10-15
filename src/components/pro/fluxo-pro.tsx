@@ -14,6 +14,7 @@ import {
   estadoDaAssinatura,
   fimDoTeste,
   type EstadoAssinatura,
+  type FormaDePagar,
   type PeriodoCobranca,
 } from "@/lib/pro/planos";
 import { cn } from "@/lib/utils";
@@ -83,6 +84,7 @@ export function FluxoPro({ sessao }: { sessao: string | null }) {
   const [saindo, setSaindo] = useState(false);
   const [pulso, setPulso] = useState(0);
   const [periodo, setPeriodo] = useState<PeriodoCobranca>("anual");
+  const [forma, setForma] = useState<FormaDePagar>("assinatura");
   const [assinatura, setAssinatura] = useState<EstadoAssinatura | null>(null);
   const [aviso, setAviso] = useState("");
 
@@ -92,6 +94,8 @@ export function FluxoPro({ sessao }: { sessao: string | null }) {
 
   // Quem já usou o teste não pode ver a promessa de "7 dias grátis".
   const comTeste = !assinatura?.jaTeveTeste;
+  // O pagamento único não tem teste: a pessoa paga e já é PRO.
+  const comTesteNaForma = comTeste && forma === "assinatura";
   const passos = PASSOS.filter((p) => p.id !== "teste" || comTeste);
   const passo = passos[Math.min(indice, passos.length - 1)];
 
@@ -203,7 +207,7 @@ export function FluxoPro({ sessao }: { sessao: string | null }) {
 
   const textoDoBotao = (() => {
     if (APRESENTACOES.has(passo.id)) return "Continuar";
-    if (passo.id === "plano") return comTeste ? `Começar ${DIAS_DE_TESTE} dias grátis` : "Ir para o pagamento";
+    if (passo.id === "plano") return comTesteNaForma ? `Começar ${DIAS_DE_TESTE} dias grátis` : "Ir para o pagamento";
     return comTeste ? `Teste ${DIAS_DE_TESTE} dias grátis` : "Assinar o PRO";
   })();
 
@@ -291,9 +295,9 @@ export function FluxoPro({ sessao }: { sessao: string | null }) {
                 )}
               >
                 {passo.id === "plano" ? (
-                  <ArtePlano periodo={periodo} onPeriodo={setPeriodo} comTeste={comTeste} />
+                  <ArtePlano periodo={periodo} onPeriodo={setPeriodo} comTeste={comTesteNaForma} forma={forma} onForma={setForma} />
                 ) : passo.id === "pagamento" ? (
-                  <PagamentoEmbutido periodo={periodo} />
+                  <PagamentoEmbutido periodo={periodo} forma={forma} />
                 ) : (
                   passo.Arte && <passo.Arte />
                 )}
@@ -405,6 +409,7 @@ function PainelAssinante({ assinatura, onVoltar }: { assinatura: EstadoAssinatur
 
   const linhas: { rotulo: string; valor: string }[] = [];
   if (assinatura?.plano) linhas.push({ rotulo: "Plano", valor: assinatura.plano === "anual" ? "Anual" : "Mensal" });
+  if (!temAssinatura && assinatura?.pagoAte) linhas.push({ rotulo: "PRO pago até", valor: formatarDia(assinatura.pagoAte) });
   if (assinatura?.validoAte) {
     linhas.push(
       teste
@@ -459,7 +464,11 @@ function PainelAssinante({ assinatura, onVoltar }: { assinatura: EstadoAssinatur
           </dl>
         )}
         {!temAssinatura && assinatura && (
-          <p className="text-[0.88rem] text-white/60">Seu PRO foi ativado pela equipe do ZulCode.</p>
+          <p className="text-[0.88rem] text-white/60">
+            {assinatura.pagoAte
+              ? "Pago uma vez, sem renovação. Quando acabar, é só pagar de novo."
+              : "Seu PRO foi ativado pela equipe do ZulCode."}
+          </p>
         )}
         {erro && <p role="alert" className="text-[0.88rem] font-bold text-amber-200">{erro}</p>}
       </div>

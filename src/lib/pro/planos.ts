@@ -26,6 +26,12 @@ export const DESCONTO_ANUAL = 0.37;
 
 export type PeriodoCobranca = "mensal" | "anual";
 
+/** Assinatura renova sozinha no cartão; o pagamento único (Pix) dá 30 dias ou 1 ano e acaba. */
+export type FormaDePagar = "assinatura" | "unico";
+
+/** Quantos dias de PRO o pagamento único dá (o mesmo número do backend). */
+export const DIAS_DO_PAGAMENTO_UNICO: Record<PeriodoCobranca, number> = { mensal: 30, anual: 365 };
+
 /** Preço no período escolhido: o total cobrado e o equivalente mensal. */
 export function precoDoPeriodo(periodo: PeriodoCobranca) {
   if (periodo === "mensal") return { porMes: PRECO_MENSAL, total: PRECO_MENSAL };
@@ -56,6 +62,8 @@ export interface EstadoAssinatura {
   validoAte: string | null;
   canceladaNoFim: boolean;
   jaTeveTeste: boolean;
+  /** Até quando vale o PRO pago uma vez (Pix), se ainda vale. */
+  pagoAte?: string | null;
 }
 
 async function chamar<T>(caminho: string, init: RequestInit = {}): Promise<T> {
@@ -79,8 +87,8 @@ async function chamar<T>(caminho: string, init: RequestInit = {}): Promise<T> {
  * guarda a chave secreta, não o navegador) e devolve só o segredo que o
  * formulário embutido precisa.
  */
-export function iniciarAssinatura(periodo: PeriodoCobranca) {
-  return chamar<{ clientSecret: string; comTeste: boolean }>("/pro/checkout", {
+export function iniciarAssinatura(periodo: PeriodoCobranca, forma: FormaDePagar = "assinatura") {
+  return chamar<{ clientSecret: string; comTeste: boolean }>(forma === "unico" ? "/pro/pagamento-unico" : "/pro/checkout", {
     method: "POST",
     body: JSON.stringify({ plano: periodo }),
   });

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { loadStripe, type Stripe } from "@stripe/stripe-js";
 import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js";
 import { Loader2 } from "lucide-react";
-import { iniciarAssinatura, type PeriodoCobranca } from "@/lib/pro/planos";
+import { iniciarAssinatura, type FormaDePagar, type PeriodoCobranca } from "@/lib/pro/planos";
 
 const CHAVE_PUBLICA = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
@@ -23,20 +23,20 @@ type Estado = { tipo: "carregando" } | { tipo: "pronto"; segredo: string } | { t
  * `/pro?sessao=…`, e é a tela de boas-vindas que confere com o backend se deu
  * certo — o que acontece aqui dentro não liga o PRO de ninguém.
  */
-export function PagamentoEmbutido({ periodo }: { periodo: PeriodoCobranca }) {
+export function PagamentoEmbutido({ periodo, forma = "assinatura" }: { periodo: PeriodoCobranca; forma?: FormaDePagar }) {
   const [estado, setEstado] = useState<Estado>({ tipo: "carregando" });
   const [tentativa, setTentativa] = useState(0);
 
   useEffect(() => {
     if (!CHAVE_PUBLICA) return;
     let vivo = true;
-    iniciarAssinatura(periodo)
+    iniciarAssinatura(periodo, forma)
       .then(({ clientSecret }) => vivo && setEstado({ tipo: "pronto", segredo: clientSecret }))
       .catch((e: unknown) => vivo && setEstado({ tipo: "erro", mensagem: e instanceof Error ? e.message : "Não foi possível abrir o pagamento." }));
     return () => {
       vivo = false;
     };
-  }, [periodo, tentativa]);
+  }, [periodo, forma, tentativa]);
 
   if (!CHAVE_PUBLICA) {
     return (

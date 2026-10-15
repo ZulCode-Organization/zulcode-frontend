@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { Bell, Check, CreditCard, Feather, Mail, Minus, ShieldCheck, Sparkles } from "lucide-react";
+import { Bell, Check, CreditCard, Feather, Mail, Minus, QrCode, ShieldCheck, Sparkles } from "lucide-react";
 import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { Rupee } from "@/components/shared/rupee";
 import { SeloPro } from "@/components/shared/selo-pro";
@@ -12,8 +12,10 @@ import {
   DESCONTO_ANUAL,
   DIAS_DE_TESTE,
   DIAS_DO_LEMBRETE,
+  DIAS_DO_PAGAMENTO_UNICO,
   formatarBRL,
   precoDoPeriodo,
+  type FormaDePagar,
   type PeriodoCobranca,
 } from "@/lib/pro/planos";
 import { cn } from "@/lib/utils";
@@ -502,10 +504,14 @@ export function ArtePlano({
   periodo,
   onPeriodo,
   comTeste,
+  forma,
+  onForma,
 }: {
   periodo: PeriodoCobranca;
   onPeriodo: (p: PeriodoCobranca) => void;
   comTeste: boolean;
+  forma: FormaDePagar;
+  onForma: (f: FormaDePagar) => void;
 }) {
   const anual = precoDoPeriodo("anual");
   const mensal = precoDoPeriodo("mensal");
@@ -565,11 +571,38 @@ export function ArtePlano({
       </p>
       {opcao("anual", "Anual", `${formatarBRL(anual.total)} por ano`, `Economize ${Math.round(DESCONTO_ANUAL * 100)}%`)}
       {opcao("mensal", "Mensal", `${formatarBRL(mensal.total)} por mês`)}
+      <div role="radiogroup" aria-label="Como pagar" className="zc-pro-sobe mt-1 grid w-full grid-cols-2 gap-1 rounded-2xl bg-white/[0.07] p-1">
+        {(
+          [
+            { id: "assinatura", Icone: CreditCard, titulo: "Cartão", detalhe: "renova sozinho" },
+            { id: "unico", Icone: QrCode, titulo: "Pix", detalhe: "paga uma vez" },
+          ] as const
+        ).map(({ id, Icone, titulo, detalhe }) => (
+          <button
+            key={id}
+            type="button"
+            role="radio"
+            aria-checked={forma === id}
+            onClick={() => onForma(id)}
+            className={cn(
+              "zc-press flex items-center justify-center gap-2 rounded-xl px-2 py-2.5 transition-colors duration-200",
+              forma === id ? "bg-white text-violet-700" : "text-white/70 hover:text-white",
+            )}
+          >
+            <Icone className="size-4.5 shrink-0" strokeWidth={2.4} />
+            <span className="text-left leading-tight">
+              <b className="block text-[0.85rem] font-black">{titulo}</b>
+              <span className="text-[0.7rem] font-bold opacity-75">{detalhe}</span>
+            </span>
+          </button>
+        ))}
+      </div>
       <p className="mt-1 text-center text-[0.82rem] leading-snug text-white/55">
-        {comTeste
-          ? `Hoje você paga R$ 0,00. A primeira cobrança é daqui a ${DIAS_DE_TESTE} dias.`
-          : "A cobrança acontece hoje."}{" "}
-        Cancele quando quiser.
+        {forma === "unico"
+          ? `Você paga hoje e tem ${periodo === "anual" ? "1 ano" : `${DIAS_DO_PAGAMENTO_UNICO.mensal} dias`} de PRO. Não renova sozinho.`
+          : comTeste
+            ? `Hoje você paga R$ 0,00. A primeira cobrança é daqui a ${DIAS_DE_TESTE} dias. Cancele quando quiser.`
+            : "A cobrança acontece hoje. Cancele quando quiser."}
       </p>
     </div>
   );

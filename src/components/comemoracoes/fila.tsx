@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { silenciar } from "@/lib/reacoes";
 import type { Comemoracao } from "@/lib/types/comemoracao";
+import { ComemoracaoBarril } from "./barril";
 import { ComemoracaoConquista } from "./conquista";
 import { ComemoracaoDivisao } from "./divisao";
 import { ComemoracaoOfensiva } from "./ofensiva";
@@ -25,6 +26,7 @@ export function FilaDeComemoracoes({ itens, aoTerminar }: { itens: Comemoracao[]
   };
 
   if (atual.tipo === "ofensiva") return <ComemoracaoOfensiva key={indice} ofensiva={atual.ofensiva} aoContinuar={proxima} />;
+  if (atual.tipo === "barril") return <ComemoracaoBarril key={indice} barril={atual.barril} aoContinuar={proxima} />;
   if (atual.tipo === "divisao") return <ComemoracaoDivisao key={indice} divisaoId={atual.divisaoId} aoContinuar={proxima} />;
   return <ComemoracaoConquista key={indice} conquista={atual.conquista} aoContinuar={proxima} />;
 }

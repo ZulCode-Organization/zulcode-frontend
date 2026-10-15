@@ -41,5 +41,26 @@
       "erro": "Couldn't recover it right now. Try again.",
       "semRupees": "Not enough rupees to recover."
     }
+  },
+  "barril": {
+    "titulo": "You got a barrel!",
+    "marco": "{n}-day barrel!",
+    "convite": "There's a surprise inside. Open it to see what you got.",
+    "abrir": "Open",
+    "abrindo": "Opening…",
+    "abriu": "Look what you got!",
+    "erro": "Couldn't open it right now. Try again.",
+    "raridade": {
+      "comum": "Common barrel",
+      "raro": "Rare barrel",
+      "epico": "Epic barrel",
+      "lendario": "Legendary barrel"
+    },
+    "itens": {
+      "pena": "+{n} {n, plural, one {feather} other {feathers}}",
+      "escudo": "+{n} {n, plural, one {shield} other {shields}}",
+      "gas": "+{n} streak {n, plural, one {gas} other {gases}}",
+      "xpEmDobro": "Double XP for {min} min"
+    }
   }
 }

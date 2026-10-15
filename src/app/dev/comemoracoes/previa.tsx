@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { FilaDeComemoracoes } from "@/components/comemoracoes/fila";
 import type { Comemoracao } from "@/lib/types/comemoracao";
+import type { Raridade } from "@/lib/barril";
 
 export function PreviaDasComemoracoes() {
   const busca = useSearchParams();
@@ -14,6 +15,8 @@ export function PreviaDasComemoracoes() {
 
   const todas: Comemoracao[] = [
     { tipo: "ofensiva", ofensiva: { antes, depois, protegida: busca.get("protegida") === "1" } },
+    // Com ?barril=<id> de um barril de verdade, o "Abrir" abre mesmo.
+    { tipo: "barril", barril: { id: busca.get("barril") ?? "", raridade: (busca.get("raridade") as Raridade) ?? "epico", origem: "ofensiva-30" } },
     { tipo: "divisao", divisaoId: busca.get("divisao") ?? "ouro" },
     { tipo: "conquista", conquista: { id: busca.get("conquista") ?? "first-lesson", title: "Primeiro passo", description: "Conclua a sua primeira lição no ZulCode.", coins: 50 } },
   ];

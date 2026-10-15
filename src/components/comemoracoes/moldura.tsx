@@ -12,7 +12,7 @@ import { reagir, type Momento } from "@/lib/reacoes";
  * estava em cima dele pularia a comemoração sem ver.
  */
 export function MolduraDeComemoracao({
-  cor, momento, rotulo, titulo, peca, children, aoContinuar,
+  cor, momento, rotulo, titulo, peca, children, aoContinuar, textoDoBotao,
 }: {
   /** A cor da tela (brilho, brasas, raios), em hexadecimal. */
   cor: string;
@@ -23,6 +23,8 @@ export function MolduraDeComemoracao({
   peca: ReactNode;
   children?: ReactNode;
   aoContinuar: () => void;
+  /** O texto do botão, quando não é "Continuar". */
+  textoDoBotao?: ReactNode;
 }) {
   const t = useTranslations("comemoracoes");
   const idDoTitulo = useId();
@@ -57,7 +59,7 @@ export function MolduraDeComemoracao({
           className="zc-press zc-press-shadow w-full rounded-2xl bg-primary py-3.5 text-[0.8rem] font-black uppercase tracking-[0.06em] text-primary-foreground"
           style={{ ["--zc-press-color" as string]: "color-mix(in srgb, var(--primary) 70%, black)" }}
         >
-          {t("continuar")}
+          {textoDoBotao ?? t("continuar")}
         </button>
       </div>
     </div>

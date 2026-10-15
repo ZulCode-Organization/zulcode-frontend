@@ -41,5 +41,26 @@
       "erro": "Não deu para recuperar agora. Tente de novo.",
       "semRupees": "Faltam rupees para recuperar."
     }
+  },
+  "barril": {
+    "titulo": "Você ganhou um barril!",
+    "marco": "Barril dos {n} dias!",
+    "convite": "Tem uma surpresa aí dentro. Abra para ver o que saiu.",
+    "abrir": "Abrir",
+    "abrindo": "Abrindo…",
+    "abriu": "Olha o que saiu!",
+    "erro": "Não deu para abrir agora. Tente de novo.",
+    "raridade": {
+      "comum": "Barril comum",
+      "raro": "Barril raro",
+      "epico": "Barril épico",
+      "lendario": "Barril lendário"
+    },
+    "itens": {
+      "pena": "+{n} {n, plural, one {pena} other {penas}}",
+      "escudo": "+{n} {n, plural, one {escudo} other {escudos}}",
+      "gas": "+{n} {n, plural, one {gás de ofensiva} other {gases de ofensiva}}",
+      "xpEmDobro": "XP em dobro por {min} min"
+    }
   }
 }

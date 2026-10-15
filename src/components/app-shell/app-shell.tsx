@@ -4,6 +4,7 @@ import { AppSidebar } from "./app-sidebar";
 import { AppBottomNav } from "./app-bottom-nav";
 import { AvisoFimDoTeste } from "@/components/pro/aviso-fim-do-teste";
 import { AvisoAoAbrir } from "@/components/notificacoes/aviso-ao-abrir";
+import { AvisoDaOfensiva } from "@/components/comemoracoes/aviso-da-ofensiva";
 import { AppTopBar } from "./app-topbar";
 import { StickyBottomPanel } from "./sticky-bottom-panel";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,8 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
       <AppSidebar />
       {/* A notificação nova desce do topo ao abrir o app (fica por cima de tudo). */}
       <AvisoAoAbrir />
+      {/* O gás que segurou a ofensiva, ou a ofensiva que apagou: uma vez, em tela cheia. */}
+      <AvisoDaOfensiva />
 
       {/* Sem topbar no mobile: a navegação já vive inteira na barra inferior,
           então uma segunda barra fixa no topo só duplicava e sobrava. */}

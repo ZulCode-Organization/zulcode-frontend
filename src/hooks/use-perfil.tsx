@@ -274,6 +274,7 @@ function usePerfilData(): PerfilState {
           streakAtual: usuario.currentStreak,
           streakRecorde: usuario.longestStreak,
           streakFreezes: usuario.streakFreezes,
+          ofensivaAviso: usuario.ofensivaAviso ?? null,
           protectedStreakDays: Array.isArray(usuario.protectedStreakDays) ? usuario.protectedStreakDays : [],
           doubleXpUntil: usuario.doubleXpUntil,
           vidas: numeroOuNulo(vidasState?.lives, usuario.hearts, usuario.vidas),

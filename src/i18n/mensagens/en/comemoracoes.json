@@ -17,5 +17,19 @@
   "conquista": {
     "rotulo": "Achievement unlocked",
     "recompensa": "+{n} rupees"
+  },
+  "avisoDaOfensiva": {
+    "gas": {
+      "titulo": "The gas saved your streak!",
+      "texto": "{dias, plural, one {You missed a day} other {You missed # days}}, but your flame is still lit.",
+      "pro": "PRO covered one of the days.",
+      "restantes": "{n, plural, =0 {No gas left in stock.} one {# gas left in stock.} other {# gas left in stock.}}"
+    },
+    "perdida": {
+      "titulo": "Your streak went out",
+      "texto": "{n, plural, one {It was # day in a row.} other {It was # days in a row.}} One lesson today and the flame lights up again.",
+      "dica": "Streak gas, in the shop, covers a missed day."
+    },
+    "dias": "{n, plural, one {day streak} other {day streak}}"
   }
 }

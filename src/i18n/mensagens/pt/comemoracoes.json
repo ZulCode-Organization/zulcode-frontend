@@ -17,5 +17,19 @@
   "conquista": {
     "rotulo": "Conquista desbloqueada",
     "recompensa": "+{n} rupees"
+  },
+  "avisoDaOfensiva": {
+    "gas": {
+      "titulo": "O gás segurou sua ofensiva!",
+      "texto": "{dias, plural, one {Faltou um dia} other {Faltaram # dias}}, mas a chama continua acesa.",
+      "pro": "O PRO cuidou de um dos dias.",
+      "restantes": "{n, plural, =0 {Nenhum gás guardado agora.} one {Ainda resta # gás guardado.} other {Ainda restam # gases guardados.}}"
+    },
+    "perdida": {
+      "titulo": "Sua ofensiva apagou",
+      "texto": "{n, plural, one {Foi # dia seguido.} other {Foram # dias seguidos.}} Uma lição hoje e a chama acende de novo.",
+      "dica": "O gás de ofensiva, na loja, segura um dia perdido."
+    },
+    "dias": "{n, plural, one {dia de ofensiva} other {dias de ofensiva}}"
   }
 }

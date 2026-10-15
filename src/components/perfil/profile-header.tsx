@@ -217,20 +217,19 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
 
       </div>
 
-      {/* As configurações ficam logo abaixo do banner, à direita (só no próprio perfil). */}
-      {editavel && (
-        <div className="mt-2 flex justify-end px-1.5">
-          <Link
-            href="/configuracoes"
-            aria-label="Configurações"
-            className="zc-press grid size-10 place-items-center rounded-xl bg-muted text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <DuoConfiguracoes className="size-6" />
-          </Link>
-        </div>
-      )}
-
       <div className="relative px-1.5">
+        {/* As configurações ficam logo abaixo do banner, à direita (só no próprio perfil). */}
+        {editavel && (
+          <div className="absolute right-3 top-3 z-10">
+            <Link
+              href="/configuracoes"
+              aria-label="Configurações"
+              className="zc-press grid size-10 place-items-center rounded-xl bg-muted text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <DuoConfiguracoes className="size-6" />
+            </Link>
+          </div>
+        )}
         {/* O avatar não é mais clicável: quem edita é o lápis da capa. */}
         <span className="relative -mt-[52px] flex size-28 items-center justify-center rounded-[32px] border-[6px] border-background bg-primary text-3xl font-black text-primary-foreground" style={{ background: corCapa ?? "#22c55e" }}>
           <AvatarIcon id={avatar} />

@@ -14,6 +14,7 @@ import { AvatarIcon } from "@/components/shared/avatar-icon";
 import { usePerfil } from "@/hooks/use-perfil";
 import { LadrilhoCurso } from "@/components/app-shell/topbar-cursos";
 import { BotaoSeguir } from "./botao-seguir";
+import { AcoesDeAmigos } from "./acoes-de-amigos";
 import { useSeguir } from "@/hooks/use-seguir";
 
 interface ProfileHeaderProps {
@@ -191,7 +192,7 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
             // que a arte, e o object-cover comia as laterais. Seguindo a
             // proporcao, a arte aparece inteira em qualquer largura -- e nos
             // 768px da exatamente os mesmos 150px de antes.
-            "relative h-[180px] overflow-hidden rounded-3xl border border-border sm:h-auto sm:aspect-[2304/520]",
+            "relative -mx-4 h-[180px] overflow-hidden rounded-b-[28px] border-b border-border sm:mx-0 sm:h-auto sm:rounded-3xl sm:border sm:aspect-[2304/520]",
             editavel && "group cursor-pointer"
           )}
           style={capaStyle}
@@ -269,6 +270,8 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
         </div>
       </div>
 
+
+      {editavel && <AcoesDeAmigos perfil={perfil} />}
 
       <div className="mt-6 h-px bg-border" aria-hidden />
 

@@ -31,6 +31,8 @@ export interface PerfilUsuario {
   xpProximoNivel: number | null;
   /** Semanas em que a pessoa terminou no top 3 da liga dela. */
   podios?: number;
+  /** Meses com medalha (pelo menos um pódio no mês), no formato AAAA-MM. */
+  medalhas?: string[];
   /** Quantas pessoas seguem essa conta, e quantas ela segue. */
   seguidores?: number;
   seguindo?: number;

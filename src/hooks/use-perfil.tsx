@@ -269,6 +269,7 @@ function usePerfilData(): PerfilState {
           xpProximoNivel: usuario.xpProximoNivel,
           membroDesde: usuario.createdAt ?? null,
           podios: usuario.podios ?? 0,
+          medalhas: Array.isArray(usuario.medalhas) ? usuario.medalhas : [],
           seguidores: usuario.seguidores ?? 0,
           seguindo: usuario.seguindo ?? 0,
           streakAtual: usuario.currentStreak,

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ProfileHeader } from "@/components/perfil/profile-header";
 import { StatsGrid } from "@/components/perfil/stats-grid";
 import { CartaoPerfilIncompleto } from "@/components/perfil/cartao-perfil-incompleto";
+import { MedalhasDoPerfil } from "@/components/perfil/medalhas-perfil";
 import { AchievementsSection } from "@/components/perfil/achievements-section";
 import { SugestoesAmigos } from "@/components/perfil/sugestoes-amigos";
 import { EditorAvatar } from "@/components/perfil/editor-avatar";
@@ -45,6 +46,7 @@ function PerfilContent({ editando, setEditando }: { editando: boolean; setEditan
       <CartaoPerfilIncompleto perfil={perfil} onContinuar={() => setEditando(true)} />
       <StatsGrid perfil={perfil} />
       <OfensivaComAmigos />
+      <MedalhasDoPerfil medalhas={perfil.medalhas} />
       <AchievementsSection conquistas={perfil.conquistas} />
       <SugestoesAmigos />
     </div>

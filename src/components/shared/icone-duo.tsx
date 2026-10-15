@@ -1,5 +1,5 @@
 import type { Icon as IconePhosphor } from "@phosphor-icons/react";
-import { GearSix, Lightning } from "@phosphor-icons/react/dist/ssr";
+import { BellSimple, GearSix, Lightning } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 import { DESENHOS_SOLAR } from "./desenhos-solar";
 
@@ -63,3 +63,4 @@ export const DuoPlayground = solar("Playground", "DuoPlayground");
 export const DuoBug = solar("Bug", "DuoBug");
 export const DuoMetas = phosphor(Lightning, "DuoMetas");
 export const DuoConfiguracoes = phosphor(GearSix, "DuoConfiguracoes");
+export const DuoNotificacoes = phosphor(BellSimple, "DuoNotificacoes");

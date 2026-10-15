@@ -3,6 +3,7 @@ import { PerfilProvider } from "@/hooks/use-perfil";
 import { AppSidebar } from "./app-sidebar";
 import { AppBottomNav } from "./app-bottom-nav";
 import { AvisoFimDoTeste } from "@/components/pro/aviso-fim-do-teste";
+import { AvisoAoAbrir } from "@/components/notificacoes/aviso-ao-abrir";
 import { AppTopBar } from "./app-topbar";
 import { StickyBottomPanel } from "./sticky-bottom-panel";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,8 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
     // cada coluna (sidebar, conteúdo, painel direito) cuida do próprio scroll.
     <div className="flex h-dvh overflow-hidden bg-background">
       <AppSidebar />
+      {/* A notificação nova desce do topo ao abrir o app (fica por cima de tudo). */}
+      <AvisoAoAbrir />
 
       {/* Sem topbar no mobile: a navegação já vive inteira na barra inferior,
           então uma segunda barra fixa no topo só duplicava e sobrava. */}

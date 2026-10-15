@@ -14,6 +14,8 @@ import { limparWidgetDaOfensiva } from "@/lib/widget-ofensiva";
 import { limparAvisos } from "@/lib/avisos";
 import { adminEntry, moreNavItems } from "./nav-items";
 import { usePerfil } from "@/hooks/use-perfil";
+import { SeloDeNaoLidas } from "@/components/notificacoes/selo-de-nao-lidas";
+import { useNaoLidas } from "@/lib/notificacoes";
 
 interface MaisMenuProps {
   onClose: () => void;
@@ -33,6 +35,7 @@ export function MaisMenu({ onClose }: MaisMenuProps) {
   const pathname = usePathname();
   const [visivel, setVisivel] = useState(false);
   const { perfil } = usePerfil();
+  const naoLidas = useNaoLidas();
   const itens = perfil?.role === "ADMIN" || perfil?.role === "PROFESSOR" ? [...moreNavItems, adminEntry] : moreNavItems;
 
   useLayoutEffect(() => {
@@ -108,7 +111,7 @@ export function MaisMenu({ onClose }: MaisMenuProps) {
               "flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-black uppercase tracking-[0.05em] transition-colors duration-150",
               active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted/60"
             );
-            const content = <><span className={cn("flex size-9 shrink-0 items-center justify-center rounded-[10px]", active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}><Icon className="size-[30px]" /></span>{item.label}</>;
+            const content = <><span className={cn("flex size-9 shrink-0 items-center justify-center rounded-[10px]", active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}><Icon className="size-[30px]" /></span>{item.label}{item.id === "notificacoes" && <SeloDeNaoLidas total={naoLidas} className="ml-auto" />}</>;
             if (item.external) return <a key={item.id} href={item.href} onClick={fechar} className={className}>{content}</a>;
             return (
               <Link

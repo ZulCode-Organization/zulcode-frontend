@@ -1,0 +1,13 @@
+{
+  "titulo": "Notificações",
+  "subtitulo": "Recados da equipe do ZulCode.",
+  "marcarTodas": "Marcar todas como lidas",
+  "vazio": {
+    "titulo": "Nada por aqui ainda",
+    "texto": "Quando a equipe do ZulCode mandar um recado, ele aparece aqui."
+  },
+  "erro": "Não deu para carregar as notificações. Tente de novo daqui a pouco.",
+  "nova": "Nova",
+  "abrir": "Ver",
+  "fechar": "Fechar aviso"
+}

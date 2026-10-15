@@ -1,5 +1,6 @@
 import { MAX_ARQUIVOS_POR_TIPO, MAX_CODE_LENGTH, PLAYGROUND_CHANNEL, previewUrl, type WebFiles } from "../playground-preview";
 import type { ConsoleTone, ExecutionRequest, ExecutionSnapshot, PlaygroundExecutor } from "./executor";
+import { parseRuntimeMessage } from "./protocol";
 
 const STARTUP_TIMEOUT_MS = 5000;
 const initialSnapshot = (): ExecutionSnapshot => ({ status: "idle", logs: [], preview: null });
@@ -86,10 +87,8 @@ export class IframeExecutor implements PlaygroundExecutor {
     const active = this.active;
     if (!active || !this.frame?.contentWindow ||
         event.source !== this.frame.contentWindow || event.origin !== "null") return;
-    const data: unknown = event.data;
-    if (!data || typeof data !== "object") return;
-    const message = data as Record<string, unknown>;
-    if (message.channel !== PLAYGROUND_CHANNEL || message.runId !== active.id) return;
+    const message = parseRuntimeMessage(event.data);
+    if (!message || message.runId !== active.id) return;
     if (message.type === "booted") {
       if (this.booted) return;
       this.booted = true;
@@ -99,12 +98,11 @@ export class IframeExecutor implements PlaygroundExecutor {
       }, "*");
       return;
     }
-    if (this.booted && message.type === "limit" && typeof message.text === "string") {
+    if (!this.booted) return;
+    if (message.type === "limit") {
       this.fail(message.text);
       return;
     }
-    if (!this.booted || typeof message.text !== "string" ||
-        !["console", "ready", "error"].includes(String(message.type))) return;
     const tone: ConsoleTone = message.type === "error" ? "error"
       : message.type === "ready" ? "success"
         : message.tone === "error" || message.tone === "warning" ? message.tone : "normal";

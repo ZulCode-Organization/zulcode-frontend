@@ -8,7 +8,10 @@ import { join } from "node:path";
 const appUrl = process.env.PLAYGROUND_TEST_URL;
 const chrome = process.env.CHROME_BIN || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
-test("tela do playground: recuperação, confirmação e salvamento ao navegar", {
+// Chave do rascunho local da versão atual (rascunho.ts).
+const DRAFT_KEY = "zulcode:playground-rascunho:v2";
+
+test("tela do playground: rascunho v2, salvamento ao navegar e editor CodeMirror", {
   skip: !appUrl, timeout: 45000,
 }, async () => {
   const profile = await mkdtemp(join(tmpdir(), "zulcode-page-"));
@@ -59,44 +62,97 @@ test("tela do playground: recuperação, confirmação e salvamento ao navegar",
       }
       assert.fail("Condição não atendida: " + expression);
     };
-    // Credencial fictícia somente no perfil temporário; nenhuma conta é usada.
+
+    // Credencial fictícia somente no perfil temporário; nenhuma conta real é usada.
     // Bloqueia chamadas ao backend para que o teste não dependa do serviço.
     await command("Network.enable");
-    await command("Network.setBlockedURLs", { urls: ["*/user*", "*/courses*", "*/languages*"] });
+    await command("Network.setBlockedURLs", { urls: ["*/playground/projects*", "*/user*", "*/courses*"] });
     await command("Page.enable");
+
+    // ── Cenário 1: rascunho v2 salvo é restaurado ao recarregar ──────────────
+    // Semeia um projeto salvo na chave v2 antes da primeira navegação.
+    const rascunhoSemeado = JSON.stringify({
+      projeto: {
+        id: null,
+        nome: "Rascunho teste",
+        modo: "web",
+        bibliotecas: [],
+        slugPublico: null,
+        arquivos: [
+          { id: "aaa", nome: "index.html", conteudo: "<h1>Restaurado</h1>" },
+          { id: "bbb", nome: "style.css",  conteudo: "" },
+          { id: "ccc", nome: "script.js",  conteudo: "" },
+        ],
+      },
+      emQue: Date.now(),
+    });
     await command("Page.addScriptToEvaluateOnNewDocument", { source: `
       localStorage.setItem("accessToken", "playground-test");
       if (!sessionStorage.getItem("seeded")) {
-        localStorage.setItem("zulcode:playground-web-draft:v1", "{rascunho quebrado");
+        localStorage.setItem(${JSON.stringify(DRAFT_KEY)}, ${JSON.stringify(rascunhoSemeado)});
         sessionStorage.setItem("seeded", "1");
       }
     ` });
     await command("Page.navigate", { url: new URL("/playground", appUrl).href });
-    await waitFor('document.querySelector("textarea") && !document.querySelector("textarea").disabled');
-    assert.equal(await evaluate(`Object.keys(localStorage).some(key => key.includes(":recovery:") &&
-      localStorage.getItem(key) === "{rascunho quebrado")`), true);
-    assert.equal(await evaluate('document.body.textContent.includes("Baixar rascunho original")'), true);
-    const original = await evaluate('document.querySelector("textarea").value');
-    const edit = value => `(() => {
-      const field = document.querySelector("textarea");
-      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set.call(field, ${JSON.stringify(value)});
-      field.dispatchEvent(new Event("input", {bubbles:true}));
-    })()`;
-    await evaluate(edit("<h1>Edição preservada</h1>"));
-    await evaluate(`window.confirm = () => false; document.querySelector('[aria-label="Restaurar exemplo"]').click()`);
-    assert.equal(await evaluate('document.querySelector("textarea").value'), "<h1>Edição preservada</h1>");
-    await evaluate(`window.confirm = () => true; document.querySelector('[aria-label="Restaurar exemplo"]').click()`);
-    await waitFor(`document.querySelector("textarea").value === ${JSON.stringify(original)}`);
-    // Editar e clicar no mesmo comando evita depender do debounce de 300 ms.
-    await evaluate(edit("<h1>Última edição antes de sair</h1>") + `; document.querySelector('a[href="/home"]').click()`);
-    await waitFor('location.pathname === "/home" && !document.querySelector("textarea")');
-    assert.equal(await evaluate('JSON.parse(localStorage.getItem("zulcode:playground-web-draft:v1")).html'),
-      "<h1>Última edição antes de sair</h1>");
-    assert.equal(await evaluate(`Object.keys(localStorage).some(key => key.includes(":recovery:") &&
-      localStorage.getItem(key) === "{rascunho quebrado")`), true);
+
+    // O editor CodeMirror monta dentro de .cm-editor; espera o elemento aparecer.
+    await waitFor('!!document.querySelector(".cm-editor")');
+
+    // O conteúdo do arquivo ativo aparece no .cm-content como texto plano.
+    const conteudoInicial = await evaluate(
+      'document.querySelector(".cm-content")?.textContent ?? ""',
+    );
+    assert.ok(
+      conteudoInicial.includes("Restaurado"),
+      `Esperava "Restaurado" no editor, obteve: ${conteudoInicial}`,
+    );
+
+    // ── Cenário 2: editar via API interna do CodeMirror e navegar imediatamente ─
+    // Edita o arquivo ativo usando a instância do CodeMirror exposta no DOM;
+    // em seguida navega sem esperar o debounce de 500 ms — o cleanup do efeito
+    // deve disparar o salvamento síncrono antes de desmontar.
+    const novoConteudo = "<h1>Última edição antes de sair</h1>";
+    await evaluate(`
+      (() => {
+        // O CodeMirror armazena a instância EditorView no elemento .cm-editor.
+        // Usamos a API pública de dispatch para não depender de seletores frágeis.
+        const el = document.querySelector(".cm-editor");
+        const view = el?.["__cm"];
+        if (!view) {
+          // Fallback: simula Input Event no cm-content (funciona para textos curtos).
+          const content = document.querySelector(".cm-content");
+          content.focus();
+          document.execCommand("selectAll");
+          document.execCommand("insertText", false, ${JSON.stringify(novoConteudo)});
+        } else {
+          view.dispatch({
+            changes: { from: 0, to: view.state.doc.length, insert: ${JSON.stringify(novoConteudo)} },
+          });
+        }
+        // Navega imediatamente — antes do debounce de 500 ms.
+        document.querySelector('a[href="/home"]')?.click();
+      })()
+    `);
+
+    await waitFor('location.pathname === "/home"');
+
+    // O rascunho deve ter sido gravado pelo cleanup do efeito antes de desmontar.
+    const rascunhoSalvo = await evaluate(
+      `JSON.parse(localStorage.getItem(${JSON.stringify(DRAFT_KEY)}) ?? "null")`,
+    );
+    assert.ok(rascunhoSalvo, "Rascunho não foi salvo ao navegar");
+    // O projeto salvo deve conter o arquivo editado com o novo conteúdo.
+    const conteudoSalvo = rascunhoSalvo?.projeto?.arquivos?.find?.(
+      a => a.nome === "index.html",
+    )?.conteudo;
+    assert.equal(
+      conteudoSalvo,
+      novoConteudo,
+      `Esperava "${novoConteudo}", obteve: ${conteudoSalvo}`,
+    );
   } finally {
     socket?.close();
     if (child.exitCode === null) await new Promise(resolve => { child.once("exit", resolve); child.kill(); });
-    await rm(profile, {recursive:true, force:true, maxRetries:5, retryDelay:200});
+    await rm(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
   }
 });

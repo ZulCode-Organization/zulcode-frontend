@@ -174,11 +174,13 @@ type Comum = {
 
 export function ChipOfensiva({
   contaId, carregando, aberto, aoAbrir, aoSegurar,
-  dias, acesa, protegido, recorde, protegidos,
+  dias, acesa, protegido, recorde, protegidos, perfeita = false,
 }: Comum & {
   dias: number | null;
   acesa: boolean;
   protegido: boolean;
+  /** Ofensiva perfeita: o contorno da chama fica dourado. */
+  perfeita?: boolean;
   recorde: number;
   protegidos: string[];
 }) {
@@ -240,7 +242,7 @@ export function ChipOfensiva({
       destinoDoNumero="/loja"
       iconeRef={icone}
       numeroRef={numero}
-      icone={<ChamaDupla className="size-6 lg:size-7" aceso={acesa} protegido={protegido} dias={dias} />}
+      icone={<ChamaDupla className="size-6 lg:size-7" aceso={acesa} protegido={protegido} dias={dias} perfeita={perfeita} />}
       numero={carregando || dias === null ? "…" : (
         <Odometro valor={dias} teto={1000} anterior={mudanca?.de} versao={mudanca?.id} atraso={120} />
       )}

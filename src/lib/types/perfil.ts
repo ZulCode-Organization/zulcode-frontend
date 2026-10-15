@@ -46,11 +46,13 @@ export interface PerfilUsuario {
    * de "5 dias, e hoje ainda não". */
   ultimaAtividade?: string | null;
   streakFreezes?: number;
+  /** Dias seguidos com a meta diária cumprida. A partir de 7, a chama ganha o contorno dourado. */
+  ofensivaPerfeita?: number;
   /** O que aconteceu com a ofensiva desde a última visita (gás usado ou ofensiva
    * perdida). O app mostra uma vez e avisa o servidor. Só no meu perfil. */
   ofensivaAviso?:
     | { tipo: "protegida"; dias: number; ofensiva: number; gasesRestantes: number; pro: boolean }
-    | { tipo: "perdida"; antes: number }
+    | { tipo: "perdida"; antes: number; recuperavelAte?: string | null }
     | null;
   /** Dias em que uma proteção impediu a quebra da sequência (YYYY-MM-DD). */
   protectedStreakDays?: string[];

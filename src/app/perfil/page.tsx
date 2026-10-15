@@ -12,6 +12,7 @@ import { SugestoesAmigos } from "@/components/perfil/sugestoes-amigos";
 import { EditorAvatar } from "@/components/perfil/editor-avatar";
 import { AbasSeguidores, AdicionarAmigos } from "@/components/perfil/painel-social";
 import { SideFooter } from "@/components/shared/side-footer";
+import { OfensivaComAmigos } from "@/components/perfil/ofensiva-com-amigos";
 
 function PerfilContent({ editando, setEditando }: { editando: boolean; setEditando: (v: boolean) => void }) {
   const { perfil, loading, error, retry } = usePerfil();
@@ -41,6 +42,7 @@ function PerfilContent({ editando, setEditando }: { editando: boolean; setEditan
     <div className="flex max-w-none flex-col gap-7">
       <ProfileHeader perfil={perfil} onEditar={() => setEditando(true)} />
       <StatsGrid perfil={perfil} />
+      <OfensivaComAmigos />
       <SugestoesAmigos />
       <AchievementsSection conquistas={perfil.conquistas} />
     </div>

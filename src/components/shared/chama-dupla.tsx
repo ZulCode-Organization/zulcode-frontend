@@ -48,6 +48,9 @@ export function faixaDaChama(dias: number | null | undefined): FaixaDaChama {
  * e ele vale acima da faixa. Saber que a sequência não apaga amanhã importa
  * mais do que saber há quanto tempo ela existe.
  *
+ * `perfeita` é a ofensiva perfeita: 7 dias ou mais seguidos com a meta diária
+ * cumprida (não só uma lição). O contorno vira dourado e brilha, em qualquer faixa.
+ *
  * Não há animação aqui, de propósito. A chama parada ao lado de um número é o
  * estado normal; quem anima os momentos (subir, vacilar, o brilho do gás) é a
  * barra, uma vez, quando o momento acontece.
@@ -56,6 +59,7 @@ export function ChamaDupla({
   className,
   aceso = true,
   protegido = false,
+  perfeita = false,
   dias,
 }: {
   className?: string;
@@ -65,6 +69,8 @@ export function ChamaDupla({
   protegido?: boolean;
   /** Dias de sequência. Sem ele a chama fica na primeira faixa, azul. */
   dias?: number | null;
+  /** Ofensiva perfeita: a meta diária cumprida 7 dias seguidos ou mais. */
+  perfeita?: boolean;
 }) {
   const comGas = aceso && protegido;
   const faixa = faixaDaChama(dias);
@@ -75,7 +81,12 @@ export function ChamaDupla({
         className={cn(
           "size-full transition-[fill,stroke] duration-500",
           comGas && "fill-violet-600 stroke-emerald-400",
-          aceso && !comGas && [faixa.corpo, faixa.contorno],
+          aceso && !comGas && [
+            faixa.corpo,
+            perfeita
+              ? cn(faixa.id === "dourada" ? "stroke-amber-50" : "stroke-amber-300", "drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]")
+              : faixa.contorno,
+          ],
           !aceso && "fill-muted-foreground/35 stroke-muted-foreground/60"
         )}
         strokeWidth={2.2}

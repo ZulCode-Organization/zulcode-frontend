@@ -2,13 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Hand, Users } from "lucide-react";
 import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { GasOfensiva } from "@/components/shared/gas-ofensiva";
 import { UserAvatar } from "@/components/shared/user-avatar";
-import { SeloVerificado } from "@/components/shared/selo-verificado";
 import { usePerfil } from "@/hooks/use-perfil";
-import { PessoaSocial, listarSeguindo } from "@/lib/social";
+import { cutucar, listarAmigosNaOfensiva, type AmigoNaOfensiva } from "@/lib/ofensiva-amigos";
 import { cn } from "@/lib/utils";
 
 const DIAS_DA_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -129,6 +128,7 @@ function AbaPessoal({ streakAtual, streakRecorde, protecoes, diasProtegidos, onN
             Seu recorde é de {streakRecorde} {streakRecorde === 1 ? "dia" : "dias"}.
           </p>
         )}
+        <OfensivaPerfeita />
       </div>
 
       {/* Gás de ofensiva: o item existe na loja, então o card leva pra lá em
@@ -240,24 +240,47 @@ function AbaPessoal({ streakAtual, streakRecorde, protecoes, diasProtegidos, onN
  * uma consulta só. Ordenar por sequência, e não por nome, é o que faz a aba
  * valer: quem está na frente aparece primeiro.
  */
-function AbaAmigos({ onNavegar }: { onNavegar?: () => void }) {
+/** Dias seguidos com a meta diária cumprida: a partir de 7, a chama ganha o contorno dourado. */
+function OfensivaPerfeita() {
   const { perfil } = usePerfil();
-  const [amigos, setAmigos] = useState<PessoaSocial[] | null>(null);
+  const dias = perfil?.ofensivaPerfeita ?? 0;
+  if (dias < 1) return null;
+  return (
+    <p className="relative mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[0.75rem] font-black text-white">
+      <ChamaDupla className="size-4" dias={perfil?.streakAtual} perfeita={dias >= 7} />
+      {dias >= 7 ? `Ofensiva perfeita: ${dias} dias com a meta cumprida` : `Meta cumprida ${dias} ${dias === 1 ? "dia" : "dias"} seguidos (7 dá a chama dourada)`}
+    </p>
+  );
+}
+
+function AbaAmigos({ onNavegar }: { onNavegar?: () => void }) {
+  const [amigos, setAmigos] = useState<AmigoNaOfensiva[] | null>(null);
+  const [ocupado, setOcupado] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!perfil?.id) return;
     let valeu = true;
-    listarSeguindo(perfil.id)
-      .then((lista) => {
-        if (valeu) setAmigos(lista);
-      })
-      .catch(() => {
-        if (valeu) setAmigos([]);
-      });
+    listarAmigosNaOfensiva()
+      .then((lista) => valeu && setAmigos(lista))
+      .catch(() => valeu && setAmigos([]));
     return () => {
       valeu = false;
     };
-  }, [perfil?.id]);
+  }, []);
+
+  const lembrar = async (amigo: AmigoNaOfensiva) => {
+    setOcupado(amigo.id);
+    setAviso(null);
+    try {
+      await cutucar(amigo.id);
+      setAmigos((atual) => atual?.map((a) => (a.id === amigo.id ? { ...a, cutucadoHoje: true } : a)) ?? null);
+      setAviso(`${amigo.nome.split(" ")[0]} vai receber seu lembrete.`);
+    } catch (e) {
+      setAviso(e instanceof Error ? e.message : "Não deu certo agora.");
+    } finally {
+      setOcupado(null);
+    }
+  };
 
   if (amigos === null) {
     return (
@@ -287,45 +310,45 @@ function AbaAmigos({ onNavegar }: { onNavegar?: () => void }) {
     );
   }
 
-  const ordenados = [...amigos].sort((a, b) => b.currentStreak - a.currentStreak);
-
   return (
-    <div className="overflow-hidden rounded-[20px] border border-border bg-card">
-      {ordenados.map((amigo, posicao) => (
-        <Link
-          key={amigo.id}
-          href={`/perfil/${amigo.id}`}
-          onClick={onNavegar}
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 transition-colors duration-150 hover:bg-muted/60",
-            posicao > 0 && "border-t border-border"
-          )}
-        >
-          <UserAvatar
-            iniciais={amigo.name.slice(0, 2).toUpperCase()}
-            avatarId={amigo.avatarId}
-            bannerColor={amigo.bannerColor}
-            size="sm"
-            className="[&>div]:rounded-full [&>div]:ring-0"
-          />
-          <span className="min-w-0 flex-1">
-            <b className="block truncate text-[0.88rem]">
-              {amigo.name}
-              {amigo.isVerified && <SeloVerificado className="ml-1 text-[0.8rem]" />}
-            </b>
-            <span className="text-[0.72rem] text-muted-foreground">Nível {amigo.nivel}</span>
-          </span>
-          <span
-            className={cn(
-              "flex shrink-0 items-center gap-1 text-[0.95rem] font-black",
-              amigo.currentStreak > 0 ? "text-blue-600" : "text-muted-foreground"
+    <div className="flex flex-col gap-2.5">
+      {aviso && <p role="status" className="rounded-xl bg-muted px-3 py-2 text-center text-[0.8rem] font-black">{aviso}</p>}
+      <div className="overflow-hidden rounded-[20px] border border-border bg-card">
+        {amigos.map((amigo, posicao) => (
+          <div key={amigo.id} className={cn("flex items-center gap-3 px-4 py-3", posicao > 0 && "border-t border-border")}>
+            <Link href={`/perfil/${amigo.id}`} onClick={onNavegar} className="flex min-w-0 flex-1 items-center gap-3">
+              <UserAvatar
+                iniciais={amigo.nome.slice(0, 2).toUpperCase()}
+                avatarId={amigo.avatarId}
+                bannerColor={amigo.bannerColor}
+                size="sm"
+                className="[&>div]:rounded-full [&>div]:ring-0"
+              />
+              <span className="min-w-0 flex-1">
+                <b className="block truncate text-[0.88rem]">{amigo.nome}</b>
+                <span className={cn("text-[0.72rem]", amigo.emRisco ? "font-bold text-orange-500" : "text-muted-foreground")}>
+                  {amigo.estudouHoje ? "Já estudou hoje" : amigo.emRisco ? "Ainda não estudou hoje" : "Sem ofensiva"}
+                </span>
+              </span>
+            </Link>
+            {amigo.emRisco && (
+              <button
+                type="button"
+                disabled={amigo.cutucadoHoje || ocupado === amigo.id}
+                onClick={() => void lembrar(amigo)}
+                className="flex shrink-0 items-center gap-1 rounded-lg bg-orange-500/15 px-2.5 py-1.5 text-[0.65rem] font-black uppercase text-orange-500 disabled:bg-muted disabled:text-muted-foreground"
+              >
+                <Hand className="size-3.5" />
+                {amigo.cutucadoHoje ? "Feito" : "Cutucar"}
+              </button>
             )}
-          >
-            <ChamaDupla className="size-6" aceso={amigo.currentStreak > 0} />
-            {amigo.currentStreak}
-          </span>
-        </Link>
-      ))}
+            <span className={cn("flex shrink-0 items-center gap-1 text-[0.95rem] font-black", amigo.ofensiva > 0 ? "text-blue-600" : "text-muted-foreground")}>
+              <ChamaDupla className="size-6" aceso={amigo.estudouHoje} dias={amigo.ofensiva} />
+              {amigo.ofensiva}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

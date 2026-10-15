@@ -270,6 +270,7 @@ export function AppTopBar() {
             protegido={protecoes > 0}
             recorde={perfil?.streakRecorde ?? 0}
             protegidos={perfil?.protectedStreakDays ?? []}
+            perfeita={(perfil?.ofensivaPerfeita ?? 0) >= 7}
           />
         </div>
 

@@ -219,17 +219,6 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
 
       <div className="relative px-1.5">
         {/* As configurações ficam logo abaixo do banner, à direita (só no próprio perfil). */}
-        {editavel && (
-          <div className="absolute right-3 top-3 z-10">
-            <Link
-              href="/configuracoes"
-              aria-label="Configurações"
-              className="zc-press grid size-10 place-items-center rounded-xl bg-muted text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <DuoConfiguracoes className="size-6" />
-            </Link>
-          </div>
-        )}
         {/* O avatar não é mais clicável: quem edita é o lápis da capa. */}
         <span className="relative -mt-[52px] flex size-28 items-center justify-center rounded-[32px] border-[6px] border-background bg-primary text-3xl font-black text-primary-foreground" style={{ background: corCapa ?? "#22c55e" }}>
           <AvatarIcon id={avatar} />
@@ -239,7 +228,15 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
         </span>
 
         <div className="mt-3.5">
-          <div className="flex items-center gap-3">{editorAtivo === "nome" ? <input autoFocus value={nome} onChange={e => setNome(e.target.value)} onBlur={salvarNome} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { setNome(perfil.nome); setEditorAtivo(null); } }} className="w-full rounded-xl border border-primary bg-background px-3 py-1 text-2xl font-black text-foreground outline-none ring-2 ring-primary/20" /> : <button type="button" onClick={() => editavel && setEditorAtivo("nome")} className={cn("group flex items-center gap-2 text-left text-2xl font-black text-foreground", editavel && "cursor-text")}>{nome}{perfil.isVerified && <SeloVerificado className="text-[1.35rem]" />}{editavel && <Pencil className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />}</button>}{perfil.publicCode && <span className="text-sm font-black text-muted-foreground">#{perfil.publicCode}</span>}</div>
+          <div className="flex items-center gap-3">{editorAtivo === "nome" ? <input autoFocus value={nome} onChange={e => setNome(e.target.value)} onBlur={salvarNome} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { setNome(perfil.nome); setEditorAtivo(null); } }} className="w-full rounded-xl border border-primary bg-background px-3 py-1 text-2xl font-black text-foreground outline-none ring-2 ring-primary/20" /> : <button type="button" onClick={() => editavel && setEditorAtivo("nome")} className={cn("group flex items-center gap-2 text-left text-2xl font-black text-foreground", editavel && "cursor-text")}>{nome}{perfil.isVerified && <SeloVerificado className="text-[1.35rem]" />}{editavel && <Pencil className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />}</button>}{perfil.publicCode && <span className="text-sm font-black text-muted-foreground">#{perfil.publicCode}</span>}{editavel && (
+            <Link
+              href="/configuracoes"
+              aria-label="Configurações"
+              className="zc-press ml-auto grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <DuoConfiguracoes className="size-6" />
+            </Link>
+          )}</div>
           {editavel && <p className="mt-0.5 text-sm text-muted-foreground/70">{perfil.email}</p>}
 
           {/* Identidade: desde quando está por aqui, o social e os cursos que

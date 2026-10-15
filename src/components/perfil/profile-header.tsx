@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import { ReactNode, useEffect, useState } from "react";
+import Link from "next/link";
 import { Pencil } from "lucide-react";
+import { DuoConfiguracoes } from "@/components/shared/icone-duo";
 import { Progress } from "@/components/ui/progress";
 import { PerfilUsuario } from "@/lib/types/perfil";
 import { cn } from "@/lib/utils";
 import { SeloVerificado } from "@/components/shared/selo-verificado";
 import { SeloPro } from "@/components/shared/selo-pro";
-import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
 import { usePerfil } from "@/hooks/use-perfil";
 import { LadrilhoCurso } from "@/components/app-shell/topbar-cursos";
@@ -215,6 +216,19 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
 
       </div>
 
+      {/* As configurações ficam logo abaixo do banner, à direita (só no próprio perfil). */}
+      {editavel && (
+        <div className="mt-2 flex justify-end px-1.5">
+          <Link
+            href="/configuracoes"
+            aria-label="Configurações"
+            className="zc-press grid size-10 place-items-center rounded-xl bg-muted text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <DuoConfiguracoes className="size-6" />
+          </Link>
+        </div>
+      )}
+
       <div className="relative px-1.5">
         {/* O avatar não é mais clicável: quem edita é o lápis da capa. */}
         <span className="relative -mt-[42px] flex size-24 items-center justify-center rounded-[28px] border-[5px] border-background bg-primary text-3xl font-black text-primary-foreground" style={{ background: corCapa ?? "#22c55e" }}>
@@ -226,13 +240,6 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
 
         <div className="mt-3.5">
           <div className="flex items-center gap-3">{editorAtivo === "nome" ? <input autoFocus value={nome} onChange={e => setNome(e.target.value)} onBlur={salvarNome} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { setNome(perfil.nome); setEditorAtivo(null); } }} className="w-full rounded-xl border border-primary bg-background px-3 py-1 text-2xl font-black text-foreground outline-none ring-2 ring-primary/20" /> : <button type="button" onClick={() => editavel && setEditorAtivo("nome")} className={cn("group flex items-center gap-2 text-left text-2xl font-black text-foreground", editavel && "cursor-text")}>{nome}{perfil.isVerified && <SeloVerificado className="text-[1.35rem]" />}{editavel && <Pencil className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />}</button>}{perfil.publicCode && <span className="text-sm font-black text-muted-foreground">#{perfil.publicCode}</span>}</div>
-          {/* O Clube dos 365: um ano inteiro seguido, em algum momento. */}
-          {(perfil.streakRecorde ?? 0) >= 365 && (
-            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-400/15 px-3 py-1 text-[0.72rem] font-black uppercase tracking-[0.06em] text-amber-500">
-              <ChamaDupla className="size-4" dias={365} />
-              Clube dos 365
-            </span>
-          )}
           {editavel && <p className="mt-0.5 text-sm text-muted-foreground/70">{perfil.email}</p>}
 
           {/* Identidade: desde quando está por aqui, o social e os cursos que

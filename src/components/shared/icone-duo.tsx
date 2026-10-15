@@ -64,3 +64,9 @@ export const DuoBug = solar("Bug", "DuoBug");
 export const DuoMetas = phosphor(Lightning, "DuoMetas");
 export const DuoConfiguracoes = phosphor(GearSix, "DuoConfiguracoes");
 export const DuoNotificacoes = phosphor(BellSimple, "DuoNotificacoes");
+
+// Os da visão geral do perfil: o mesmo desenho de duas camadas, com a cor de cada número.
+export const DuoOfensiva = solar("Ofensiva", "DuoOfensiva");
+export const DuoXp = solar("Xp", "DuoXp");
+export const DuoDivisao = solar("Divisao", "DuoDivisao");
+export const DuoPodio = solar("Podio", "DuoPodio");

@@ -5,7 +5,6 @@ import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { DuoConfiguracoes } from "@/components/shared/icone-duo";
-import { Progress } from "@/components/ui/progress";
 import { PerfilUsuario } from "@/lib/types/perfil";
 import { cn } from "@/lib/utils";
 import { SeloVerificado } from "@/components/shared/selo-verificado";
@@ -139,10 +138,6 @@ const BANNER_RICHARD = "linear-gradient(135deg, #111827, #1e3a8a 52%, #38bdf8)";
 export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: ProfileHeaderProps) {
   const { salvarDados, cursosEmAndamento, cursosConcluidos } = usePerfil();
   const cursos = [...cursosEmAndamento, ...cursosConcluidos];
-  const nivelMaximo = perfil.xpNecessarioNivel === null;
-  const progresso = nivelMaximo
-    ? 100
-    : Math.min(100, Math.round((perfil.xpNivelAtual / perfil.xpNecessarioNivel) * 100));
 
   // A capa e o ícone vêm direto do perfil: escolher os dois é papel do
   // EditorAvatar, e quando ele salva o perfil recarrega e chega aqui atualizado.
@@ -270,18 +265,6 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
       {editavel && <AcoesDeAmigos perfil={perfil} />}
 
       <div className="mt-6 h-px bg-border" aria-hidden />
-
-      <div className="mt-6 rounded-[20px] border border-border bg-card px-5 py-4.5">
-        <p className="text-sm font-extrabold text-foreground">
-          {nivelMaximo ? "Nível máximo alcançado 🏆" : `Progresso para Nível ${perfil.nivel + 1}`}
-        </p>
-        {!nivelMaximo && (
-          <p className="mt-1 text-sm font-extrabold text-primary">
-            {perfil.xpNivelAtual} / {perfil.xpNecessarioNivel} XP
-          </p>
-        )}
-        <Progress value={progresso} className="mt-2.5 h-3" />
-      </div>
     </div>
   );
 }

@@ -1,9 +1,11 @@
 import { ReactNode } from "react";
-import { Medal, Shield, Zap } from "lucide-react";
-import { ChamaDupla } from "@/components/shared/chama-dupla";
+import { DuoDivisao, DuoOfensiva, DuoPodio, DuoXp } from "@/components/shared/icone-duo";
 import { PerfilUsuario } from "@/lib/types/perfil";
 import { divisaoDoXp } from "@/lib/divisoes";
 import { cn } from "@/lib/utils";
+
+/** O mesmo tamanho para os quatro, um pouco maior no computador. */
+const TAMANHO = "size-8 sm:size-9";
 
 interface StatsGridProps {
   perfil: PerfilUsuario;
@@ -17,10 +19,8 @@ interface StatsGridProps {
  * marcado como em breve — o backend guarda a colocação atual, mas não histórico
  * de quem terminou no pódio, então qualquer número ali seria inventado.
  *
- * Os ícones são cheios, com o contorno num tom mais escuro do que o
- * preenchimento. Só de contorno eles sumiam dentro do card, que já tem borda —
- * virava desenho de linha sobre desenho de linha. O par de tons é escolhido com
- * folga suficiente pra borda não se perder dentro da própria cor.
+ * Os ícones são os mesmos de duas camadas da navegação (Solar, "bold
+ * duotone"): o volume claro e o detalhe escuro na mesma cor, uma por número.
  */
 export function StatsGrid({ perfil }: StatsGridProps) {
   const divisao = divisaoDoXp(perfil.xp);
@@ -28,24 +28,20 @@ export function StatsGrid({ perfil }: StatsGridProps) {
   const cartoes: { id: string; icone: ReactNode; valor: string; rotulo: string }[] = [
     {
       id: "streak",
-      // A mesma chama da barra de cima: ela é azul desde a última mudança, e
-      // apaga em cinza quando não há sequência — aqui valia o mesmo.
-      icone: <ChamaDupla className="size-6 shrink-0 sm:size-7" aceso={perfil.streakAtual > 0} />,
+      // Azul como a chama da barra de cima, e cinza sem sequência.
+      icone: <DuoOfensiva className={cn(TAMANHO, perfil.streakAtual > 0 ? "text-[#1892ff]" : "text-muted-foreground")} />,
       valor: perfil.streakAtual.toLocaleString("pt-BR"),
       rotulo: perfil.streakAtual === 1 ? "Dia seguido" : "Dias seguidos",
     },
     {
       id: "xp",
-      // Sem contorno: o preenchimento e o traço são a mesma cor, então o raio
-      // fica uma peça chapada só. O strokeWidth continua ali de propósito: sem
-      // ele a forma afina e o ícone fica menor que os vizinhos.
-      icone: <Zap className="size-6 shrink-0 sm:size-7 fill-amber-400 text-amber-400" strokeWidth={2.4} />,
+      icone: <DuoXp className={cn(TAMANHO, "text-amber-400")} />,
       valor: perfil.xp.toLocaleString("pt-BR"),
       rotulo: "Total de XP",
     },
     {
       id: "divisao",
-      icone: <Shield className={cn("size-6 shrink-0 sm:size-7", divisao.preenchimento, divisao.contorno)} strokeWidth={2.4} />,
+      icone: <DuoDivisao className={cn(TAMANHO, divisao.texto)} />,
       valor: divisao.nome,
       rotulo: "Divisão",
     },
@@ -53,7 +49,7 @@ export function StatsGrid({ perfil }: StatsGridProps) {
       id: "podios",
       // Deixou de ser "em breve": a tabela semanal fecha e registra o top 3 de
       // cada liga, então este número vem de pódios que aconteceram mesmo.
-      icone: <Medal className="size-6 shrink-0 sm:size-7 fill-amber-400 text-amber-600" strokeWidth={2.4} />,
+      icone: <DuoPodio className={cn(TAMANHO, "text-amber-400")} />,
       valor: (perfil.podios ?? 0).toLocaleString("pt-BR"),
       rotulo: "Pódios",
     },

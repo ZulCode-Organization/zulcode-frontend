@@ -3,21 +3,18 @@
 import type { CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { Rupee } from "@/components/shared/rupee";
-import { estiloDaConquista } from "@/lib/conquistas-icones";
+import { SeloConquista } from "@/components/shared/selo-conquista";
 import type { ConquistaNova } from "@/lib/types/comemoracao";
-import { cn } from "@/lib/utils";
 import { MolduraDeComemoracao } from "./moldura";
 
 /**
  * Uma conquista recém-desbloqueada.
  *
- * O desenho é o mesmo do perfil (escolhido pelo id da conquista), agora em
- * destaque: raios girando atrás e um brilho que atravessa a peça. É uma versão
- * provisória — os troféus vão ganhar desenho próprio, com o Zul.
+ * O selo é o mesmo do perfil (a arte do Zul e a cor da família da conquista),
+ * agora em destaque, com os raios girando atrás.
  */
 export function ComemoracaoConquista({ conquista, aoContinuar }: { conquista: ConquistaNova; aoContinuar: () => void }) {
   const t = useTranslations("comemoracoes.conquista");
-  const { Icone, cor, fundo } = estiloDaConquista(conquista.id);
 
   return (
     <MolduraDeComemoracao
@@ -29,9 +26,8 @@ export function ComemoracaoConquista({ conquista, aoContinuar }: { conquista: Co
       peca={
         <span className="relative grid size-44 place-items-center">
           <span aria-hidden className="zc-com-raios" />
-          <span className={cn("zc-com-nasce relative grid size-36 place-items-center rounded-[36px] shadow-xl", fundo)}>
-            <Icone className={cn("size-16", cor)} strokeWidth={2.2} />
-            <span aria-hidden className="zc-com-varre" />
+          <span className="zc-com-nasce relative">
+            <SeloConquista id={conquista.id} className="w-44" />
           </span>
         </span>
       }

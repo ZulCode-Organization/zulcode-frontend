@@ -1,10 +1,15 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { PerfilUsuario } from "@/lib/types/perfil";
-import { estiloDaConquista } from "@/lib/conquistas-icones";
-import { cn } from "@/lib/utils";
+import { SeloConquista } from "@/components/shared/selo-conquista";
 
 type Conquista = NonNullable<PerfilUsuario["conquistas"]>[number];
+
+/** Desbloqueada há menos que isso: o selo leva a etiqueta "NOVA". */
+const NOVA_POR = 7 * 24 * 60 * 60 * 1000;
 
 /** Quantas conquistas aparecem no perfil; o resto fica na página "ver todas". */
 const NO_PERFIL = 4;
@@ -47,26 +52,23 @@ export function AchievementsSection({ conquistas = [] }: { conquistas?: PerfilUs
   );
 }
 
-/** A grade de tiles. Usada no perfil (4) e na página com todas. */
+/** A grade de selos. Usada no perfil (4) e na página com todas. */
 export function ListaDeConquistas({ conquistas }: { conquistas: Conquista[] }) {
+  // O agora é lido uma vez, ao montar: o "NOVA" não precisa mudar com a tela aberta.
+  const [agora] = useState(() => Date.now());
   return (
-    <div className="mt-4 grid grid-cols-2 gap-3">
-      {conquistas.map((item, indice) => {
-        const { Icone, cor, fundo } = estiloDaConquista(item.id);
-        return (
-          <div
-            key={item.id}
-            style={{ animationDelay: `${Math.min(indice, 12) * 35}ms` }}
-            className="animate-fade-in-up flex flex-col items-center gap-2 rounded-[20px] border border-border bg-card px-3 py-4 text-center"
-          >
-            <span className={cn("grid size-20 place-items-center rounded-[24px]", fundo)}>
-              <Icone className={cn("size-10", cor)} strokeWidth={2.2} />
-            </span>
-            <p className="line-clamp-1 w-full font-black text-foreground">{item.title}</p>
-            <p className="line-clamp-2 w-full text-xs text-muted-foreground">{item.description}</p>
-          </div>
-        );
-      })}
+    <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-5">
+      {conquistas.map((item, indice) => (
+        <div
+          key={item.id}
+          style={{ animationDelay: `${Math.min(indice, 12) * 35}ms` }}
+          className="animate-fade-in-up flex flex-col items-center text-center"
+        >
+          <SeloConquista id={item.id} nova={agora - new Date(item.unlockedAt).getTime() < NOVA_POR} className="w-[118px]" />
+          <p className="mt-1.5 line-clamp-1 w-full font-black text-foreground">{item.title}</p>
+          <p className="line-clamp-2 w-full text-xs text-muted-foreground">{item.description}</p>
+        </div>
+      ))}
     </div>
   );
 }

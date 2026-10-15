@@ -9,6 +9,7 @@ import { OfflineSyncProvider } from "@/components/offline/offline-sync-provider"
 import { Abertura } from "@/components/abertura/abertura";
 import { BarrasDoSistema } from "@/components/abertura/barras-do-sistema";
 import { AbrirPeloAviso } from "@/components/avisos/abrir-pelo-aviso";
+import { VoltarDoLogin } from "@/components/auth/voltar-do-login";
 import { LANG_DO_HTML } from "@/i18n/idiomas";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
@@ -66,6 +67,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <NextIntlClientProvider>
             <BarrasDoSistema />
             <AbrirPeloAviso />
+            <VoltarDoLogin />
             <OfflineSyncProvider>{children}</OfflineSyncProvider>
             <Abertura />
           </NextIntlClientProvider>

@@ -45,12 +45,16 @@ function MarcaGoogle({ className }: { className?: string }) {
 export function BotoesSociais() {
   const [enviando, setEnviando] = useState<ProvedorSocial | null>(null);
 
-  // O estado de envio nao se desfaz: daqui o navegador sai do aplicativo e vai
-  // pro provedor. Zera-lo deixaria o botao clicavel de novo no instante entre o
-  // clique e a troca de pagina, e dois cliques abririam duas autorizacoes.
+  // No site o estado de envio nao se desfaz: daqui o navegador sai do aplicativo
+  // e vai pro provedor. Zera-lo deixaria o botao clicavel de novo no instante
+  // entre o clique e a troca de pagina, e dois cliques abririam duas
+  // autorizacoes. No app a entrada abre numa aba e, se a pessoa fecha a aba sem
+  // entrar, os botoes voltam.
   const entrar = (provedor: ProvedorSocial) => {
     setEnviando(provedor);
-    entrarComProvedor(provedor);
+    void entrarComProvedor(provedor)
+      .catch(() => null)
+      .finally(() => setEnviando(null));
   };
 
   const face = "gap-2.5 px-4 py-3.5 text-[0.82rem] normal-case tracking-normal";

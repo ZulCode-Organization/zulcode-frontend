@@ -19,6 +19,14 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- A volta do login com Google/GitHub: o navegador abre o app com
+                 com.zul.code://auth (src/lib/auth/social.ts). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.zul.code" android:host="auth" />
+            </intent-filter>
         </activity>
 
         <!-- Os widgets. exported fica true porque quem os desenha na tela inicial

@@ -13,7 +13,7 @@ import { PerfilUsuario } from "@/lib/types/perfil";
 
 /** O botão com relevo da referência: borda cinza e a de baixo mais grossa, que afunda ao tocar. */
 const BOTAO_RELEVO =
-  "flex h-12 items-center justify-center rounded-2xl border-2 border-b-4 border-border bg-transparent transition-[transform,border-width] duration-75 hover:bg-muted/40 active:translate-y-[2px] active:border-b-2";
+  "flex h-12 items-center justify-center rounded-[12px] border-2 border-b-4 border-border bg-transparent transition-[transform,border-width] duration-75 hover:bg-muted/40 active:translate-y-[2px] active:border-b-2";
 
 /** Um modal simples: fundo escuro, cartão no centro, fecha pelo X, pelo Esc ou clicando fora. */
 function Modal({ titulo, onFechar, children }: { titulo: string; onFechar: () => void; children: ReactNode }) {

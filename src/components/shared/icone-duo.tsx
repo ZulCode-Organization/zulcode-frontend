@@ -2,6 +2,7 @@ import type { Icon as IconePhosphor } from "@phosphor-icons/react";
 import { BellSimple, GearSix, Lightning } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 import { DESENHOS_SOLAR } from "./desenhos-solar";
+import { DESENHOS_EXTRAS } from "./desenhos-extras";
 
 /**
  * Ícones de duas camadas da navegação.
@@ -24,6 +25,15 @@ type Props = { className?: string };
 /** A Solar ocupa ~83% da caixa e a Phosphor ~75%. Desenhada a 91% da caixa,
  *  a Solar fica com o mesmo tamanho aparente das duas da Phosphor ao lado. */
 function solar(chave: keyof typeof DESENHOS_SOLAR, nome: string) {
+  return desenho(DESENHOS_SOLAR[chave], nome);
+}
+
+/** Os de outros conjuntos (Hugeicons, Duo Icons) no mesmo estilo de duas camadas. */
+function extra(chave: keyof typeof DESENHOS_EXTRAS, nome: string) {
+  return desenho(DESENHOS_EXTRAS[chave], nome);
+}
+
+function desenho(svg: string, nome: string) {
   function IconeSolar({ className }: Props) {
     return (
       <span aria-hidden className={cn("zc-duo zc-duo-solar relative inline-grid size-[30px] shrink-0 place-items-center", className)}>
@@ -31,7 +41,7 @@ function solar(chave: keyof typeof DESENHOS_SOLAR, nome: string) {
           viewBox="0 0 24 24"
           className="size-[91%]"
           // Os caminhos são dados fixos do arquivo gerado, nunca texto de fora.
-          dangerouslySetInnerHTML={{ __html: DESENHOS_SOLAR[chave] }}
+          dangerouslySetInnerHTML={{ __html: svg }}
         />
       </span>
     );
@@ -66,7 +76,7 @@ export const DuoConfiguracoes = phosphor(GearSix, "DuoConfiguracoes");
 export const DuoNotificacoes = phosphor(BellSimple, "DuoNotificacoes");
 
 // Os da visão geral do perfil: o mesmo desenho de duas camadas, com a cor de cada número.
-export const DuoOfensiva = solar("Ofensiva", "DuoOfensiva");
+export const DuoOfensiva = extra("Ofensiva", "DuoOfensiva");
 export const DuoXp = solar("Xp", "DuoXp");
-export const DuoDivisao = solar("Divisao", "DuoDivisao");
+export const DuoDivisao = extra("Divisao", "DuoDivisao");
 export const DuoPodio = solar("Podio", "DuoPodio");

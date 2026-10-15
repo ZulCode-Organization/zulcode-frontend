@@ -19,8 +19,9 @@ interface StatsGridProps {
  * marcado como em breve — o backend guarda a colocação atual, mas não histórico
  * de quem terminou no pódio, então qualquer número ali seria inventado.
  *
- * Os ícones são os mesmos de duas camadas da navegação (Solar, "bold
- * duotone"): o volume claro e o detalhe escuro na mesma cor, uma por número.
+ * Os ícones seguem o estilo de duas camadas da navegação: o volume
+ * translúcido e o detalhe cheio, na mesma cor, uma por número. A chama é do
+ * Hugeicons e o selo da divisão do Duo Icons; o raio e a medalha, da Solar.
  */
 export function StatsGrid({ perfil }: StatsGridProps) {
   const divisao = divisaoDoXp(perfil.xp);

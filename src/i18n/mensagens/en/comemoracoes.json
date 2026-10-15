@@ -30,6 +30,16 @@
       "texto": "{n, plural, one {It was # day in a row.} other {It was # days in a row.}} One lesson today and the flame lights up again.",
       "dica": "Streak gas, in the shop, covers a missed day."
     },
-    "dias": "{n, plural, one {day streak} other {day streak}}"
+    "dias": "{n, plural, one {day streak} other {day streak}}",
+    "recuperar": {
+      "titulo": "You can bring it back until {quando}",
+      "rupees": "Recover for {preco}",
+      "anuncio": "Watch an ad to recover",
+      "pro": "Recover free with PRO",
+      "sucesso": "Streak recovered!",
+      "voltou": "{n, plural, one {# day streak is back.} other {# day streak is back.}}",
+      "erro": "Couldn't recover it right now. Try again.",
+      "semRupees": "Not enough rupees to recover."
+    }
   }
 }

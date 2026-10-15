@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { CircleDollarSign, Feather, HeartPulse, Pencil, Plus, ShieldCheck, ShoppingBag, Trash2, Zap } from "lucide-react";
+import { CalendarCheck, CircleDollarSign, Feather, HeartPulse, Pencil, Plus, ShieldCheck, ShoppingBag, Trash2, Zap } from "lucide-react";
 import { Pagina } from "../shell";
 import { AreaDeTexto, Botao, Cabecalho, Entrada, Erro, Escolha, Esqueleto, Interruptor, Rotulo, Segmentado, Selo, Vazio } from "../ui";
 import { Dialogo, perguntar } from "../dialogo";
@@ -18,6 +18,7 @@ const EFEITOS: { efeito: EfeitoDaLoja; nome: string; descricao: string }[] = [
   { efeito: "RECOVER_LIVES", nome: "Recuperar penas", descricao: "Enche as penas na hora" },
   { efeito: "HEAL_ONE_LIFE", nome: "Uma pena", descricao: "Devolve uma pena" },
   { efeito: "FREEZE_STREAK", nome: "Protetor de ofensiva", descricao: "Guarda um dia de proteção" },
+  { efeito: "WEEKEND_FREE", nome: "Fim de semana livre", descricao: "Protege o próximo sábado e domingo" },
   { efeito: "FEATHER_SHIELD", nome: "Escudo de pena", descricao: "O próximo erro não gasta pena" },
   { efeito: "DOUBLE_XP", nome: "XP em dobro", descricao: "Dobra o XP por um tempo" },
   { efeito: "DOUBLE_COINS", nome: "Rupees em dobro", descricao: "Dobra as rupees por um tempo" },
@@ -26,6 +27,7 @@ const EFEITOS: { efeito: EfeitoDaLoja; nome: string; descricao: string }[] = [
 function IconeDoEfeito({ efeito, className }: { efeito: EfeitoDaLoja; className?: string }) {
   if (efeito === "RECOVER_LIVES") return <Feather className={className} />;
   if (efeito === "FREEZE_STREAK") return <GasOfensiva className={className} />;
+  if (efeito === "WEEKEND_FREE") return <CalendarCheck className={className} />;
   if (efeito === "FEATHER_SHIELD") return <ShieldCheck className={className} />;
   if (efeito === "DOUBLE_COINS") return <CircleDollarSign className={className} />;
   if (efeito === "HEAL_ONE_LIFE") return <HeartPulse className={className} />;

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Barrel, Feather, HeartPulse, Loader2, ShieldCheck, Zap, type LucideIcon } from "lucide-react";
+import { Barrel, CalendarCheck, Feather, HeartPulse, Loader2, ShieldCheck, Zap, type LucideIcon } from "lucide-react";
 import { Rupee } from "@/components/shared/rupee";
 import { GasOfensiva } from "@/components/shared/gas-ofensiva";
 import { SeloPro } from "@/components/shared/selo-pro";
@@ -12,7 +12,7 @@ import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { DIAS_DE_TESTE } from "@/lib/pro/planos";
 import { cn } from "@/lib/utils";
 
-type Efeito = "RECOVER_LIVES" | "FREEZE_STREAK" | "DOUBLE_XP" | "FEATHER_SHIELD" | "DOUBLE_COINS" | "HEAL_ONE_LIFE";
+type Efeito = "RECOVER_LIVES" | "FREEZE_STREAK" | "DOUBLE_XP" | "FEATHER_SHIELD" | "DOUBLE_COINS" | "HEAL_ONE_LIFE" | "WEEKEND_FREE";
 
 interface ItemLoja {
   id: string;
@@ -29,6 +29,7 @@ const DESENHO: Record<Efeito, { Icone: LucideIcon | ((p: { className?: string })
   HEAL_ONE_LIFE: { Icone: HeartPulse, cor: "text-rose-400", fundo: "bg-rose-500/15" },
   FEATHER_SHIELD: { Icone: ShieldCheck, cor: "text-sky-500", fundo: "bg-sky-500/15" },
   FREEZE_STREAK: { Icone: GasOfensiva, cor: "text-violet-500", fundo: "bg-violet-500/15" },
+  WEEKEND_FREE: { Icone: CalendarCheck, cor: "text-teal-500", fundo: "bg-teal-500/15" },
   DOUBLE_XP: { Icone: Zap, cor: "text-amber-500", fundo: "bg-amber-400/15" },
   DOUBLE_COINS: { Icone: Rupee, cor: "text-emerald-500", fundo: "bg-emerald-500/15" },
 };
@@ -37,6 +38,7 @@ const DESENHO: Record<Efeito, { Icone: LucideIcon | ((p: { className?: string })
  * lista fixa de ids: item novo criado pelo admin cai sozinho no lugar certo. */
 const SECAO: Record<Efeito, "ofensiva" | "penas" | "poderes"> = {
   FREEZE_STREAK: "ofensiva",
+  WEEKEND_FREE: "ofensiva",
   RECOVER_LIVES: "penas",
   HEAL_ONE_LIFE: "penas",
   FEATHER_SHIELD: "penas",

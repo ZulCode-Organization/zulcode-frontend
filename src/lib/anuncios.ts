@@ -129,12 +129,25 @@ export type ResultadoDaPena =
  * foi visto até o fim.
  */
 export async function assistirParaGanharPena(): Promise<ResultadoDaPena> {
+  return assistirRecompensado("pena");
+}
+
+/** O anúncio que recupera a ofensiva perdida (enquanto a recuperação está aberta). */
+export async function assistirParaRecuperarOfensiva(): Promise<boolean> {
+  return (await assistirRecompensado("ofensiva")).ok;
+}
+
+async function assistirRecompensado(tipo: "pena" | "ofensiva"): Promise<ResultadoDaPena> {
   const m = await admob();
   const token = localStorage.getItem("accessToken");
   if (!m || !token) return { ok: false, motivo: "semAnuncio" };
   const headers = { Authorization: `Bearer ${token}` };
 
-  const pedido = await fetchComTimeout(`${API_BASE_URL}/user/lives/anuncio`, { method: "POST", headers }).catch(() => null);
+  const pedido = await fetchComTimeout(`${API_BASE_URL}/user/lives/anuncio`, {
+    method: "POST",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({ tipo }),
+  }).catch(() => null);
   if (pedido?.status === 422) {
     const corpo = await pedido.json().catch(() => null);
     const motivo = corpo?.motivo;

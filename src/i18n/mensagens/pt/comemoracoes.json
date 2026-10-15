@@ -30,6 +30,16 @@
       "texto": "{n, plural, one {Foi # dia seguido.} other {Foram # dias seguidos.}} Uma lição hoje e a chama acende de novo.",
       "dica": "O gás de ofensiva, na loja, segura um dia perdido."
     },
-    "dias": "{n, plural, one {dia de ofensiva} other {dias de ofensiva}}"
+    "dias": "{n, plural, one {dia de ofensiva} other {dias de ofensiva}}",
+    "recuperar": {
+      "titulo": "Dá para trazer de volta até {quando}",
+      "rupees": "Recuperar por {preco}",
+      "anuncio": "Assistir anúncio e recuperar",
+      "pro": "Recuperar grátis com o PRO",
+      "sucesso": "Ofensiva recuperada!",
+      "voltou": "{n, plural, one {# dia de ofensiva de volta.} other {# dias de ofensiva de volta.}}",
+      "erro": "Não deu para recuperar agora. Tente de novo.",
+      "semRupees": "Faltam rupees para recuperar."
+    }
   }
 }

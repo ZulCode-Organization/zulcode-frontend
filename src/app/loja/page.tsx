@@ -14,6 +14,7 @@ import {
   Zap,
   HeartPulse,
   CircleDollarSign,
+  CalendarCheck,
 } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { usePerfil } from "@/hooks/use-perfil";
@@ -30,7 +31,7 @@ type Item = {
   title: string;
   description: string;
   price: number;
-  effect: "RECOVER_LIVES" | "FREEZE_STREAK" | "DOUBLE_XP" | "FEATHER_SHIELD" | "DOUBLE_COINS" | "HEAL_ONE_LIFE";
+  effect: "RECOVER_LIVES" | "FREEZE_STREAK" | "DOUBLE_XP" | "FEATHER_SHIELD" | "DOUBLE_COINS" | "HEAL_ONE_LIFE" | "WEEKEND_FREE";
 };
 type Kind = "THEME" | "AVATAR" | "BANNER";
 type Cosmetic = {
@@ -74,6 +75,8 @@ function IconeDoPoder({ effect, className }: { effect: Item["effect"]; className
       return <Feather className={className} />;
     case "FREEZE_STREAK":
       return <GasOfensiva className={className} />;
+    case "WEEKEND_FREE":
+      return <CalendarCheck className={className} />;
     case "FEATHER_SHIELD":
       return <ShieldCheck className={className} />;
     case "DOUBLE_COINS":

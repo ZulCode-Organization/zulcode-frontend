@@ -206,7 +206,7 @@ export interface AulaNoEditor {
 
 // ── Loja ─────────────────────────────────────────────────────────────────
 
-export type EfeitoDaLoja = "RECOVER_LIVES" | "FREEZE_STREAK" | "DOUBLE_XP" | "FEATHER_SHIELD" | "DOUBLE_COINS" | "HEAL_ONE_LIFE";
+export type EfeitoDaLoja = "RECOVER_LIVES" | "FREEZE_STREAK" | "DOUBLE_XP" | "FEATHER_SHIELD" | "DOUBLE_COINS" | "HEAL_ONE_LIFE" | "WEEKEND_FREE";
 
 export interface ItemDaLoja {
   id: string; title: string; description: string; price: number; effect: EfeitoDaLoja; active: boolean; order: number;

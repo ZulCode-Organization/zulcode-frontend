@@ -2,6 +2,7 @@
 
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { estadoDosAvisos } from "@/lib/avisos";
+import { CHAVE_DO_TOKEN_DO_APARELHO } from "@/lib/notificacoes";
 
 /**
  * O resultado de ativar as notificações, como código: quem mostra a frase é a
@@ -53,6 +54,8 @@ export async function ativarNotificacoesNativas(): Promise<ResultadoPush> {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ token: value, platform: Capacitor.getPlatform() }),
         });
+        // Guardado para o aparelho ser esquecido no servidor quando a pessoa sair da conta.
+        if (resposta.ok) localStorage.setItem(CHAVE_DO_TOKEN_DO_APARELHO, value);
         finalizar(resposta.ok ? { ok: true, codigo: "ativado" } : { ok: false, codigo: "falhaAoSalvar" });
       });
       registrationError = await PushNotifications.addListener("registrationError", () => finalizar({ ok: false, codigo: "falha" }));

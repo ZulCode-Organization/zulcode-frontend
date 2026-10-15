@@ -52,7 +52,10 @@
       "semPermissao": "Permission denied. Turn notifications on in your device settings.",
       "sessao": "Your session expired. Please sign in again.",
       "falhaAoSalvar": "Couldn't save this device to receive notifications.",
-      "falha": "Couldn't turn notifications on for this device."
+      "falha": "Couldn't turn notifications on for this device.",
+      "instaleNoIphone": "On iPhone, tap Share, then Add to Home Screen. Open ZulCode from there and turn this on.",
+      "semSuporte": "This browser can't receive notifications. Use Chrome or the Android app.",
+      "semServidor": "Site notifications are not set up yet."
     },
     "ativas": "On for this device.",
     "desativadas": "Off. Turn them on to get Zul's reminders.",
@@ -67,7 +70,10 @@
       "titulo": "See an example",
       "descricao": "Shows a reminder right now, just like the ones you'll get.",
       "botao": "Show"
-    }
+    },
+    "ligadas": "On: study reminder, friends and league arrive in your notification bar.",
+    "desligadas": "Off. Turn on to get Zul's reminders.",
+    "bloqueadasSite": "Blocked in the browser. Allow notifications in the site settings."
   },
   "widgets": {
     "descricao": "Your streak on your phone's home screen, without opening the app.",

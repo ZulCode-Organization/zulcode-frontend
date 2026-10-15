@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import { Zap, ShoppingBag, ShieldCheck, LayoutDashboard, FolderPlus, Bell, Users } from "lucide-react";
 import {
-  DuoBug, DuoConfiguracoes, DuoElementos, DuoJornada, DuoLideres, DuoLoja, DuoMetas, DuoNotificacoes, DuoPerfil, DuoPlayground,
+  DuoBug, DuoConfiguracoes, DuoElementos, DuoJornada, DuoLideres, DuoLoja, DuoMetas, DuoPerfil, DuoPlayground,
 } from "@/components/shared/icone-duo";
 
 export interface NavItem {
@@ -28,7 +28,6 @@ export const sidebarNavItems: NavItem[] = [
 /** O que abre no menu lateral do botão "Mais…" (só no desktop — no celular
  * esse papel é do `moreNavItems`, na barra de baixo). */
 export const sidebarMoreItems: NavItem[] = [
-  { id: "notificacoes", label: "Notificações", href: "/notificacoes", icon: DuoNotificacoes },
   { id: "playground", label: "Playground", href: "/playground", icon: DuoPlayground },
   { id: "configuracoes", label: "Configurações", href: "/configuracoes", icon: DuoConfiguracoes },
   { id: "reportar-bug", label: "Reportar bug", href: "https://forms.cloud.microsoft/r/FD8MLw693j", external: true, icon: DuoBug },
@@ -59,7 +58,6 @@ export const bottomNavItems: NavItem[] = [
 /** Também aparecem no menu "Mais" do celular, para complementar a barra
  * inferior sem aumentar a quantidade de atalhos fixos. */
 export const moreNavItems: NavItem[] = [
-  { id: "notificacoes", label: "Notificações", href: "/notificacoes", icon: DuoNotificacoes },
   { id: "metas", label: "Metas", href: "/metas", icon: DuoMetas },
   { id: "playground", label: "Playground", href: "/playground", icon: DuoPlayground },
   { id: "configuracoes", label: "Configurações", href: "/configuracoes", icon: DuoConfiguracoes },

@@ -9,6 +9,7 @@ import { OfflineSyncProvider } from "@/components/offline/offline-sync-provider"
 import { Abertura } from "@/components/abertura/abertura";
 import { BarrasDoSistema } from "@/components/abertura/barras-do-sistema";
 import { AbrirPeloAviso } from "@/components/avisos/abrir-pelo-aviso";
+import { ManterNotificacoes } from "@/components/avisos/manter-notificacoes";
 import { VoltarDoLogin } from "@/components/auth/voltar-do-login";
 import { LANG_DO_HTML } from "@/i18n/idiomas";
 
@@ -26,6 +27,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ZulCode",
   description: "Aprenda programação de forma gamificada",
+  // O manifesto deixa adicionar o site à tela de início. No iPhone, é só assim
+  // que o site recebe notificações.
+  manifest: "/manifest.webmanifest",
+  icons: { icon: "/icons/icon-192.png", apple: "/icons/icon-192.png" },
+  appleWebApp: { capable: true, title: "ZulCode", statusBarStyle: "black-translucent" },
 };
 
 /**
@@ -67,6 +73,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <NextIntlClientProvider>
             <BarrasDoSistema />
             <AbrirPeloAviso />
+            <ManterNotificacoes />
             <VoltarDoLogin />
             <OfflineSyncProvider>{children}</OfflineSyncProvider>
             <Abertura />

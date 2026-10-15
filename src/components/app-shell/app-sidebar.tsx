@@ -8,8 +8,6 @@ import { createPortal } from "react-dom";
 import { useTheme } from "next-themes";
 import { ChevronDown, FolderPlus, LogOut } from "lucide-react";
 import { DuoMais } from "@/components/shared/icone-duo";
-import { SeloDeNaoLidas } from "@/components/notificacoes/selo-de-nao-lidas";
-import { useNaoLidas } from "@/lib/notificacoes";
 import { usePerfil } from "@/hooks/use-perfil";
 import { cn } from "@/lib/utils";
 import { adminEntry, adminNavItems, sidebarMoreItems, sidebarNavItems } from "./nav-items";
@@ -25,7 +23,6 @@ function MenuMais() {
   const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
   const [caixa, setCaixa] = useState<{ left: number; top: number } | null>(null);
-  const naoLidas = useNaoLidas();
   const botaoRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -98,7 +95,6 @@ function MenuMais() {
           <DuoMais />
         </span>
         <span className="hidden xl:inline">Mais</span>
-        <SeloDeNaoLidas total={naoLidas} className="absolute left-7 top-1 xl:static xl:ml-auto" />
       </button>
 
       {aberto && caixa && createPortal(
@@ -127,7 +123,6 @@ function MenuMais() {
                   <Icon className="size-[26px]" />
                 </span>
                 {item.label}
-                {item.id === "notificacoes" && <SeloDeNaoLidas total={naoLidas} className="ml-auto" />}
               </>
             );
 

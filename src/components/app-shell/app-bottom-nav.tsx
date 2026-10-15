@@ -7,8 +7,6 @@ import { DuoMais } from "@/components/shared/icone-duo";
 import { cn } from "@/lib/utils";
 import { bottomNavItems, moreNavItems } from "./nav-items";
 import { MaisMenu } from "./mais-menu";
-import { SeloDeNaoLidas } from "@/components/notificacoes/selo-de-nao-lidas";
-import { useNaoLidas } from "@/lib/notificacoes";
 import { usePerfil } from "@/hooks/use-perfil";
 
 /**
@@ -62,7 +60,6 @@ export function AppBottomNav() {
   const pathname = usePathname();
   const [maisAberto, setMaisAberto] = useState(false);
   const { perfil } = usePerfil();
-  const naoLidas = useNaoLidas();
 
   // Metas, Playground e Configurações só existem dentro do menu "Mais" no
   // celular — sem checar isso aqui, nenhum ícone da barra ficaria "ativo"
@@ -119,7 +116,6 @@ export function AppBottomNav() {
           <span className="relative inline-grid">
             <DuoMais />
             {/* As notificações moram no "Mais": o selo avisa que tem coisa nova lá. */}
-            <SeloDeNaoLidas total={naoLidas} className="absolute -right-2.5 -top-2" />
           </span>
         </Ladrilho>
       </button>

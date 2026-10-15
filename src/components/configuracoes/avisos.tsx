@@ -1,50 +1,63 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlarmClock, Bell, BellRing, Check, Eye, Loader2 } from "lucide-react";
+import { Bell, Eye, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   abrirConfiguracoesDeAvisos, configurarLembrete, estadoDosAvisos, mostrarExemploDeAviso, pedirPermissaoDeAvisos,
   type EstadoDosAvisos,
 } from "@/lib/avisos";
 import { ativarNotificacoesNativas } from "@/lib/push-notifications";
+import { ativarWebPush, estadoNoServidor, salvarPreferencia, webPushAtivoNesteNavegador, type ResultadoDoSite } from "@/lib/notificacoes";
 import { useTextosDosAvisos } from "@/hooks/use-avisos";
 import { classeDaLinha, Grupo, IconeDaLinha, Linha, LinhaInterruptor, Textos } from "./linhas";
 
-/** Marca que a pessoa já mexeu no lembrete: daí em diante, ligar as notificações não o religa sozinho. */
-const ESCOLHEU_LEMBRETE = "zc-lembrete-escolhido";
-
 const doisDigitos = (n: number) => String(n).padStart(2, "0");
 
-type Disponivel = "carregando" | "sim" | "semApp" | "atualize";
+type Onde = "carregando" | "app" | "site" | "atualize";
 
 /**
- * Os avisos nas Configurações: liberar as notificações, o lembrete de estudo
- * (liga, desliga e horário) e um exemplo para ver como ele aparece.
+ * As notificações nas Configurações: uma chave só, que liga ou desliga tudo
+ * (lembrete de estudo, amigos, liga e as novidades da equipe).
  *
- * Ao liberar as notificações pela primeira vez, o lembrete já vem ligado às
- * 19h — é o aviso que mais ajuda a manter a ofensiva, e quem não quiser
- * desliga aqui mesmo.
+ * No app Android ela pede a permissão do sistema, agenda o lembrete no
+ * celular e registra o aparelho no Firebase; no site, inscreve o navegador
+ * no Web Push. Em qualquer um, a escolha fica salva na conta: desligada, o
+ * servidor não manda nada.
  */
 export function GrupoDeAvisos() {
   const t = useTranslations("configuracoes");
   const textos = useTextosDosAvisos();
-  const [disponivel, setDisponivel] = useState<Disponivel>("carregando");
-  const [estado, setEstado] = useState<EstadoDosAvisos | null>(null);
+  const [onde, setOnde] = useState<Onde>("carregando");
+  const [nativo, setNativo] = useState<EstadoDosAvisos | null>(null);
+  const [naConta, setNaConta] = useState(true);
+  const [noNavegador, setNoNavegador] = useState(false);
+  const [aviso, setAviso] = useState<ResultadoDoSite | "bloqueadas" | null>(null);
   const [ocupado, setOcupado] = useState(false);
 
   useEffect(() => {
     let vivo = true;
-    void (async () => {
+    const ler = async () => {
       const { Capacitor } = await import("@capacitor/core");
-      const lido = Capacitor.isNativePlatform() ? await estadoDosAvisos() : null;
+      const servidor = await estadoNoServidor();
       if (!vivo) return;
-      setDisponivel(!Capacitor.isNativePlatform() ? "semApp" : lido ? "sim" : "atualize");
-      setEstado(lido);
-    })();
-    // Quem volta das configurações do Android pode ter liberado lá.
+      if (servidor) setNaConta(servidor.ativas);
+      if (Capacitor.isNativePlatform()) {
+        const lido = await estadoDosAvisos();
+        if (!vivo) return;
+        setNativo(lido);
+        setOnde(lido ? "app" : "atualize");
+      } else {
+        const ativo = await webPushAtivoNesteNavegador();
+        if (!vivo) return;
+        setNoNavegador(ativo);
+        setOnde("site");
+      }
+    };
+    void ler();
+    // Quem volta das configurações do celular pode ter liberado lá.
     const aoVoltar = () => {
-      if (document.visibilityState === "visible") void estadoDosAvisos().then((e) => e && vivo && setEstado(e));
+      if (document.visibilityState === "visible") void ler();
     };
     document.addEventListener("visibilitychange", aoVoltar);
     return () => {
@@ -53,124 +66,113 @@ export function GrupoDeAvisos() {
     };
   }, []);
 
-  const jaEscolheu = () => {
-    try {
-      return localStorage.getItem(ESCOLHEU_LEMBRETE) === "1";
-    } catch {
-      return false;
-    }
-  };
-  const marcarEscolha = () => {
-    try {
-      localStorage.setItem(ESCOLHEU_LEMBRETE, "1");
-    } catch {
-      // Sem armazenamento, o pior caso é o lembrete religar uma vez.
-    }
-  };
+  const ligadas = naConta && (onde === "app" ? Boolean(nativo?.ativas) : noNavegador);
 
-  const ativar = async () => {
-    setOcupado(true);
-    let novo = await pedirPermissaoDeAvisos();
-    if (novo && !novo.ativas && novo.permissao === "denied") {
-      // O Android não pergunta mais depois de duas recusas: só pelas configurações dele.
-      await abrirConfiguracoesDeAvisos();
-    } else if (novo?.ativas) {
-      if (!novo.lembrete.ativo && !jaEscolheu()) novo = await configurarLembrete({ ativo: true, hora: 19, minuto: 0, textos });
-      // Com o Firebase no APK, o aparelho também passa a receber os avisos do servidor.
-      if (novo?.firebase) void ativarNotificacoesNativas();
-    }
-    if (novo) setEstado(novo);
-    setOcupado(false);
-  };
-
-  const mudarLembrete = async (ativo: boolean) => {
-    marcarEscolha();
-    if (ativo && !estado?.ativas) {
-      const permitido = await pedirPermissaoDeAvisos();
-      if (!permitido?.ativas) {
-        if (permitido) setEstado(permitido);
-        return;
+  const ligar = async () => {
+    setAviso(null);
+    if (onde === "app") {
+      let novo = await pedirPermissaoDeAvisos();
+      if (novo && !novo.ativas && novo.permissao === "denied") {
+        // O Android não pergunta mais depois de duas recusas: só pelas configurações dele.
+        await abrirConfiguracoesDeAvisos();
+        setAviso("bloqueadas");
+      } else if (novo?.ativas) {
+        novo = (await configurarLembrete({ ativo: true, textos })) ?? novo;
+        if (novo.firebase) await ativarNotificacoesNativas();
+        if (await salvarPreferencia(true)) setNaConta(true);
       }
+      if (novo) setNativo(novo);
+      return;
     }
-    const novo = await configurarLembrete({ ativo, textos });
-    if (novo) setEstado(novo);
+    const resultado = await ativarWebPush();
+    if (resultado === "ativado") {
+      setNoNavegador(true);
+      if (await salvarPreferencia(true)) setNaConta(true);
+    } else {
+      setAviso(resultado === "semPermissao" ? "bloqueadas" : resultado);
+    }
+  };
+
+  const desligar = async () => {
+    setAviso(null);
+    if (await salvarPreferencia(false)) setNaConta(false);
+    // O lembrete é agendado no próprio celular: desligar tudo também o cancela.
+    if (onde === "app") {
+      const novo = await configurarLembrete({ ativo: false });
+      if (novo) setNativo(novo);
+    }
+  };
+
+  const mudar = async (ligar_: boolean) => {
+    setOcupado(true);
+    try {
+      await (ligar_ ? ligar() : desligar());
+    } finally {
+      setOcupado(false);
+    }
   };
 
   const mudarHorario = async (valor: string) => {
     const [hora, minuto] = valor.split(":").map(Number);
     if (!Number.isInteger(hora) || !Number.isInteger(minuto)) return;
-    marcarEscolha();
     const novo = await configurarLembrete({ hora, minuto });
-    if (novo) setEstado(novo);
+    if (novo) setNativo(novo);
   };
 
-  if (disponivel !== "sim" || !estado) {
+  if (onde === "carregando" || onde === "atualize") {
     return (
       <Grupo titulo={t("grupos.avisos")}>
         <Linha
-          Icone={disponivel === "carregando" ? Loader2 : Bell}
+          Icone={onde === "carregando" ? Loader2 : Bell}
           titulo={t("avisos.titulo")}
-          descricao={disponivel === "carregando" ? t("avisos.descricao") : disponivel === "semApp" ? t("avisos.resultado.semApp") : t("avisos.atualizeApp")}
+          descricao={onde === "carregando" ? t("avisos.descricao") : t("avisos.atualizeApp")}
           acessorio={<span />}
         />
       </Grupo>
     );
   }
 
-  const lembreteLigado = estado.ativas && estado.lembrete.ativo;
-  const horario = `${doisDigitos(estado.lembrete.hora)}:${doisDigitos(estado.lembrete.minuto)}`;
+  const descricao = aviso
+    ? aviso === "bloqueadas"
+      ? t(onde === "app" ? "avisos.bloqueadas" : "avisos.bloqueadasSite")
+      : t(`avisos.resultado.${aviso}`)
+    : ligadas
+      ? t("avisos.ligadas")
+      : t("avisos.desligadas");
 
   return (
     <Grupo titulo={t("grupos.avisos")}>
-      <Linha
+      <LinhaInterruptor
         Icone={ocupado ? Loader2 : Bell}
         titulo={t("avisos.titulo")}
-        descricao={estado.ativas ? t("avisos.ativas") : estado.permissao === "denied" ? t("avisos.bloqueadas") : t("avisos.desativadas")}
-        onClick={estado.ativas ? undefined : ativar}
-        acessorio={
-          estado.ativas ? (
-            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-              <Check className="size-4.5" strokeWidth={3} />
-            </span>
-          ) : (
-            <span className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-[0.7rem] font-black uppercase tracking-[0.06em] text-primary-foreground">
-              {ocupado ? <Loader2 className="size-3.5 animate-spin" /> : <BellRing className="size-3.5" />}
-              {ocupado ? t("avisos.ativando") : t("avisos.ativar")}
-            </span>
-          )
-        }
+        descricao={descricao}
+        ligado={ligadas}
+        aoMudar={(v) => void mudar(v)}
       />
-      <LinhaInterruptor
-        Icone={AlarmClock}
-        titulo={t("avisos.lembrete.titulo")}
-        descricao={t("avisos.lembrete.descricao")}
-        ligado={lembreteLigado}
-        aoMudar={(v) => void mudarLembrete(v)}
-      />
-      {lembreteLigado && (
-        <label className={classeDaLinha}>
-          <span className="w-10 shrink-0" aria-hidden />
-          <span className="min-w-0 flex-1 text-[0.85rem] font-bold text-muted-foreground">{t("avisos.lembrete.horario")}</span>
-          <input
-            type="time"
-            value={horario}
-            onChange={(e) => void mudarHorario(e.target.value)}
-            className="rounded-xl border-2 border-border bg-background px-3 py-2 text-[0.95rem] font-black tabular-nums text-foreground outline-none focus:border-primary"
-          />
-        </label>
-      )}
-      {estado.ativas && (
-        <div className={classeDaLinha}>
-          <IconeDaLinha Icone={Eye} cor="text-primary" />
-          <Textos titulo={t("avisos.exemplo.titulo")} descricao={t("avisos.exemplo.descricao")} />
-          <button
-            type="button"
-            onClick={() => void mostrarExemploDeAviso()}
-            className="shrink-0 rounded-lg border-2 border-border px-3 py-2 text-[0.7rem] font-black uppercase tracking-[0.06em] text-foreground hover:border-primary/50"
-          >
-            {t("avisos.exemplo.botao")}
-          </button>
-        </div>
+      {onde === "app" && ligadas && nativo && (
+        <>
+          <label className={classeDaLinha}>
+            <span className="w-10 shrink-0" aria-hidden />
+            <span className="min-w-0 flex-1 text-[0.85rem] font-bold text-muted-foreground">{t("avisos.lembrete.horario")}</span>
+            <input
+              type="time"
+              value={`${doisDigitos(nativo.lembrete.hora)}:${doisDigitos(nativo.lembrete.minuto)}`}
+              onChange={(e) => void mudarHorario(e.target.value)}
+              className="rounded-xl border-2 border-border bg-background px-3 py-2 text-[0.95rem] font-black tabular-nums text-foreground outline-none focus:border-primary"
+            />
+          </label>
+          <div className={classeDaLinha}>
+            <IconeDaLinha Icone={Eye} cor="text-primary" />
+            <Textos titulo={t("avisos.exemplo.titulo")} descricao={t("avisos.exemplo.descricao")} />
+            <button
+              type="button"
+              onClick={() => void mostrarExemploDeAviso()}
+              className="shrink-0 rounded-lg border-2 border-border px-3 py-2 text-[0.7rem] font-black uppercase tracking-[0.06em] text-foreground hover:border-primary/50"
+            >
+              {t("avisos.exemplo.botao")}
+            </button>
+          </div>
+        </>
       )}
     </Grupo>
   );

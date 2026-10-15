@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Hammer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { esquecerEsteAparelho } from "@/lib/notificacoes";
 
 interface ComingSoonProps {
   titulo?: string;
@@ -16,6 +17,7 @@ export function ComingSoon({
   const router = useRouter();
 
   const handleLogout = () => {
+    void esquecerEsteAparelho();
     localStorage.removeItem("accessToken");
     router.replace("/welcome");
   };

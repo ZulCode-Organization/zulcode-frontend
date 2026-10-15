@@ -16,6 +16,7 @@ import { IDIOMAS, NOME_DO_IDIOMA, type Idioma } from "@/i18n/idiomas";
 import { Grupo, Linha, LinhaDeEscolha, LinhaInterruptor, Opcao } from "./linhas";
 import { GrupoDeAvisos } from "./avisos";
 import { GrupoDeWidgets } from "./widgets";
+import { esquecerEsteAparelho } from "@/lib/notificacoes";
 
 const semAssinatura = () => () => {};
 
@@ -62,6 +63,8 @@ export function SettingsContent() {
   };
 
   const sair = () => {
+    // Antes de apagar o token: o servidor precisa dele para esquecer o aparelho.
+    void esquecerEsteAparelho();
     localStorage.removeItem("accessToken");
     void limparWidgetDaOfensiva();
     void limparAvisos();

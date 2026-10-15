@@ -52,7 +52,10 @@
       "semPermissao": "Permissão negada. Ative as notificações nas configurações do aparelho.",
       "sessao": "Sua sessão expirou. Entre de novo.",
       "falhaAoSalvar": "Não deu para salvar este aparelho para receber avisos.",
-      "falha": "Não deu para ativar as notificações neste aparelho."
+      "falha": "Não deu para ativar as notificações neste aparelho.",
+      "instaleNoIphone": "No iPhone, toque em Compartilhar e em Adicionar à Tela de Início. Abra o ZulCode por lá e ligue aqui.",
+      "semSuporte": "Este navegador não recebe notificações. Use o Chrome ou o app para Android.",
+      "semServidor": "As notificações do site ainda não foram configuradas."
     },
     "ativas": "Ativadas neste aparelho.",
     "desativadas": "Desativadas. Ative para receber os lembretes do Zul.",
@@ -67,7 +70,10 @@
       "titulo": "Ver um exemplo",
       "descricao": "Mostra agora um lembrete como os que você vai receber.",
       "botao": "Mostrar"
-    }
+    },
+    "ligadas": "Ligadas: lembrete de estudo, amigos e liga chegam na barra do celular.",
+    "desligadas": "Desligadas. Ligue para receber os lembretes do Zul.",
+    "bloqueadasSite": "Bloqueadas no navegador. Libere as notificações nas configurações do site."
   },
   "widgets": {
     "descricao": "Sua ofensiva na tela inicial do celular, sem abrir o app.",

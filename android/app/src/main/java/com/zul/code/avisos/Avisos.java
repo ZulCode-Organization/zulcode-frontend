@@ -93,4 +93,37 @@ public final class Avisos {
             // Android 13+ sem a permissão de avisos: não há o que mostrar.
         }
     }
+
+    /**
+     * Um aviso que veio do servidor: o mesmo visual dos outros, mais a imagem
+     * grande e um botão de ação, quando o administrativo os mandou.
+     */
+    static void mostrarDoServidor(Context contexto, int id, String canal, String titulo, String texto, String rota,
+                                  Bitmap imagem, String botao, String rotaDoBotao) {
+        if (!NotificationManagerCompat.from(contexto).areNotificationsEnabled()) return;
+
+        NotificationCompat.Builder aviso = new NotificationCompat.Builder(contexto, canal)
+            .setSmallIcon(R.drawable.ic_aviso_zul)
+            .setColor(AZUL)
+            .setContentTitle(titulo)
+            .setContentText(texto)
+            .setLargeIcon(imagem != null ? imagem : ArteDoAviso.cabecaDoZul(contexto))
+            .setContentIntent(abrir(contexto, rota, id, id))
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH);
+
+        if (imagem != null) {
+            // Aberta, a notificação mostra a imagem grande; fechada, ela aparece pequena ao lado.
+            aviso.setStyle(new NotificationCompat.BigPictureStyle().bigPicture(imagem).bigLargeIcon((Bitmap) null).setSummaryText(texto));
+        } else {
+            aviso.setStyle(new NotificationCompat.BigTextStyle().bigText(texto));
+        }
+        if (botao != null && rotaDoBotao != null) aviso.addAction(0, botao, abrir(contexto, rotaDoBotao, id + 3, id));
+
+        try {
+            NotificationManagerCompat.from(contexto).notify(id, aviso.build());
+        } catch (SecurityException semPermissao) {
+            // Android 13+ sem a permissão de avisos: não há o que mostrar.
+        }
+    }
 }

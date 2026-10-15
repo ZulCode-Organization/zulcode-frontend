@@ -3,7 +3,6 @@ import { PerfilProvider } from "@/hooks/use-perfil";
 import { AppSidebar } from "./app-sidebar";
 import { AppBottomNav } from "./app-bottom-nav";
 import { AvisoFimDoTeste } from "@/components/pro/aviso-fim-do-teste";
-import { AvisoAoAbrir } from "@/components/notificacoes/aviso-ao-abrir";
 import { AvisoDaOfensiva } from "@/components/comemoracoes/aviso-da-ofensiva";
 import { AppTopBar } from "./app-topbar";
 import { StickyBottomPanel } from "./sticky-bottom-panel";
@@ -34,7 +33,6 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
     <div className="flex h-dvh overflow-hidden bg-background">
       <AppSidebar />
       {/* A notificação nova desce do topo ao abrir o app (fica por cima de tudo). */}
-      <AvisoAoAbrir />
       {/* O gás que segurou a ofensiva, ou a ofensiva que apagou: uma vez, em tela cheia. */}
       <AvisoDaOfensiva />
 

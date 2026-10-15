@@ -7,6 +7,7 @@ import { AppShell } from "@/components/app-shell/app-shell";
 import { Button } from "@/components/ui/button";
 import { ProfileHeader } from "@/components/perfil/profile-header";
 import { StatsGrid } from "@/components/perfil/stats-grid";
+import { CartaoPerfilIncompleto } from "@/components/perfil/cartao-perfil-incompleto";
 import { AchievementsSection } from "@/components/perfil/achievements-section";
 import { SugestoesAmigos } from "@/components/perfil/sugestoes-amigos";
 import { EditorAvatar } from "@/components/perfil/editor-avatar";
@@ -41,10 +42,11 @@ function PerfilContent({ editando, setEditando }: { editando: boolean; setEditan
   return (
     <div className="flex max-w-none flex-col gap-7">
       <ProfileHeader perfil={perfil} onEditar={() => setEditando(true)} />
+      <CartaoPerfilIncompleto perfil={perfil} onContinuar={() => setEditando(true)} />
       <StatsGrid perfil={perfil} />
       <OfensivaComAmigos />
-      <SugestoesAmigos />
       <AchievementsSection conquistas={perfil.conquistas} />
+      <SugestoesAmigos />
     </div>
   );
 }

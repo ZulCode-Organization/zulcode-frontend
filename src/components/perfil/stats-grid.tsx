@@ -61,21 +61,18 @@ export function StatsGrid({ perfil }: StatsGridProps) {
 
   return (
     <section>
-      <h2 className="text-lg font-black text-foreground">Estatísticas</h2>
+      <h2 className="text-[0.78rem] font-black uppercase tracking-[0.12em] text-muted-foreground">Visão geral</h2>
 
-      <div className="mt-4 grid grid-cols-2 gap-2.5 sm:gap-3">
+      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-5">
         {cartoes.map(({ id, icone, valor, rotulo }) => (
           <div
             key={id}
-            className={cn(
-              "relative flex items-center gap-2.5 rounded-2xl border border-border bg-card px-3 py-3",
-              "sm:gap-3.5 sm:rounded-[18px] sm:px-5 sm:py-4"
-            )}
+            className="flex items-center gap-3"
           >
             {icone}
             <div className="min-w-0">
-              <p className="truncate text-[0.95rem] font-black leading-none sm:text-[1.15rem] text-foreground">{valor}</p>
-              <p className="mt-1 truncate text-[0.75rem] sm:mt-1.5 sm:text-[0.85rem] text-muted-foreground">{rotulo}</p>
+              <p className="truncate text-[1.25rem] font-black leading-none text-foreground">{valor}</p>
+              <p className="mt-1 truncate text-[0.8rem] font-bold text-muted-foreground">{rotulo}</p>
             </div>
           </div>
         ))}

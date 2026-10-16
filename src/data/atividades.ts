@@ -17,6 +17,11 @@ interface PerguntaBase {
   /** Só combina com selo tipo "novo": a palavra/símbolo que aparece grifado
    * onde surgir dentro do enunciado ou do código. */
   termoDestacado?: string;
+  /** O que o Zul diz no balão acima da pergunta. Sem ela, vai uma fala do tipo da pergunta. */
+  fala?: string;
+  /** O porquê de cada resposta, pelo id da alternativa (ou pelo bloco, no
+   * completar): aparece na faixa depois de verificar, certa ou errada. */
+  explicacoes?: Record<string, string>;
 }
 
 export interface PerguntaAlternativa extends PerguntaBase {
@@ -48,7 +53,47 @@ export interface PerguntaCodigo extends PerguntaBase {
   dica: string;
 }
 
-export type Pergunta = PerguntaAlternativa | PerguntaCompletar | PerguntaCodigo;
+/** Um teste da função: chama com `args` e confere se devolve `esperado`. */
+export interface TesteDaFuncao {
+  args: unknown[];
+  esperado: unknown;
+}
+
+/** Escrever uma função de verdade: os testes rodam no aparelho e dizem o que passou. */
+export interface PerguntaTestes extends PerguntaBase {
+  tipo: "testes";
+  nomeDaFuncao: string;
+  codigoInicial: string;
+  testes: TesteDaFuncao[];
+  /** Até 3 dicas, uma de cada vez. */
+  dicas: string[];
+  /** A solução comentada, que aparece depois da última dica. */
+  solucao?: string;
+  /** No projeto guiado: o código começa de onde o passo anterior parou. */
+  continuaDoAnterior?: boolean;
+}
+
+/** Tocar na linha que tem o erro. */
+export interface PerguntaBug extends PerguntaBase {
+  tipo: "bug";
+  codigo: string;
+  /** A linha com o erro, contando de 1. */
+  linhaDoErro: number;
+}
+
+/** Digitar o que o código mostra no console. */
+export interface PerguntaDigitar extends PerguntaBase {
+  tipo: "digitar";
+  codigo?: string;
+  respostaCorreta: string;
+  /** Outras formas aceitas (ex.: com ou sem aspas). */
+  aceitas?: string[];
+}
+
+export type Pergunta = PerguntaAlternativa | PerguntaCompletar | PerguntaCodigo | PerguntaTestes | PerguntaBug | PerguntaDigitar;
+
+/** Os tipos de aula do formato novo. */
+export type TipoDeAula = "conceito" | "codigo" | "depuracao" | "prova" | "projeto" | "prova-da-unidade";
 
 export interface SlideIntroducao {
   titulo: string;
@@ -66,6 +111,17 @@ export interface Atividade {
    * aprender nada. */
   introducao: SlideIntroducao[];
   perguntas: Pergunta[];
+  /** Só nas aulas do formato novo (uma aula só, sem etapas). */
+  tipoDeAula?: TipoDeAula;
+  titulo?: string;
+  minutos?: number;
+  /** "Ao final desta aula você consegue". */
+  metas?: string[];
+  fonte?: string;
+  /** O cartão de revisão do fim. */
+  resumo?: { texto: string; codigo?: string };
+  /** O slug da linguagem: o código só roda no aparelho quando é "javascript". */
+  linguagem?: string;
 }
 
 /**

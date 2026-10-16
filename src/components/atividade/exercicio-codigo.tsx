@@ -42,9 +42,9 @@ export function ExercicioCodigo({ pergunta, onRodar }: ExercicioCodigoProps) {
 
   return (
     <>
-      <h1 className="mt-2 text-xl font-black text-foreground sm:text-2xl">{pergunta.enunciado}</h1>
+      <h1 className="text-xl font-black leading-snug text-foreground sm:text-2xl">{pergunta.enunciado}</h1>
 
-      <div className="mt-3 flex items-start gap-2 rounded-xl bg-accent px-4 py-3 text-[0.85rem] text-accent-foreground">
+      <div className="mt-3 flex items-start gap-2 rounded-2xl bg-amber-400/10 px-4 py-3 text-[0.85rem] font-bold text-amber-700 dark:text-amber-200">
         <Lightbulb className="mt-0.5 size-4 shrink-0" />
         <span>{pergunta.dica}</span>
       </div>

@@ -1,11 +1,9 @@
 "use client";
 
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Feather, X } from "lucide-react";
-import { PenaDesgastada, PenaInfinita } from "@/components/shared/pena-desgastada";
-import { cn } from "@/lib/utils";
-import { Atividade } from "@/data/atividades";
+import { Check, X } from "lucide-react";
+import { Atividade, Pergunta, TipoDeAula } from "@/data/atividades";
 import { LicaoTrilha } from "@/lib/types/trilha";
 import { ResultadoExecucao } from "@/hooks/use-executar-js";
 import { CodeBlock } from "./code-block";
@@ -19,6 +17,71 @@ import { FilaDeComemoracoes } from "@/components/comemoracoes/fila";
 import { comemoracoesDaLicao, type Comemoracao, type ResultadoDaLicao } from "@/lib/types/comemoracao";
 import { PenaPorAnuncio } from "@/components/anuncios/pena-por-anuncio";
 import { licaoConcluidaParaAnuncio, mostrarIntersticialSePronto } from "@/lib/anuncios";
+import { BarraDaAula } from "./barra-da-aula";
+import { FalaDoZul, PoseDoZul, ZulDaAula } from "./zul-da-aula";
+import { ExercicioTestes } from "./exercicio-testes";
+import { ExercicioBug } from "./exercicio-bug";
+import { ExercicioDigitar, respostaDigitadaConfere } from "./exercicio-digitar";
+import { AberturaDaAula } from "./abertura-da-aula";
+import { GabaritoDaProva, RespostaDaProva } from "./gabarito-da-prova";
+import "./aula.css";
+
+/** O Zul de cada tipo de pergunta e o que ele diz quando a pergunta não traz fala própria. */
+const ZUL_DA_PERGUNTA: Record<Pergunta["tipo"], { pose: PoseDoZul; fala: string }> = {
+  alternativa: { pose: "coco", fala: "Pense com calma e escolha a certa." },
+  logica: { pose: "lupa", fala: "Leia o código linha por linha: o que ele faz?" },
+  completar: { pose: "equilibrio", fala: "Qual peça encaixa no espaço vazio?" },
+  codigo: { pose: "escrevendo", fala: "Escreva e rode. Pode errar à vontade." },
+  testes: { pose: "escrevendo", fala: "Os testes conferem sua função. Pode errar à vontade." },
+  bug: { pose: "lagarta", fala: "Tem um bug escondido aqui. Em qual linha?" },
+  digitar: { pose: "lupa", fala: "Rode o código na cabeça: o que aparece?" },
+};
+
+/** Na prova, nada de resposta na hora: tudo vai para o gabarito do fim. */
+const TIPOS_DE_PROVA: TipoDeAula[] = ["prova", "prova-da-unidade"];
+const NOTA_MINIMA_DA_PROVA_DA_UNIDADE = 70;
+
+/** A resposta dada confere com a certa? (As perguntas de código conferem rodando.) */
+function respostaConfere(pergunta: Pergunta, resposta: string | null): boolean {
+  if (resposta === null) return false;
+  if (pergunta.tipo === "alternativa" || pergunta.tipo === "logica") return resposta === pergunta.respostaCorretaId;
+  if (pergunta.tipo === "completar") return resposta === pergunta.respostaCorreta;
+  if (pergunta.tipo === "bug") return resposta === String(pergunta.linhaDoErro);
+  if (pergunta.tipo === "digitar") return respostaDigitadaConfere(pergunta, resposta);
+  return false;
+}
+
+/** O porquê que aparece na faixa depois de verificar. Sem explicação escrita,
+ * quem errou ao menos vê qual era a resposta certa. */
+function porqueDaResposta(pergunta: Pergunta, resposta: string | null, correto: boolean): string | null {
+  const escrito = resposta ? pergunta.explicacoes?.[resposta] : undefined;
+  if (escrito) return escrito;
+  // Bug, digitar e testes têm uma explicação só, a da resposta certa.
+  if (pergunta.explicacoes?.certo) return pergunta.explicacoes.certo;
+  if (correto) return null;
+  if (pergunta.tipo === "alternativa" || pergunta.tipo === "logica") {
+    const certa = pergunta.alternativas.find((alt) => alt.id === pergunta.respostaCorretaId);
+    return certa ? `A resposta certa é: ${certa.texto}` : null;
+  }
+  if (pergunta.tipo === "completar") return `O que encaixa aqui é: ${pergunta.respostaCorreta}`;
+  if (pergunta.tipo === "codigo") return `A saída esperada era: ${pergunta.resultadoEsperado}`;
+  if (pergunta.tipo === "bug") return `O erro está na linha ${pergunta.linhaDoErro}.`;
+  if (pergunta.tipo === "digitar") return `O console mostra: ${pergunta.respostaCorreta}`;
+  return null;
+}
+
+/** Para o gabarito: a resposta dada e a certa em texto. */
+function descreverResposta(pergunta: Pergunta, resposta: string | null) {
+  const porque = porqueDaResposta(pergunta, resposta, true);
+  if (pergunta.tipo === "alternativa" || pergunta.tipo === "logica") {
+    const texto = (id: string | null) => pergunta.alternativas.find((alt) => alt.id === id)?.texto ?? "";
+    return { dada: texto(resposta), certa: texto(pergunta.respostaCorretaId), porque };
+  }
+  if (pergunta.tipo === "completar") return { dada: resposta ?? "", certa: pergunta.respostaCorreta, porque };
+  if (pergunta.tipo === "bug") return { dada: resposta ? `linha ${resposta}` : "", certa: `linha ${pergunta.linhaDoErro}`, porque };
+  if (pergunta.tipo === "digitar") return { dada: resposta ?? "", certa: pergunta.respostaCorreta, porque };
+  return { dada: "", certa: "", porque };
+}
 
 interface ActivityPlayerProps {
   atividade: Atividade;
@@ -48,10 +111,11 @@ interface ActivityPlayerProps {
   aoSair?: () => void;
 }
 
-type Fase = "introducao" | "quiz" | "concluida" | "comemorando" | "sem-penas";
+type Fase = "abertura" | "introducao" | "quiz" | "gabarito" | "concluida" | "comemorando" | "sem-penas";
 
 interface MoldeAtividadeProps {
   progresso: number;
+  seguidas: number;
   vidas: number;
   vidasIlimitadas?: boolean;
   onSair: () => void;
@@ -66,30 +130,14 @@ interface MoldeAtividadeProps {
  * remonta ao trocar de pergunta), então o código digitado não se perde
  * enquanto a pessoa avança na lição.
  */
-function MoldeAtividade({ progresso, vidas, vidasIlimitadas, onSair, children, rodape }: MoldeAtividadeProps) {
+function MoldeAtividade({ progresso, seguidas, vidas, vidasIlimitadas, onSair, children, rodape }: MoldeAtividadeProps) {
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      <div className="flex items-center gap-4 px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] lg:px-8">
-        <button
-          type="button"
-          onClick={onSair}
-          aria-label="Sair da lição"
-          className="flex size-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground"
-        >
-          <X className="size-6" strokeWidth={2.6} />
-        </button>
-        <div className="h-5 flex-1 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary transition-[width] duration-300"
-            style={{ width: `${progresso}%` }}
-          />
-        </div>
-        <span className="flex shrink-0 items-center gap-1.5 text-sm font-black text-rose-500" title={vidasIlimitadas ? "Penas ilimitadas" : `${vidas} penas restantes`}>{vidasIlimitadas ? <PenaInfinita className="size-8" /> : <><PenaDesgastada restantes={vidas} className="size-8" />{vidas}</>}</span>
-      </div>
+    <div className="zc-aula flex min-h-dvh flex-col bg-background">
+      <BarraDaAula progresso={progresso} seguidas={seguidas} vidas={vidas} vidasIlimitadas={vidasIlimitadas} onSair={onSair} />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:px-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 pb-[env(safe-area-inset-bottom)] lg:px-8">
         <div className="flex flex-1 flex-col">
-          <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center">{children}</div>
+          <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center py-4">{children}</div>
           {rodape}
         </div>
 
@@ -121,10 +169,23 @@ function MoldeAtividade({ progresso, vidas, vidasIlimitadas, onSair, children, r
  */
 export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, aoErrar, vidas: vidasIniciais, vidasIlimitadas = false, comAnuncios = false, aoResponder, aoSair }: ActivityPlayerProps) {
   const router = useRouter();
-  const { introducao, perguntas } = atividade;
+  const { introducao, perguntas, tipoDeAula } = atividade;
   const totalPassos = introducao.length + perguntas.length;
+  const emProva = !!tipoDeAula && TIPOS_DE_PROVA.includes(tipoDeAula);
+  // Os exemplos e os testes só rodam no aparelho nas aulas de JavaScript.
+  const podeRodar = !atividade.linguagem || atividade.linguagem === "javascript";
+  const faseInicial: Fase = tipoDeAula ? "abertura" : introducao.length > 0 ? "introducao" : "quiz";
 
-  const [fase, setFase] = useState<Fase>(introducao.length > 0 ? "introducao" : "quiz");
+  const [fase, setFase] = useState<Fase>(faseInicial);
+  // Na prova, cada resposta fica guardada para o gabarito do fim.
+  const [respostasDaProva, setRespostasDaProva] = useState<Record<string, RespostaDaProva>>({});
+  // No projeto guiado, o código de um passo é o começo do próximo: o que está
+  // sendo escrito fica na ref e vira o estado quando a pessoa segue.
+  const codigoEscritoRef = useRef<string | undefined>(undefined);
+  const [codigoDoProjeto, setCodigoDoProjeto] = useState<string | undefined>(undefined);
+  const guardarCodigo = useCallback((codigo: string) => {
+    codigoEscritoRef.current = codigo;
+  }, []);
   const [indiceIntro, setIndiceIntro] = useState(0);
   // Fila das perguntas que ainda faltam: quem erra volta pro fim dela, e a
   // lição só termina quando a fila esvazia — ou seja, tem que acertar todas.
@@ -139,6 +200,10 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   const [salvandoXp, setSalvandoXp] = useState(false);
   const [erroSalvarXp, setErroSalvarXp] = useState(false);
   const [vidas, setVidas] = useState(vidasIniciais);
+  // Acertos em sequência: a barra mostra "N seguidas!" e fica roxa a partir de 3.
+  const [seguidas, setSeguidas] = useState(0);
+  // Cada pergunta conta uma vez na sequência, mesmo que o código rode certo duas vezes.
+  const contouNaSequenciaRef = useRef(false);
   // O que o servidor mandou comemorar (ofensiva, divisão, conquistas): as
   // telas cheias entre o fim da lição e a volta para a trilha.
   const [comemoracoes, setComemoracoes] = useState<Comemoracao[]>([]);
@@ -195,21 +260,26 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   }, [fase]);
 
   const reiniciar = () => {
-    setFase(introducao.length > 0 ? "introducao" : "quiz");
+    setFase(faseInicial);
+    setRespostasDaProva({});
+    codigoEscritoRef.current = undefined;
+    setCodigoDoProjeto(undefined);
     setIndiceIntro(0);
     setFila(perguntas.map((_, indice) => indice));
     setErrouAlguma([]);
     setResposta(null);
     setVerificado(false);
     setCorreto(false);
+    setSeguidas(0);
     penalizouQuestaoRef.current = false;
+    contouNaSequenciaRef.current = false;
   };
 
   if (fase === "sem-penas") {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center">
-        <span className="flex size-20 items-center justify-center rounded-[28px] bg-rose-500/10 text-rose-500"><Feather className="size-10" /></span>
-        <h1 className="mt-6 text-3xl font-black">Suas penas acabaram</h1>
+      <div className="zc-aula flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center">
+        <ZulDaAula pose="muletas" caiu className="size-44" />
+        <h1 className="mt-4 text-3xl font-black">Suas penas acabaram</h1>
         <p className="mt-3 max-w-md text-muted-foreground">Infelizmente não foi dessa vez. Recupere suas penas e tente novamente mais tarde — cada uma volta em uma hora.</p>
         <button type="button" onClick={sair} className="mt-7 rounded-2xl bg-primary px-7 py-3.5 text-sm font-black text-primary-foreground">Voltar para a jornada</button>
         {/* Com a pena do anúncio, a lição continua de onde parou. */}
@@ -230,6 +300,22 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
     return <FilaDeComemoracoes itens={comemoracoes} aoTerminar={() => void sairDaLicaoConcluida()} />;
   }
 
+  if (fase === "gabarito") {
+    const minimo = tipoDeAula === "prova-da-unidade" ? NOTA_MINIMA_DA_PROVA_DA_UNIDADE : undefined;
+    const nota = perguntas.length ? Math.round((acertos / perguntas.length) * 100) : 0;
+    return (
+      <GabaritoDaProva
+        perguntas={perguntas}
+        respostas={respostasDaProva}
+        minimo={minimo}
+        descrever={descreverResposta}
+        // Abaixo do mínimo a aula não conta: sai sem concluir, ou tenta de novo.
+        onContinuar={() => (minimo !== undefined && nota < minimo ? sair() : setFase("concluida"))}
+        onTentarDeNovo={reiniciar}
+      />
+    );
+  }
+
   if (fase === "concluida") {
     return (
       <TelaConclusao
@@ -237,6 +323,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
         xpBase={licao.xp}
         acertos={acertos}
         total={perguntas.length}
+        resumo={atividade.resumo}
         onRevisar={reiniciar}
         onContinuar={() => (comemoracoes.length ? setFase("comemorando") : void sairDaLicaoConcluida())}
         salvando={salvandoXp}
@@ -248,8 +335,29 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   // A barra mede pergunta resolvida (que saiu da fila), não posição — assim
   // ela não avança quando a pessoa erra e a pergunta volta pro fim.
   const passoGlobal =
-    fase === "introducao" ? indiceIntro : introducao.length + (perguntas.length - fila.length);
+    fase === "abertura" ? 0 : fase === "introducao" ? indiceIntro : introducao.length + (perguntas.length - fila.length);
   const progresso = Math.round((passoGlobal / totalPassos) * 100);
+
+  if (fase === "abertura" && tipoDeAula) {
+    return (
+      <MoldeAtividade
+        progresso={0}
+        seguidas={0}
+        vidas={vidas}
+        vidasIlimitadas={vidasIlimitadas}
+        onSair={sair}
+        rodape={
+          <div className="py-5">
+            <button type="button" onClick={() => setFase(introducao.length > 0 ? "introducao" : "quiz")} className="zc-aula-botao">
+              Começar
+            </button>
+          </div>
+        }
+      >
+        <AberturaDaAula atividade={{ ...atividade, tipoDeAula, titulo: atividade.titulo ?? licao.titulo }} />
+      </MoldeAtividade>
+    );
+  }
 
   const avancarIntro = () => {
     if (indiceIntro + 1 >= introducao.length) {
@@ -264,31 +372,40 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
     return (
       <MoldeAtividade
         progresso={progresso}
+        seguidas={0}
         vidas={vidas}
         vidasIlimitadas={vidasIlimitadas}
         onSair={sair}
         rodape={
           <div className="py-5">
-            <button
-              type="button"
-              onClick={avancarIntro}
-              className="zc-press zc-press-shadow w-full rounded-2xl bg-primary py-3.5 text-[0.8rem] font-black uppercase tracking-[0.06em] text-primary-foreground"
-              style={{ ["--zc-press-color" as string]: "color-mix(in srgb, var(--primary) 70%, black)" }}
-            >
-              Continuar
+            <button type="button" onClick={avancarIntro} className="zc-aula-botao">
+              {indiceIntro + 1 >= introducao.length ? "Entendi" : "Continuar"}
             </button>
           </div>
         }
       >
-        <p className="text-xs font-black uppercase tracking-[0.08em] text-primary">Aprenda antes de responder</p>
-        <h1 className="mt-2 text-xl font-black text-foreground sm:text-2xl">{slide.titulo}</h1>
-        <p className="mt-4 text-[1rem] leading-relaxed text-muted-foreground">{slide.texto}</p>
-
-        {slide.codigo && (
-          <pre className="mt-5 overflow-x-auto rounded-xl border border-border bg-muted/50 px-4 py-3.5 font-mono text-[0.85rem] text-foreground">
-            {slide.codigo}
-          </pre>
-        )}
+        {/* A chave refaz a entrada em cascata a cada tela. */}
+        <div key={indiceIntro} className="zc-aula-entra flex flex-col gap-4">
+          {/* Na aula nova, quem apresenta é a abertura; aqui o Zul só aparece nas antigas. */}
+          {indiceIntro === 0 && !tipoDeAula && (
+            <div className="flex items-end gap-3">
+              <ZulDaAula pose="lendo" className="size-28" />
+              <div className="zc-aula-balao mb-6 text-[0.95rem] text-foreground">Primeiro o conceito. Depois, você pratica.</div>
+            </div>
+          )}
+          <h1 className="text-2xl font-black leading-tight text-foreground">{slide.titulo}</h1>
+          <p className="text-[1.02rem] font-medium leading-relaxed text-foreground/80">{slide.texto}</p>
+          {/* Exemplo vivo: na aula nova de JavaScript dá para mudar e rodar. */}
+          {slide.codigo && tipoDeAula && podeRodar ? (
+            <CodeBlock key={`exemplo-${indiceIntro}`} valorInicial={slide.codigo} titulo="Mude e rode" />
+          ) : (
+            slide.codigo && (
+              <pre className="overflow-x-auto rounded-2xl border-2 border-border bg-muted/50 px-4 py-3.5 font-mono text-[0.85rem] leading-relaxed text-foreground">
+                {slide.codigo}
+              </pre>
+            )
+          )}
+        </div>
       </MoldeAtividade>
     );
   }
@@ -299,6 +416,10 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
     reagir(ok ? "acerto" : "erro");
     setVerificado(true);
     setCorreto(ok);
+    if (!contouNaSequenciaRef.current) {
+      contouNaSequenciaRef.current = true;
+      setSeguidas((atual) => (ok ? atual + 1 : 0));
+    }
     if (aoResponder && !respondidasRef.current.has(pergunta.id)) {
       respondidasRef.current.add(pergunta.id);
       aoResponder(pergunta.id, ok);
@@ -314,11 +435,27 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
 
   const verificarSelecao = () => {
     if (!resposta) return;
-    if (pergunta.tipo === "alternativa" || pergunta.tipo === "logica") {
-      aplicarResultado(resposta === pergunta.respostaCorretaId);
-    } else if (pergunta.tipo === "completar") {
-      aplicarResultado(resposta === pergunta.respostaCorreta);
+    if (emProva) {
+      responderNaProva();
+      return;
     }
+    aplicarResultado(respostaConfere(pergunta, resposta));
+  };
+
+  /** Prova: guarda a resposta e segue, sem mostrar se acertou, sem repescagem e sem gastar pena. */
+  const responderNaProva = () => {
+    const ok = respostaConfere(pergunta, resposta);
+    reagir("toque");
+    if (aoResponder && !respondidasRef.current.has(pergunta.id)) {
+      respondidasRef.current.add(pergunta.id);
+      aoResponder(pergunta.id, ok);
+    }
+    setRespostasDaProva((atual) => ({ ...atual, [pergunta.id]: { resposta, correto: ok } }));
+    if (!ok) setErrouAlguma((anteriores) => [...anteriores, fila[0]]);
+    const restante = fila.slice(1);
+    setFila(restante);
+    setResposta(null);
+    if (restante.length === 0) setFase("gabarito");
   };
 
   // O tipo "codigo" deixa rodar de novo depois de errar (ajusta e roda de
@@ -332,6 +469,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
     const atual = fila[0];
     // Acertou, sai da fila; errou, vai pro fim dela e aparece de novo depois.
     const restante = correto ? fila.slice(1) : [...fila.slice(1), atual];
+    if (pergunta.tipo === "testes") setCodigoDoProjeto(codigoEscritoRef.current);
 
     if (!correto && !errouAlguma.includes(atual)) {
       setErrouAlguma((anteriores) => [...anteriores, atual]);
@@ -348,9 +486,12 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
     setVerificado(false);
     setCorreto(false);
     penalizouQuestaoRef.current = false;
+    contouNaSequenciaRef.current = false;
   };
 
-  const podeVerificar = pergunta.tipo !== "codigo" && !!resposta;
+  // Código e testes se conferem rodando: não têm botão de verificar.
+  const seConfereRodando = pergunta.tipo === "codigo" || pergunta.tipo === "testes";
+  const podeVerificar = !seConfereRodando && !!resposta?.trim();
 
   /** Escolher uma opção responde ao toque; tocar de novo na mesma não. */
   const escolher = (valor: string | null) => {
@@ -358,68 +499,60 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
     setResposta(valor);
   };
 
+  const zul = ZUL_DA_PERGUNTA[pergunta.tipo];
+  const porque = verificado ? porqueDaResposta(pergunta, resposta, correto) : null;
+
   return (
     <MoldeAtividade
       progresso={progresso}
+      seguidas={seguidas}
       vidas={vidas}
       vidasIlimitadas={vidasIlimitadas}
       onSair={sair}
       rodape={
         verificado ? (
+          // A faixa sobe de baixo com o resultado e o porquê da resposta.
           <div
-            className={cn(
-              "-mx-4 border-t-2 px-4 py-5 lg:-mx-8 lg:px-8",
-              correto ? "border-emerald-500 bg-emerald-500/10" : "border-red-500 bg-red-500/10"
-            )}
+            className="zc-aula-faixa -mx-4 px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5 lg:-mx-8 lg:px-8"
+            data-certo={correto}
+            role="status"
           >
-            <div className="mx-auto flex w-full max-w-xl flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <span
-                  className={cn(
-                    "flex size-10 shrink-0 items-center justify-center rounded-full text-white",
-                    correto ? "bg-emerald-500" : "bg-red-500"
-                  )}
-                >
-                  {correto ? <Check className="size-5" /> : <X className="size-5" />}
+            <div className="mx-auto w-full max-w-xl">
+              <p className="zc-aula-faixa-titulo flex items-center gap-2.5 text-xl font-black">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--faixa-cor)] text-white">
+                  {correto ? <Check className="size-5" strokeWidth={3.5} /> : <X className="size-5" strokeWidth={3.5} />}
                 </span>
-                <div>
-                  <p className={cn("font-black", correto ? "text-emerald-600" : "text-red-600")}>
-                    {correto ? "Boa!" : "Não foi dessa vez"}
-                  </p>
-                </div>
-              </div>
+                {correto ? "Mandou bem!" : "Quase!"}
+              </p>
+              {porque && (
+                <p className="zc-aula-faixa-porque mt-2 text-[0.95rem] font-bold leading-relaxed">{porque}</p>
+              )}
               <button
                 type="button"
                 onClick={continuar}
-                className={cn(
-                  "zc-press zc-press-shadow rounded-2xl px-8 py-3.5 text-[0.8rem] font-black uppercase tracking-[0.06em] text-white",
-                  correto ? "bg-emerald-500" : "bg-red-500"
-                )}
-                style={{
-                  ["--zc-press-color" as string]: correto
-                    ? "color-mix(in srgb, #10b981 70%, black)"
-                    : "color-mix(in srgb, #ef4444 70%, black)",
-                }}
+                data-cor={correto ? "verde" : "vermelho"}
+                className="zc-aula-botao mt-4"
               >
                 Continuar
               </button>
             </div>
           </div>
-        ) : pergunta.tipo === "codigo" ? null : (
+        ) : seConfereRodando ? null : (
           <div className="py-5">
-            <button
-              type="button"
-              disabled={!podeVerificar}
-              onClick={verificarSelecao}
-              className="zc-press zc-press-shadow w-full rounded-2xl bg-primary py-3.5 text-[0.8rem] font-black uppercase tracking-[0.06em] text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40"
-              style={{ ["--zc-press-color" as string]: "color-mix(in srgb, var(--primary) 70%, black)" }}
-            >
-              Verificar
+            <button type="button" disabled={!podeVerificar} onClick={verificarSelecao} className="zc-aula-botao">
+              {!emProva ? "Verificar" : fila.length > 1 ? "Próxima" : "Ver resultado"}
             </button>
           </div>
         )
       }
     >
+      {/* A chave refaz a entrada em cascata a cada pergunta, inclusive na repescagem. */}
+      <div key={`${fila[0]}-${fila.length}`} className="zc-aula-entra flex flex-col">
+      {/* Errou: o Zul derrete. Na prova ele só mostra a contagem. */}
+      <FalaDoZul pose={verificado && !correto ? "derretido" : emProva ? "oculos" : zul.pose} className="mb-4">
+        {emProva ? `Questão ${perguntas.length - fila.length + 1} de ${perguntas.length}. ${pergunta.fala ?? "Sem pressa."}` : pergunta.fala ?? zul.fala}
+      </FalaDoZul>
+
       {pergunta.selo && <SeloPerguntaBadge selo={pergunta.selo} />}
 
       {(pergunta.tipo === "alternativa" || pergunta.tipo === "logica") && (
@@ -443,6 +576,32 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
       {pergunta.tipo === "codigo" && (
         <ExercicioCodigo pergunta={pergunta} onRodar={aoRodarCodigo} />
       )}
+
+      {pergunta.tipo === "testes" && (
+        <ExercicioTestes
+          pergunta={pergunta}
+          codigoDeInicio={pergunta.continuaDoAnterior ? codigoDoProjeto : undefined}
+          onCodigo={guardarCodigo}
+          onPassou={() => aplicarResultado(true)}
+          podeRodar={podeRodar}
+        />
+      )}
+
+      {pergunta.tipo === "bug" && (
+        <ExercicioBug pergunta={pergunta} selecionada={resposta} onSelecionar={escolher} verificado={verificado} />
+      )}
+
+      {pergunta.tipo === "digitar" && (
+        <ExercicioDigitar
+          pergunta={pergunta}
+          resposta={resposta}
+          onDigitar={setResposta}
+          onEnviar={verificarSelecao}
+          verificado={verificado}
+          correto={correto}
+        />
+      )}
+      </div>
     </MoldeAtividade>
   );
 }

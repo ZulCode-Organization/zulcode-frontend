@@ -10,7 +10,7 @@ import { ActivityPlayer } from "@/components/atividade/activity-player";
 import { PenaPorAnuncio } from "@/components/anuncios/pena-por-anuncio";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import type { ResultadoDaLicao } from "@/lib/types/comemoracao";
-import { atividadeDaApi, ApiLesson } from "@/lib/course-content";
+import { atividadeDaApi, aulaDoFormatoNovo, ApiLesson } from "@/lib/course-content";
 import { LicaoTrilha } from "@/lib/types/trilha";
 
 /** Sem sidebar/topbar/painel direito de propósito — a tela de fazer a
@@ -125,6 +125,12 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
       );
     }
     return <div className="flex min-h-dvh items-center justify-center text-sm font-bold text-muted-foreground">Carregando aula…</div>;
+  }
+
+  // Formato novo: uma aula só, sem etapas — terminar é concluir a lição.
+  if (aulaDoFormatoNovo(lesson)) {
+    const licaoNova: LicaoTrilha = { id: lesson.id, titulo: lesson.title, subtitulo: "", xp: lesson.xpReward, estado: "atual" };
+    return <ActivityPlayer atividade={atividadeDaApi(lesson, "")} licao={licaoNova} aoConcluir={(acertos, total) => completarLicaoReal(id, Math.round((acertos / total) * 100))} aoErrar={() => consumirPena(livesState, id)} aoResponder={(perguntaId, correto) => registrarResposta(id, perguntaId, correto)} vidas={livesState.lives} vidasIlimitadas={livesState.isUnlimited} comAnuncios={!livesState.isUnlimited} />;
   }
 
   const totalEtapas = Math.max(1, lesson.stageCount ?? 2);

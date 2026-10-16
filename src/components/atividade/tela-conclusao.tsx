@@ -1,10 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Target, Zap } from "lucide-react";
+import { Sparkles, Target, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { reagir } from "@/lib/reacoes";
+import { ZulDaAula } from "./zul-da-aula";
+import "./aula.css";
 
 interface TelaConclusaoProps {
   xp: number;
@@ -22,6 +23,8 @@ interface TelaConclusaoProps {
   /** XP que a lição vale sem bônus. Quando o XP confirmado vem dobrado, é a
    * comparação com esse valor que revela o power-up ativo. */
   xpBase?: number;
+  /** O cartão de revisão da aula: o que vale guardar dela. */
+  resumo?: { texto: string; codigo?: string };
 }
 
 function qualificador(percentual: number): string {
@@ -59,7 +62,7 @@ function useContador(alvo: number, inicio: number, duracao: number, comecar: boo
   return semMovimento ? alvo : valor;
 }
 
-export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salvando, erroSalvar, xpBase }: TelaConclusaoProps) {
+export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salvando, erroSalvar, xpBase, resumo }: TelaConclusaoProps) {
   const percentual = Math.round((acertos / total) * 100);
 
   // A vinheta de fim de lição toca uma vez, quando a tela aparece.
@@ -94,9 +97,9 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salv
   );
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
+    <div className="zc-aula flex min-h-dvh flex-col bg-background">
       <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
-        <Image src="/mascot.png" alt="" width={112} height={112} className="size-28" />
+        <ZulDaAula pose="comemorando" caiu className="size-44" />
         <h1 className="text-3xl font-black text-foreground">Lição concluída!</h1>
 
         <div className="flex gap-4">
@@ -133,11 +136,11 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salv
             </p>
           </div>
 
-          <div className="rounded-2xl border-2 border-emerald-400 bg-emerald-400/10 px-7 py-4">
-            <p className="text-[0.7rem] font-black uppercase tracking-[0.08em] text-emerald-600">
+          <div className="rounded-2xl border-2 border-[#22c55e] bg-[#22c55e]/10 px-7 py-4">
+            <p className="text-[0.7rem] font-black uppercase tracking-[0.08em] text-[#16a34a] dark:text-[#4ade80]">
               {qualificador(percentual)}
             </p>
-            <p className="mt-1 flex items-center justify-center gap-1.5 text-2xl font-black text-emerald-600">
+            <p className="mt-1 flex items-center justify-center gap-1.5 text-2xl font-black text-[#16a34a] dark:text-[#4ade80]">
               <Target className="size-5" />
               {percentual}%
             </p>
@@ -153,6 +156,18 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salv
         <p className="text-sm text-muted-foreground">
           Você acertou {acertos} de {total} perguntas.
         </p>
+        {resumo && (
+          <div className="zc-aula-entra-um w-full max-w-md rounded-2xl border-2 border-border p-4 text-left [animation-delay:0.8s]">
+            <p className="flex items-center gap-1.5 text-[0.72rem] font-black uppercase tracking-[0.08em] text-[#1892ff]">
+              <Sparkles className="size-4" />
+              Seu cartão de revisão
+            </p>
+            {resumo.codigo && (
+              <pre className="mt-2.5 overflow-x-auto rounded-xl bg-muted/60 px-3 py-2.5 font-mono text-[0.8rem] leading-relaxed text-foreground">{resumo.codigo}</pre>
+            )}
+            <p className="mt-2.5 text-[0.85rem] font-semibold leading-relaxed text-muted-foreground">{resumo.texto}</p>
+          </div>
+        )}
         {salvando && <p className="text-xs font-bold text-primary">Confirmando conclusão e recompensas…</p>}
         {erroSalvar && (
           <p className="text-xs font-bold text-red-500">
@@ -166,7 +181,8 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salv
           type="button"
           disabled={salvando}
           onClick={onRevisar}
-          className="zc-press flex-1 rounded-2xl border-2 border-border py-3.5 text-[0.8rem] font-black uppercase tracking-[0.06em] text-muted-foreground disabled:cursor-wait disabled:opacity-50"
+          data-cor="contorno"
+          className="zc-aula-botao flex-1 disabled:cursor-wait disabled:opacity-50"
         >
           Revisar lição
         </button>
@@ -174,8 +190,8 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salv
           type="button"
           disabled={salvando}
           onClick={onContinuar}
-          className="zc-press zc-press-shadow flex-1 rounded-2xl bg-emerald-500 py-3.5 text-[0.8rem] font-black uppercase tracking-[0.06em] text-white disabled:cursor-wait disabled:opacity-50"
-          style={{ ["--zc-press-color" as string]: "color-mix(in srgb, #10b981 70%, black)" }}
+          data-cor="verde"
+          className="zc-aula-botao flex-1 disabled:cursor-wait disabled:opacity-50"
         >
           Continuar
         </button>

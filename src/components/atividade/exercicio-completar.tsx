@@ -16,9 +16,9 @@ export function ExercicioCompletar({ pergunta, resposta, onEscolherBloco, verifi
 
   return (
     <>
-      <h1 className="mt-2 text-xl font-black text-foreground sm:text-2xl">{pergunta.enunciado}</h1>
+      <h1 className="text-xl font-black leading-snug text-foreground sm:text-2xl">{pergunta.enunciado}</h1>
 
-      <div className="mt-5 rounded-xl border border-border bg-muted/50 px-4 py-4 font-mono text-[0.95rem] leading-relaxed text-foreground">
+      <div className="mt-5 rounded-2xl border-2 border-border bg-muted/50 px-4 py-4 font-mono text-[0.95rem] leading-relaxed text-foreground">
         {pergunta.codigoAntes}
         <button
           type="button"
@@ -30,8 +30,8 @@ export function ExercicioCompletar({ pergunta, resposta, onEscolherBloco, verifi
             resposta &&
               !verificado &&
               "border-primary bg-primary/10 text-primary",
-            verificado && correto && "border-emerald-500 bg-emerald-500/10 text-emerald-600",
-            verificado && !correto && "border-red-500 bg-red-500/10 text-red-600"
+            verificado && correto && "border-[#22c55e] bg-[#22c55e]/10 text-[#16a34a] dark:text-[#4ade80]",
+            verificado && !correto && "border-[#ff4b4b] bg-[#ff4b4b]/10 text-[#ea2b2b] dark:text-[#ff8a8a]"
           )}
         >
           {resposta ?? "    "}
@@ -49,7 +49,7 @@ export function ExercicioCompletar({ pergunta, resposta, onEscolherBloco, verifi
               disabled={verificado || emUso}
               onClick={() => onEscolherBloco(bloco)}
               className={cn(
-                "rounded-xl border-2 border-border bg-card px-4 py-2.5 font-mono text-[0.9rem] font-bold text-foreground transition-opacity duration-150",
+                "zc-aula-opcao w-auto px-4 py-2.5 font-mono text-[0.9rem]",
                 emUso && "pointer-events-none opacity-0"
               )}
             >

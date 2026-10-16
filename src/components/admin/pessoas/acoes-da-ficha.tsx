@@ -10,7 +10,7 @@ import { invalidar, pedir, salvarArquivo, useDados } from "@/lib/admin/api";
 import { data, numero } from "@/lib/admin/formato";
 import type { Calendario, FichaDaPessoa, Papel } from "@/lib/admin/tipos";
 
-export type AcaoDaFicha = "saldo" | "selos" | "papel" | "bloquear" | "ofensiva" | "notificar" | "cortesia" | "dados" | "excluir";
+export type AcaoDaFicha = "saldo" | "selos" | "papel" | "bloquear" | "ofensiva" | "notificar" | "cortesia" | "tirarPro" | "dados" | "excluir";
 
 const LIMITE = { rupees: 1000, xp: 5000 };
 
@@ -35,6 +35,7 @@ export function AcoesDaFicha({ pessoa, acao, aoFechar }: { pessoa: FichaDaPessoa
   if (acao === "ofensiva") return <RestaurarOfensiva {...props} />;
   if (acao === "notificar") return <Notificar {...props} />;
   if (acao === "cortesia") return <Cortesia {...props} />;
+  if (acao === "tirarPro") return <TirarPro {...props} />;
   if (acao === "excluir") return <Excluir {...props} />;
   return null;
 }
@@ -384,6 +385,42 @@ function Cortesia({ pessoa, aoFechar, concluir }: Props) {
             </Rotulo>
           </>
         )}
+        <MensagemDeErro erro={erro} />
+      </div>
+    </Dialogo>
+  );
+}
+
+// ── Remover o PRO ────────────────────────────────────────────────────────
+
+const ORIGEM_DO_PRO: Record<FichaDaPessoa["plano"], string> = {
+  teste: "Está no teste grátis do Stripe. O teste é cancelado lá agora, e o cartão não será cobrado no fim.",
+  pro: "É assinante pagante. A assinatura é cancelada no Stripe agora, sem reembolso automático do que já foi pago.",
+  cortesia: "Tem PRO de cortesia. A cortesia acaba agora.",
+  "grátis": "O PRO vem do selo permanente ou de um pagamento por Pix. Os dois são desligados.",
+};
+
+function TirarPro({ pessoa, aoFechar, concluir }: Props) {
+  const { enviando, erro, enviar } = useEnvio();
+  return (
+    <Dialogo
+      aberto
+      aoFechar={aoFechar}
+      titulo="Remover o PRO"
+      descricao="Tira o PRO na hora, venha de onde vier: teste, assinatura, Pix, cortesia ou selo."
+      rodape={
+        <>
+          <Botao variante="fantasma" onClick={aoFechar}>Cancelar</Botao>
+          <Botao variante="perigo" carregando={enviando} onClick={() => enviar(async () => {
+            const r = await pedir<{ assinaturaCancelada: boolean }>(`/admin/pessoas/${pessoa.id}/pro`, { method: "DELETE" });
+            concluir(r.assinaturaCancelada ? "PRO removido e assinatura cancelada no Stripe." : "PRO removido.");
+          })}>Remover o PRO</Botao>
+        </>
+      }
+    >
+      <div className="space-y-3 text-sm">
+        <p>{ORIGEM_DO_PRO[pessoa.plano]}</p>
+        <p className="text-muted-foreground">O visual de PRO (avatar, capa e tema do selo) volta ao padrão. A ação fica no registro.</p>
         <MensagemDeErro erro={erro} />
       </div>
     </Dialogo>

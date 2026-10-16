@@ -17,7 +17,7 @@ import { MARCOS_DA_SEQUENCIA } from "@/lib/sequencia";
 import { Odometro } from "./odometro";
 import { BarraRecarga } from "./barra-recarga";
 import { Dica, DicaOfensiva, DicaPenas, DicaRupees, useDica } from "./dica";
-import { COR_DA_PENA, COR_DO_RUPEE, ChamaNeon, ComEnfeite, PenaDaBarra, corDaChama, useTemaDaBarra } from "./tema";
+import { COR_DA_PENA, COR_DO_RUPEE, ChamaNeon, ComEnfeite, ENFEITES_DA_BARRA, PenaDaBarra, corDaChama, useTemaDaBarra } from "./tema";
 
 /** Quanto tempo segurar para fixar o painel. Curto o bastante para ser
  *  descoberto sem querer, longo o bastante para nunca disparar num clique. */
@@ -301,7 +301,7 @@ export function ChipRupees({
       iconeRef={icone}
       numeroRef={numero}
       icone={(
-        <ComEnfeite enfeite={tema === "halloween" ? "abobora" : null}>
+        <ComEnfeite enfeite={ENFEITES_DA_BARRA[tema].rupee}>
           <Rupee className="size-5.5 lg:size-6" quantidade={moedas} />
         </ComEnfeite>
       )}
@@ -376,7 +376,7 @@ export function ChipPenas({
       icone={pro
         ? <SeloPro className="h-5.5 rounded-[3px] lg:h-6" />
         : (
-          <ComEnfeite enfeite={tema === "halloween" && !vazia ? "morcego" : null}>
+          <ComEnfeite enfeite={vazia ? null : ENFEITES_DA_BARRA[tema].pena}>
             <PenaDaBarra tema={tema} vazia={vazia} className="size-5.5 lg:size-6" />
           </ComEnfeite>
         )}

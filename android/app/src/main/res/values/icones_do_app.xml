@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- O fundo de cada ícone alternativo do app (gerado por gerar-icones.js). -->
+<resources>
+    <color name="icone_vampiro_fundo">#652d89</color>
+    <color name="icone_biscoito_fundo">#ebb619</color>
+    <color name="icone_derretido_fundo">#ea580c</color>
+    <color name="icone_frankenstein_fundo">#235e34</color>
+</resources>

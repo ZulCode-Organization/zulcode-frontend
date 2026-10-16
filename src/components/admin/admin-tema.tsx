@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { pedir, useDados } from "@/lib/admin/api";
 import { Rupee } from "@/components/shared/rupee";
 import {
-  COR_DA_PENA, COR_DO_RUPEE, ChamaNeon, ComEnfeite, PenaDaBarra, corDaChama, definirTemaDaBarra,
+  COR_DA_PENA, COR_DO_RUPEE, ChamaNeon, ComEnfeite, ENFEITES_DA_BARRA, PenaDaBarra, corDaChama, definirTemaDaBarra,
   type TemaDaBarra,
 } from "@/components/app-shell/barra-viva/tema";
 import { Pagina } from "./shell";
@@ -14,8 +14,8 @@ import { Botao, Cabecalho, Cartao, Erro, Esqueleto } from "./ui";
 
 const OPCOES: { tema: TemaDaBarra; nome: string; descricao: string }[] = [
   { tema: "normal", nome: "Normal", descricao: "Chama neon pela sequência, rupee verde e pena violeta." },
-  { tema: "halloween", nome: "Halloween", descricao: "Chama verde de bruxa, rupee abóbora com a abóbora e pena roxa com morcego." },
-  { tema: "natal", nome: "Natal", descricao: "Chama neon pela sequência, rupee vermelho e pena verde." },
+  { tema: "halloween", nome: "Halloween", descricao: "O app em laranja e roxo, abóbora nas aulas feitas; na barra, chama verde de bruxa, rupee com abóbora e pena com morcego." },
+  { tema: "natal", nome: "Natal", descricao: "O app em vermelho e verde, presente nas aulas feitas; na barra, chama de gelo, rupee com presente e pena com árvore." },
 ];
 
 /** A barra como a pessoa vai ver, com números de exemplo. */
@@ -26,13 +26,13 @@ function Previa({ tema }: { tema: TemaDaBarra }) {
         <ChamaNeon className="size-7" dias={12} tema={tema} />12
       </span>
       <span className={cn("inline-flex items-center gap-1.5", COR_DO_RUPEE[tema])}>
-        <ComEnfeite enfeite={tema === "halloween" ? "abobora" : null}>
+        <ComEnfeite enfeite={ENFEITES_DA_BARRA[tema].rupee}>
           <Rupee className="size-6" />
         </ComEnfeite>
         250
       </span>
       <span className={cn("inline-flex items-center gap-1.5", COR_DA_PENA[tema])}>
-        <ComEnfeite enfeite={tema === "halloween" ? "morcego" : null}>
+        <ComEnfeite enfeite={ENFEITES_DA_BARRA[tema].pena}>
           <PenaDaBarra className="size-6" tema={tema} />
         </ComEnfeite>
         5

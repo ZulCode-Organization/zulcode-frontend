@@ -15,10 +15,8 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            <!-- O ícone da tela inicial não fica aqui: fica nos activity-alias logo
+                 abaixo, um por ícone, para o admin poder trocar (PluginDoIcone). -->
             <!-- A volta do login com Google/GitHub: o navegador abre o app com
                  com.zul.code://auth (src/lib/auth/social.ts). -->
             <intent-filter>
@@ -28,6 +26,75 @@
                 <data android:scheme="com.zul.code" android:host="auth" />
             </intent-filter>
         </activity>
+
+        <!-- Os ícones do app na tela inicial. Só um fica ligado; o PluginDoIcone troca
+             qual, quando o app vai para o fundo. Para um ícone novo: gere as artes
+             (gerar-icones.js), acrescente um alias aqui e o nome em PluginDoIcone.ICONES. -->
+        <activity-alias
+            android:name=".IconePadrao"
+            android:targetActivity=".MainActivity"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconeVampiro"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_vampiro"
+            android:roundIcon="@mipmap/ic_launcher_vampiro_round"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconeBiscoito"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_biscoito"
+            android:roundIcon="@mipmap/ic_launcher_biscoito_round"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconeDerretido"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_derretido"
+            android:roundIcon="@mipmap/ic_launcher_derretido_round"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconeFrankenstein"
+            android:targetActivity=".MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_frankenstein"
+            android:roundIcon="@mipmap/ic_launcher_frankenstein_round"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <!-- Os widgets. exported fica true porque quem os desenha na tela inicial
              é o lançador, que é outro aplicativo. -->

@@ -4,6 +4,7 @@ import { UnidadeTrilha } from "@/lib/types/trilha";
 import { CorUnidade } from "@/data/trilha";
 import { cn } from "@/lib/utils";
 import { UnidadeGuia } from "./unidade-guia";
+import { useTemaDaBarra } from "@/components/app-shell/barra-viva/tema";
 
 interface UnitBannerProps {
   unidade: UnidadeTrilha;
@@ -33,6 +34,9 @@ export function UnitBanner({ unidade, cor, unidades, onUnidadeClick }: UnitBanne
   const [aberto, setAberto] = useState(false);
   const [guiaAberto, setGuiaAberto] = useState(false);
   const [afundado, setAfundado] = useState(false);
+  // Num evento, o cartão de toda unidade fica na cor do evento, e não na cor própria dela.
+  const tema = useTemaDaBarra();
+  const fundo = tema === "normal" ? cor.bg : "bg-primary";
   const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,7 +69,7 @@ export function UnitBanner({ unidade, cor, unidades, onUnidadeClick }: UnitBanne
             deixa de ser um bloco solto e vira o topo de um painel. */}
         {!aberto && (
           <div
-            className={cn("absolute inset-x-0 rounded-3xl brightness-75", cor.bg)}
+            className={cn("absolute inset-x-0 rounded-3xl brightness-75", fundo)}
             style={{ top: ALTURA_BASE, bottom: -ALTURA_BASE, transition: TROCA_DE_COR }}
             aria-hidden
           />
@@ -91,7 +95,7 @@ export function UnitBanner({ unidade, cor, unidades, onUnidadeClick }: UnitBanne
           className={cn(
             "relative cursor-pointer px-5 py-4 text-left text-white sm:px-7 sm:py-5",
             aberto ? "rounded-t-3xl" : "rounded-3xl",
-            cor.bg
+            fundo
           )}
           style={{ top: afundado ? AFUNDA : 0, transition: `top ${AFUNDA_MS}ms ease, ${TROCA_DE_COR}` }}
         >
@@ -136,7 +140,7 @@ export function UnitBanner({ unidade, cor, unidades, onUnidadeClick }: UnitBanne
           <div
             className={cn(
               "zc-guia-abre absolute left-0 right-0 top-full z-20 origin-top overflow-hidden rounded-b-3xl px-7 pb-5 pt-4 text-white shadow-lg",
-              cor.bg
+              fundo
             )}
           >
             {/* A troca de curso saiu daqui: agora ela mora na barra de status,

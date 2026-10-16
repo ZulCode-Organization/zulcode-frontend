@@ -1,4 +1,4 @@
-import { BarChart3, BookOpen, History, Megaphone, Palette, ShoppingBag, Target, UsersRound } from "lucide-react";
+import { BarChart3, BookOpen, History, Megaphone, Palette, ShoppingBag, Smartphone, Target, UsersRound } from "lucide-react";
 
 /** As seções do administrativo. `soAdmin` esconde do professor, que só cuida de conteúdo. */
 export const SECOES = [
@@ -9,5 +9,6 @@ export const SECOES = [
   { href: "/admin/metas", rotulo: "Metas", Icone: Target, atalho: "m", soAdmin: true },
   { href: "/admin/notificacoes", rotulo: "Notificações", Icone: Megaphone, atalho: "n", soAdmin: true },
   { href: "/admin/tema", rotulo: "Tema da barra", Icone: Palette, atalho: "t", soAdmin: true },
+  { href: "/admin/icone", rotulo: "Ícone do app", Icone: Smartphone, atalho: "i", soAdmin: true },
   { href: "/admin/registro", rotulo: "Registro de ações", Icone: History, atalho: "r", soAdmin: true },
 ] as const;

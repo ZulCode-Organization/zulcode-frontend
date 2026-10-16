@@ -126,6 +126,9 @@ function MenuDeAcoes({ pessoa, aoEscolher }: { pessoa: FichaDaPessoa; aoEscolher
         <DropdownMenu.Content align="end" sideOffset={6} className="zc-adm-entra z-50 min-w-56 rounded-xl border bg-popover p-1 shadow-xl">
           <DropdownMenu.Item className={item} onSelect={() => aoEscolher("selos")}><BadgeCheck className="size-4" /> Selos</DropdownMenu.Item>
           <DropdownMenu.Item className={item} onSelect={() => aoEscolher("cortesia")}><Gift className="size-4" /> PRO de cortesia</DropdownMenu.Item>
+          {(pessoa.isPro || pessoa.plano !== "grátis") && (
+            <DropdownMenu.Item className={cn(item, "text-rose-600 dark:text-rose-400")} onSelect={() => aoEscolher("tirarPro")}><Crown className="size-4" /> Remover o PRO</DropdownMenu.Item>
+          )}
           <DropdownMenu.Item className={item} onSelect={() => aoEscolher("ofensiva")}><ChamaDupla className="size-4" /> Restaurar ofensiva</DropdownMenu.Item>
           <DropdownMenu.Item className={item} onSelect={() => aoEscolher("papel")}><UserCog className="size-4" /> Papel da conta</DropdownMenu.Item>
           <DropdownMenu.Separator className="my-1 h-px bg-border" />

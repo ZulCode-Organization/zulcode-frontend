@@ -117,6 +117,118 @@
   --sidebar-ring: #1892ff;
 }
 
+/* Temas de evento, ligados pelo administrativo (data-evento no <html>). Valem
+   por cima do tema comprado na loja enquanto o evento durar: por isso o
+   !important, já que o tema da loja entra como estilo inline. */
+:root[data-evento="halloween"] {
+  --background: #fff7ed !important;
+  --foreground: #2a1636 !important;
+  --card: #ffffff !important;
+  --card-foreground: #2a1636 !important;
+  --popover: #ffffff !important;
+  --popover-foreground: #2a1636 !important;
+  --primary: #ea580c !important;
+  --primary-foreground: #ffffff !important;
+  --secondary: #fdebd9 !important;
+  --secondary-foreground: #2a1636 !important;
+  --muted: #fdebd9 !important;
+  --muted-foreground: #7c5a46 !important;
+  --accent: #f3e8ff !important;
+  --accent-foreground: #7e22ce !important;
+  --border: #f7d2b0 !important;
+  --input: #f7d2b0 !important;
+  --ring: #ea580c !important;
+  --sidebar: #fffaf5 !important;
+  --sidebar-foreground: #2a1636 !important;
+  --sidebar-primary: #ea580c !important;
+  --sidebar-primary-foreground: #ffffff !important;
+  --sidebar-accent: #fdebd9 !important;
+  --sidebar-accent-foreground: #2a1636 !important;
+  --sidebar-border: #f7d2b0 !important;
+  --sidebar-ring: #ea580c !important;
+}
+:root.dark[data-evento="halloween"] {
+  --background: #160d1f !important;
+  --foreground: #f3e8ff !important;
+  --card: #24152f !important;
+  --card-foreground: #f3e8ff !important;
+  --popover: #24152f !important;
+  --popover-foreground: #f3e8ff !important;
+  --primary: #f97316 !important;
+  --primary-foreground: #ffffff !important;
+  --secondary: #2e1c3d !important;
+  --secondary-foreground: #f3e8ff !important;
+  --muted: #2e1c3d !important;
+  --muted-foreground: #a993bf !important;
+  --accent: #3b2150 !important;
+  --accent-foreground: #fed7aa !important;
+  --border: #3a2450 !important;
+  --input: #3a2450 !important;
+  --ring: #f97316 !important;
+  --sidebar: #1c1127 !important;
+  --sidebar-foreground: #f3e8ff !important;
+  --sidebar-primary: #f97316 !important;
+  --sidebar-primary-foreground: #ffffff !important;
+  --sidebar-accent: #2e1c3d !important;
+  --sidebar-accent-foreground: #f3e8ff !important;
+  --sidebar-border: #3a2450 !important;
+  --sidebar-ring: #f97316 !important;
+}
+:root[data-evento="natal"] {
+  --background: #f0fdf4 !important;
+  --foreground: #052e16 !important;
+  --card: #ffffff !important;
+  --card-foreground: #052e16 !important;
+  --popover: #ffffff !important;
+  --popover-foreground: #052e16 !important;
+  --primary: #dc2626 !important;
+  --primary-foreground: #ffffff !important;
+  --secondary: #dcfce7 !important;
+  --secondary-foreground: #052e16 !important;
+  --muted: #dcfce7 !important;
+  --muted-foreground: #4d7360 !important;
+  --accent: #fee2e2 !important;
+  --accent-foreground: #991b1b !important;
+  --border: #bbf7d0 !important;
+  --input: #bbf7d0 !important;
+  --ring: #dc2626 !important;
+  --sidebar: #f7fef9 !important;
+  --sidebar-foreground: #052e16 !important;
+  --sidebar-primary: #dc2626 !important;
+  --sidebar-primary-foreground: #ffffff !important;
+  --sidebar-accent: #dcfce7 !important;
+  --sidebar-accent-foreground: #052e16 !important;
+  --sidebar-border: #bbf7d0 !important;
+  --sidebar-ring: #dc2626 !important;
+}
+:root.dark[data-evento="natal"] {
+  --background: #08180f !important;
+  --foreground: #ecfdf3 !important;
+  --card: #0f2a1b !important;
+  --card-foreground: #ecfdf3 !important;
+  --popover: #0f2a1b !important;
+  --popover-foreground: #ecfdf3 !important;
+  --primary: #dc2626 !important;
+  --primary-foreground: #ffffff !important;
+  --secondary: #143522 !important;
+  --secondary-foreground: #ecfdf3 !important;
+  --muted: #143522 !important;
+  --muted-foreground: #8fb8a0 !important;
+  --accent: #173d27 !important;
+  --accent-foreground: #fecaca !important;
+  --border: #1d4a30 !important;
+  --input: #1d4a30 !important;
+  --ring: #dc2626 !important;
+  --sidebar: #0b2015 !important;
+  --sidebar-foreground: #ecfdf3 !important;
+  --sidebar-primary: #dc2626 !important;
+  --sidebar-primary-foreground: #ffffff !important;
+  --sidebar-accent: #143522 !important;
+  --sidebar-accent-foreground: #ecfdf3 !important;
+  --sidebar-border: #1d4a30 !important;
+  --sidebar-ring: #dc2626 !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

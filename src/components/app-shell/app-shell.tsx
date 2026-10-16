@@ -6,6 +6,7 @@ import { AvisoFimDoTeste } from "@/components/pro/aviso-fim-do-teste";
 import { AvisoDaOfensiva } from "@/components/comemoracoes/aviso-da-ofensiva";
 import { AppTopBar } from "./app-topbar";
 import { StickyBottomPanel } from "./sticky-bottom-panel";
+import { EventoNoApp } from "./barra-viva/tema";
 import { cn } from "@/lib/utils";
 
 interface AppShellProps {
@@ -95,6 +96,7 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
         </div>
 
         <AvisoFimDoTeste />
+        <EventoNoApp />
         <AppBottomNav />
       </div>
     </div>

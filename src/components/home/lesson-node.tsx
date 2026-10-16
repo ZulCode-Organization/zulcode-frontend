@@ -5,6 +5,8 @@ import { CodeXml, Lock, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LicaoTrilha } from "@/lib/types/trilha";
 import { LessonPopup } from "./lesson-popup";
+import { useTemaDaBarra } from "@/components/app-shell/barra-viva/tema";
+import { Enfeite } from "@/components/shared/enfeite";
 
 interface LessonNodeProps {
   licao: LicaoTrilha;
@@ -23,6 +25,9 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
   const [popupAberto, setPopupAberto] = useState(false);
   const [anchor, setAnchor] = useState<DOMRect | null>(null);
   const botaoRef = useRef<HTMLButtonElement>(null);
+  // Num evento, as aulas feitas ganham o enfeite dele no canto de baixo.
+  const tema = useTemaDaBarra();
+  const enfeite = estado === "concluida" && tema !== "normal" ? (tema === "halloween" ? "abobora" : "presente") : null;
 
   const handleClick = () => {
     if (bloqueada) {
@@ -102,6 +107,9 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
             <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-amber-400 text-amber-950 ring-[3px] ring-background sm:size-6">
               <Star className="size-3 fill-current sm:size-3.5" strokeWidth={0} />
             </span>
+          )}
+          {enfeite && (
+            <Enfeite nome={enfeite} className="absolute -bottom-2.5 -right-3 size-8 drop-shadow-[0_2px_2px_rgba(0,0,0,0.35)] sm:size-9" />
           )}
           {emAndamento && (
             <span

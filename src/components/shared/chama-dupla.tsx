@@ -53,6 +53,7 @@ export function ChamaDupla({
   protegido = false,
   perfeita = false,
   bruxa = false,
+  gelo = false,
   dias,
 }: {
   className?: string;
@@ -65,10 +66,13 @@ export function ChamaDupla({
   perfeita?: boolean;
   /** A chama verde de bruxa, do tema de Halloween. */
   bruxa?: boolean;
+  /** A chama de gelo, do tema de Natal: a arte verde-água puxada para o azul-gelo. */
+  gelo?: boolean;
 }) {
-  const faixa = faixaDaChama(dias);
+  const faixa = gelo ? FAIXAS_DA_CHAMA[2] : faixaDaChama(dias);
   const filtros = [
     bruxa && "hue-rotate(95deg) saturate(1.3)",
+    gelo && "hue-rotate(15deg) saturate(.8) brightness(1.15)",
     !aceso && "grayscale(1) opacity(.45)",
     aceso && protegido && "drop-shadow(0 0 4px rgba(52,211,153,.85))",
     aceso && !protegido && perfeita && "drop-shadow(0 0 4px rgba(251,191,36,.85))",

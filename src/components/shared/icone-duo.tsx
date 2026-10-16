@@ -80,3 +80,17 @@ export const DuoOfensiva = extra("Ofensiva", "DuoOfensiva");
 export const DuoXp = solar("Xp", "DuoXp");
 export const DuoDivisao = extra("Divisao", "DuoDivisao");
 export const DuoPodio = solar("Podio", "DuoPodio");
+
+// Os da loja: o mesmo desenho de duas camadas, na cor de cada item.
+export const DuoCurar = solar("Curar", "DuoCurar");
+export const DuoEscudo = solar("Escudo", "DuoEscudo");
+export const DuoFimDeSemana = solar("FimDeSemana", "DuoFimDeSemana");
+
+/** Qualquer desenho da Solar pelo nome, para listas que escolhem o ícone por dado (ex.: os elementos). */
+export function IconeSolar({ nome, className }: { nome: keyof typeof DESENHOS_SOLAR; className?: string }) {
+  return (
+    <span aria-hidden className={cn("zc-duo zc-duo-solar relative inline-grid size-[30px] shrink-0 place-items-center", className)}>
+      <svg viewBox="0 0 24 24" className="size-[91%]" dangerouslySetInnerHTML={{ __html: DESENHOS_SOLAR[nome] }} />
+    </span>
+  );
+}

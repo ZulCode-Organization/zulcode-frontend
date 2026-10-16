@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import {
-  AlertTriangle, ArrowDown, ArrowUp, BadgeCheck, Bookmark, ChevronLeft, ChevronRight, Code2, Crown, Download, Filter, Flame, Gem, Search, Sparkles, X,
+  AlertTriangle, ArrowDown, ArrowUp, BadgeCheck, Bookmark, ChevronLeft, ChevronRight, Code2, Crown, Download, Filter, Gem, Search, Sparkles, X,
 } from "lucide-react";
+import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { Pagina } from "../shell";
 import { AvatarPequeno, Botao, Cabecalho, Cartao, Entrada, Erro, Escolha, Esqueleto, Rotulo, Selo, Vazio } from "../ui";
 import { avisar } from "../avisos";
@@ -408,7 +409,7 @@ function LinhaDaPessoa({ p, marcado, aoMarcar }: { p: PessoaDaLista; marcado: bo
       <td className="px-3 py-2"><SeloDoPlano p={p} /></td>
       <td className="px-3 py-2 text-right tabular-nums">{numero(p.xp)}</td>
       <td className="px-3 py-2 text-right tabular-nums">
-        <span className="inline-flex items-center gap-1">{p.currentStreak > 0 && <Flame className="size-3.5 text-orange-500" />}{numero(p.currentStreak)}</span>
+        <span className="inline-flex items-center gap-1">{p.currentStreak > 0 && <ChamaDupla className="size-3.5" dias={p.currentStreak} />}{numero(p.currentStreak)}</span>
       </td>
       <td className="px-3 py-2 text-right tabular-nums"><span className="inline-flex items-center gap-1"><Gem className="size-3 text-emerald-500" />{numero(p.coins)}</span></td>
       <td className="whitespace-nowrap px-3 py-2 text-right text-xs text-muted-foreground">{relativo(p.lastActivityAt)}</td>

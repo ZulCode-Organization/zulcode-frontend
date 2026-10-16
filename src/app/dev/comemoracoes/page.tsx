@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { PerfilProvider } from "@/hooks/use-perfil";
 import { PreviaDasComemoracoes } from "./previa";
 
 /**
@@ -14,7 +15,10 @@ export default function Pagina() {
   if (process.env.NODE_ENV === "production") notFound();
   return (
     <Suspense>
-      <PreviaDasComemoracoes />
+      {/* O botão de compartilhar a ofensiva lê o perfil. */}
+      <PerfilProvider>
+        <PreviaDasComemoracoes />
+      </PerfilProvider>
     </Suspense>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useRef, type CSSProperties } from "react";
 import { Check } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import { ChamaDupla, faixaDaChama, type FaixaDaChama } from "@/components/shared/chama-dupla";
+import { ChamaDupla, faixaDaChama } from "@/components/shared/chama-dupla";
 import { estourarConfete } from "@/lib/motion/efeitos";
 import { reagir } from "@/lib/reacoes";
 import { MARCOS_DA_SEQUENCIA } from "@/lib/sequencia";
@@ -11,9 +11,6 @@ import type { OfensivaDoDia } from "@/lib/types/comemoracao";
 import { cn } from "@/lib/utils";
 import { MolduraDeComemoracao } from "./moldura";
 import { BotaoCompartilharOfensiva } from "@/components/shared/botao-compartilhar-ofensiva";
-
-/** A cor de cada faixa da chama, em hexadecimal, para o brilho e as brasas. */
-const COR_DA_FAIXA: Record<FaixaDaChama["id"], string> = { azul: "#3b82f6", ciano: "#06b6d4", dourada: "#f59e0b" };
 
 /** Brasas subindo da chama: posição, atraso e para que lado cada uma desvia. */
 const BRASAS = [
@@ -28,9 +25,9 @@ const BRASAS = [
 /**
  * A ofensiva depois da primeira lição do dia.
  *
- * É a chama da barra de cima, grande: mesma forma e mesma cor da faixa (azul,
- * ciano, dourada), para a pessoa reconhecer que é o mesmo fogo. Ela nasce,
- * salta e fica tremulando; o número rola do valor de ontem para o de hoje, e a
+ * É a chama da barra de cima, grande: mesma arte e mesma cor da faixa (quente,
+ * violeta, verde-água), para a pessoa reconhecer que é o mesmo fogo. Ela acende
+ * de uma faísca e fica viva; o número rola do valor de ontem para o de hoje, e a
  * semana acende o dia de hoje.
  */
 export function ComemoracaoOfensiva({ ofensiva, aoContinuar }: { ofensiva: OfensivaDoDia; aoContinuar: () => void }) {
@@ -38,7 +35,7 @@ export function ComemoracaoOfensiva({ ofensiva, aoContinuar }: { ofensiva: Ofens
   const formato = useFormatter();
   const { antes, depois, protegida } = ofensiva;
   const faixa = faixaDaChama(depois);
-  const cor = COR_DA_FAIXA[faixa.id];
+  const cor = faixa.cor;
   const marco = MARCOS_DA_SEQUENCIA.includes(depois);
   const chama = useRef<HTMLSpanElement>(null);
 
@@ -87,8 +84,11 @@ export function ComemoracaoOfensiva({ ofensiva, aoContinuar }: { ofensiva: Ofens
           {BRASAS.map((b, i) => (
             <span key={i} aria-hidden className="zc-com-brasa" style={{ left: b.esquerda, "--atraso": `${900 + b.atraso}ms`, "--deriva": `${b.deriva}px` } as CSSProperties} />
           ))}
-          <span className="zc-com-nasce">
-            <span className="zc-com-tremula block">
+          <span aria-hidden className="zc-chama-halo" />
+          <span aria-hidden className="zc-chama-onda" />
+          <span aria-hidden className="zc-chama-faisca" />
+          <span className="zc-chama-acende relative">
+            <span className="zc-chama-viva block">
               <ChamaDupla dias={depois} className="size-40 drop-shadow-[0_10px_30px_rgba(0,0,0,0.25)]" />
             </span>
           </span>

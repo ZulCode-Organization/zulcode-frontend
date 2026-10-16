@@ -1,19 +1,23 @@
-import { Fuel } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/** O botijão é o "propane-tank" do Temaki (CC0). A sombra em volta é a silhueta
+ *  dele, fechada, para dar o corpo translúcido dos ícones de duas camadas. */
+const BOTIJAO = "M9 .5c1 0 1 .5 1 1.5v1.5c1.5 0 2.5 1 2.5 2.5v6c0 1-1 2-2.5 2v.5H5V14c-1.5 0-2.5-1-2.5-2V6c0-1.5 1-2.5 2.5-2.5V3h.75C6 3 6 2.75 6 2.5V2c0-.25 0-.5-.25-.5H5c0-.5 0-1 1-1zm-.5 1h-1c-.25 0-.5.25-.5.5v.5c0 .25.25.5.5.5h1c.25 0 .5-.25.5-.5V2c0-.25-.25-.5-.5-.5";
+const SILHUETA = "M 382.289 13.302 C 376.177 32.588, 376.377 32.361, 357.714 41.124 C 344.288 47.427, 337.208 58.169, 334.395 76.500 C 331.372 96.204, 333.176 99.240, 348.566 100.345 C 356.194 100.893, 378.134 107.523, 383.759 110.979 C 390.041 114.839, 399 137.776, 399 150 C 399 156.605, 392.783 177.636, 389.021 183.759 C 385.162 190.039, 362.785 198.721, 348 199.675 C 335.271 200.497, 332.702 202.375, 328.971 213.587 C 324.514 226.981, 324.226 227.132, 275 241.994 C 217.230 259.434, 178.114 306.909, 168.573 371.162 C 166.174 387.321, 166.183 808.108, 168.583 819.792 C 176.586 858.757, 205.115 893.194, 246.649 914.024 C 256.022 918.726, 260.997 920.473, 298 932.057 C 316.881 937.969, 320.740 939.713, 324.308 943.954 C 326.909 947.045, 343 993.454, 343 997.863 C 343 1000, 343 1000, 500 1000 C 657 1000, 657 1000, 657 997.863 C 657 993.454, 673.091 947.045, 675.692 943.954 C 679.218 939.764, 683.160 937.950, 700.500 932.541 C 708.750 929.967, 721.810 925.861, 729.522 923.415 C 783.469 906.309, 824.021 864.190, 831.980 817 C 832.758 812.384, 832.986 747.036, 832.764 591.500 C 832.452 372.500, 832.452 372.500, 829.736 360.338 C 816.271 300.035, 779.982 259.126, 724.694 241.919 C 676.703 226.984, 679.271 228.763, 671.400 205 C 667.591 193.500, 667.591 193.500, 666.886 141.500 C 666.065 81.079, 665.345 74.082, 658.447 59.500 C 653.918 49.927, 648.295 44.734, 635.774 38.561 C 623.264 32.393, 622.397 31.245, 616.711 13.302 L 612.500 0.017 499.500 0.017 L 386.500 0.017 382.289 13.302";
+
 /**
- * O gás da ofensiva: o combustível que mantém o fogo da sequência aceso.
+ * O gás da ofensiva: o botijão de gás de cozinha que mantém o fogo da
+ * sequência aceso.
  *
- * Substitui o escudo que representava o item antigo ("congelar"). Escudo diz
- * "bloqueia alguma coisa"; aqui a ideia é o contrário — o item não trava nada,
- * ele alimenta a chama num dia perdido.
- *
- * É um desenho só. A primeira versão era um cilindro com uma chama no canto, e
- * no tamanho que a loja usa os dois traços se atropelavam.
- *
- * O roxo é o mesmo que a chama assume quando há gás guardado, e é o que liga o
- * item ao efeito sem precisar de legenda.
+ * Não é o posto de gasolina: a ideia é o gás de casa, que alimenta a chama do
+ * fogão num dia perdido. O desenho segue os de duas camadas da loja (corpo
+ * translúcido e o desenho cheio por cima), no roxo do gás.
  */
 export function GasOfensiva({ className }: { className?: string }) {
-  return <Fuel className={cn("text-violet-500", className)} strokeWidth={2.2} />;
+  return (
+    <svg viewBox="0 0 15 15" aria-hidden className={cn("size-5 text-violet-500", className)}>
+      <path transform="scale(0.015)" d={SILHUETA} fill="currentColor" opacity={0.42} />
+      <path d={BOTIJAO} fill="currentColor" />
+    </svg>
+  );
 }

@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Feather, Infinity as InfinityIcon, Loader2, ShieldCheck, HeartPulse, type LucideIcon } from "lucide-react";
+import { Infinity as InfinityIcon, Loader2 } from "lucide-react";
+import { COR_DO_ITEM, IconeDoItem, type EfeitoDoItem } from "@/components/shared/icone-do-item";
+import { PenaDaBarra } from "./barra-viva/tema";
 import { PenaPorAnuncio } from "@/components/anuncios/pena-por-anuncio";
 import { Rupee } from "@/components/shared/rupee";
 import { SeloPro } from "@/components/shared/selo-pro";
@@ -30,16 +32,8 @@ interface ItemLoja {
 
 const MAX_PADRAO = 5;
 
-/** Os efeitos que têm a ver com pena. Os outros são de outra tela.
- *
- * A classe vai no desenho, e não no quadrado em volta: a pena é preenchida com
- * contorno mais escuro — duas cores —, e herdar uma cor de texto só deixaria
- * ela vazada, diferente de todas as outras penas do app. */
-const DESTA_TELA: Record<string, { Icone: LucideIcon; desenho: string; fundo: string }> = {
-  RECOVER_LIVES: { Icone: Feather, desenho: "fill-rose-500 text-rose-800", fundo: "bg-rose-500/15" },
-  HEAL_ONE_LIFE: { Icone: HeartPulse, desenho: "text-rose-400", fundo: "bg-rose-500/15" },
-  FEATHER_SHIELD: { Icone: ShieldCheck, desenho: "text-sky-500", fundo: "bg-sky-500/15" },
-};
+/** Os efeitos que têm a ver com pena. Os outros são de outra tela. */
+const DESTA_TELA = new Set<string>(["RECOVER_LIVES", "HEAL_ONE_LIFE", "FEATHER_SHIELD"]);
 
 /** "9H 51M", como no relógio de recarga. Devolve null quando não há o que
  * contar — a próxima pena já chegou, ou as penas estão cheias. */
@@ -86,7 +80,7 @@ export function PainelVidas({ onNavegar }: { onNavegar?: () => void }) {
       fetchComTimeout(`${API_BASE_URL}/user/zulcoins/items`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]);
     if (vidas) setEstado(vidas);
-    setItens(Array.isArray(lista) ? lista.filter((item: ItemLoja) => item.effect in DESTA_TELA) : []);
+    setItens(Array.isArray(lista) ? lista.filter((item: ItemLoja) => DESTA_TELA.has(item.effect)) : []);
   }, []);
 
   useEffect(() => {
@@ -154,7 +148,7 @@ export function PainelVidas({ onNavegar }: { onNavegar?: () => void }) {
             </p>
             {!cheio && falta && (
               <p className="flex items-center gap-1 text-[0.72rem] font-black uppercase tracking-[0.06em] text-muted-foreground">
-                <Feather className="size-3.5 fill-rose-500 text-rose-800" />
+                <PenaDaBarra tema="normal" className="size-3.5" />
                 {falta}
               </p>
             )}
@@ -163,7 +157,7 @@ export function PainelVidas({ onNavegar }: { onNavegar?: () => void }) {
           <div className="mt-2 flex items-center gap-2">
             <div className="relative h-7 flex-1 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-rose-500 transition-[width] duration-300"
+                className="h-full rounded-full bg-violet-500 transition-[width] duration-300"
                 style={{ width: `${Math.round((atuais / maximo) * 100)}%` }}
               />
               <span className="absolute inset-0 flex items-center justify-center text-[0.78rem] font-black text-foreground">
@@ -171,7 +165,7 @@ export function PainelVidas({ onNavegar }: { onNavegar?: () => void }) {
               </span>
             </div>
             <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted" aria-hidden>
-              <Feather className="size-5 fill-rose-500 text-rose-800" />
+              <PenaDaBarra tema="normal" className="size-5" />
             </span>
           </div>
         </>
@@ -201,7 +195,7 @@ export function PainelVidas({ onNavegar }: { onNavegar?: () => void }) {
           </div>
           <div className="flex items-center gap-3.5 px-4 py-3.5">
             <span className="relative flex size-11 shrink-0 items-center justify-center rounded-2xl bg-violet-500/15">
-              <Feather className="size-6 fill-violet-500 text-violet-800" />
+              <PenaDaBarra tema="normal" className="size-6" />
               <InfinityIcon className="absolute -right-0.5 -top-0.5 size-4 text-foreground" strokeWidth={3} />
             </span>
             <div className="min-w-0 flex-1">
@@ -241,7 +235,8 @@ export function PainelVidas({ onNavegar }: { onNavegar?: () => void }) {
       ) : (
         <div className="mt-3 flex flex-col gap-2.5">
           {itens.map((item) => {
-            const { Icone, desenho, fundo } = DESTA_TELA[item.effect];
+            const efeito = item.effect as EfeitoDoItem;
+            const { cor, fundo } = COR_DO_ITEM[efeito];
             // Recuperar tudo não faz nada com as penas cheias; os outros
             // (curar uma, escudo) continuam valendo.
             const inutil = item.effect === "RECOVER_LIVES" && cheio;
@@ -253,8 +248,8 @@ export function PainelVidas({ onNavegar }: { onNavegar?: () => void }) {
                   inutil && "opacity-50"
                 )}
               >
-                <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-2xl", fundo)}>
-                  <Icone className={cn("size-6", desenho)} />
+                <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-2xl", fundo, cor)}>
+                  <IconeDoItem efeito={efeito} className="size-6" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-[0.92rem] font-black leading-snug text-foreground">{item.title}</p>

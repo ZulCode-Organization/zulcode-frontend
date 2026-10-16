@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { DropdownMenu } from "radix-ui";
 import {
-  ArrowLeft, Award, BadgeCheck, Ban, Bell, BookOpen, Code2, Crown, Download, ExternalLink, Feather, Flame, Gem, Gift, MoreHorizontal, Pencil, Shield,
+  ArrowLeft, Award, BadgeCheck, Ban, Bell, BookOpen, Code2, Crown, Download, ExternalLink, Feather, Gem, Gift, MoreHorizontal, Pencil, Shield,
   ShoppingBag, Sparkles, StickyNote, Trash2, Trophy, Undo2, UserCog, UserPlus, Wallet,
 } from "lucide-react";
+import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { Pagina } from "../shell";
 import { AreaDeTexto, AvatarPequeno, Botao, Cartao, Erro, Esqueleto, Segmentado, Selo, Vazio } from "../ui";
 import { avisar } from "../avisos";
@@ -125,7 +126,7 @@ function MenuDeAcoes({ pessoa, aoEscolher }: { pessoa: FichaDaPessoa; aoEscolher
         <DropdownMenu.Content align="end" sideOffset={6} className="zc-adm-entra z-50 min-w-56 rounded-xl border bg-popover p-1 shadow-xl">
           <DropdownMenu.Item className={item} onSelect={() => aoEscolher("selos")}><BadgeCheck className="size-4" /> Selos</DropdownMenu.Item>
           <DropdownMenu.Item className={item} onSelect={() => aoEscolher("cortesia")}><Gift className="size-4" /> PRO de cortesia</DropdownMenu.Item>
-          <DropdownMenu.Item className={item} onSelect={() => aoEscolher("ofensiva")}><Flame className="size-4" /> Restaurar ofensiva</DropdownMenu.Item>
+          <DropdownMenu.Item className={item} onSelect={() => aoEscolher("ofensiva")}><ChamaDupla className="size-4" /> Restaurar ofensiva</DropdownMenu.Item>
           <DropdownMenu.Item className={item} onSelect={() => aoEscolher("papel")}><UserCog className="size-4" /> Papel da conta</DropdownMenu.Item>
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
           <DropdownMenu.Item className={item} onSelect={() => aoEscolher("bloquear")}>
@@ -145,7 +146,7 @@ function Resumo({ p }: { p: FichaDaPessoa }) {
   const calendario = useDados<Calendario>(`/admin/pessoas/${p.id}/calendario`);
   const numeros = [
     { rotulo: "XP", valor: numero(p.xp), icone: <Sparkles className="size-4 text-amber-500" /> },
-    { rotulo: "Ofensiva", valor: `${numero(p.currentStreak)} ${p.currentStreak === 1 ? "dia" : "dias"}`, nota: `maior: ${numero(p.longestStreak)}`, icone: <Flame className="size-4 text-orange-500" /> },
+    { rotulo: "Ofensiva", valor: `${numero(p.currentStreak)} ${p.currentStreak === 1 ? "dia" : "dias"}`, nota: `maior: ${numero(p.longestStreak)}`, icone: <ChamaDupla className="size-4" dias={p.currentStreak} aceso={p.currentStreak > 0} /> },
     { rotulo: "Rupees", valor: numero(p.coins), icone: <Gem className="size-4 text-emerald-500" /> },
     { rotulo: "Penas", valor: `${p.lives}`, nota: `${p.errorShields} escudos · ${p.streakFreezes} protetores`, icone: <Feather className="size-4 text-rose-500" /> },
   ];

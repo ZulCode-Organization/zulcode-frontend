@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AlertTriangle, BookOpen, Crown, Flame, Gem, Radio, ShieldCheck, Sparkles, Target, UsersRound } from "lucide-react";
+import { AlertTriangle, BookOpen, Crown, Gem, Radio, ShieldCheck, Sparkles, Target, UsersRound } from "lucide-react";
+import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { Pagina } from "../shell";
 import { BlocoNumero, Cabecalho, Cartao, Erro, Escolha, Esqueleto, Grade, Segmentado, Selo } from "../ui";
 import { GraficoDeColunas, GraficoDeLinhas, MapaDeCalor, Ranking } from "../graficos";
@@ -134,13 +135,13 @@ function ParteDePessoas({ periodo, pessoas }: { periodo: Periodo; pessoas: Retur
 
 function Ofensivas({ o }: { o: VisaoOfensivas }) {
   const faixas = [
-    { nome: "Dourada (100+ dias)", valor: o.dourada, cor: "text-amber-500 fill-amber-400" },
-    { nome: "Ciano (30 a 99 dias)", valor: o.ciano, cor: "text-cyan-300 fill-cyan-500" },
-    { nome: "Azul (1 a 29 dias)", valor: o.azul, cor: "text-sky-400 fill-blue-600" },
+    { nome: "Verde-água (100+ dias)", valor: o.dourada, dias: 100 },
+    { nome: "Violeta (30 a 99 dias)", valor: o.ciano, dias: 30 },
+    { nome: "Quente (1 a 29 dias)", valor: o.azul, dias: 1 },
   ];
   return (
     <div className="space-y-4">
-      <Ranking itens={faixas.map((f) => ({ chave: f.nome, nome: <span className="inline-flex items-center gap-1.5"><Flame className={cn("size-4", f.cor)} />{f.nome}</span>, valor: f.valor }))} />
+      <Ranking itens={faixas.map((f) => ({ chave: f.nome, nome: <span className="inline-flex items-center gap-1.5"><ChamaDupla className="size-4" dias={f.dias} />{f.nome}</span>, valor: f.valor }))} />
       <div className="grid grid-cols-2 gap-2 text-sm">
         <div className="rounded-lg bg-amber-500/10 px-3 py-2">
           <p className="flex items-center gap-1 text-xs font-bold text-amber-700 dark:text-amber-300"><AlertTriangle className="size-3.5" /> Em risco hoje</p>

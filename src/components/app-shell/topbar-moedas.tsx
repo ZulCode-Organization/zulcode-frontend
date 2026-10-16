@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Barrel, CalendarCheck, Feather, HeartPulse, Loader2, ShieldCheck, Zap, type LucideIcon } from "lucide-react";
+import { Barrel, Loader2, type LucideIcon } from "lucide-react";
 import { Rupee } from "@/components/shared/rupee";
-import { GasOfensiva } from "@/components/shared/gas-ofensiva";
+import { COR_DO_ITEM, IconeDoItem } from "@/components/shared/icone-do-item";
+import { PenaDaBarra } from "./barra-viva/tema";
 import { SeloPro } from "@/components/shared/selo-pro";
 import { usePerfil } from "@/hooks/use-perfil";
 import { useMetasDiarias } from "@/hooks/use-metas-diarias";
@@ -24,15 +25,23 @@ interface ItemLoja {
 
 /** Cada efeito tem seu desenho e sua cor. O gás e o rupee são componentes
  * próprios, então o tipo aceita os dois formatos. */
-const DESENHO: Record<Efeito, { Icone: LucideIcon | ((p: { className?: string }) => React.ReactElement); cor: string; fundo: string }> = {
-  RECOVER_LIVES: { Icone: Feather, cor: "text-rose-500", fundo: "bg-rose-500/15" },
-  HEAL_ONE_LIFE: { Icone: HeartPulse, cor: "text-rose-400", fundo: "bg-rose-500/15" },
-  FEATHER_SHIELD: { Icone: ShieldCheck, cor: "text-sky-500", fundo: "bg-sky-500/15" },
-  FREEZE_STREAK: { Icone: GasOfensiva, cor: "text-violet-500", fundo: "bg-violet-500/15" },
-  WEEKEND_FREE: { Icone: CalendarCheck, cor: "text-teal-500", fundo: "bg-teal-500/15" },
-  DOUBLE_XP: { Icone: Zap, cor: "text-amber-500", fundo: "bg-amber-400/15" },
-  DOUBLE_COINS: { Icone: Rupee, cor: "text-emerald-500", fundo: "bg-emerald-500/15" },
-};
+function iconeDe(efeito: Efeito) {
+  function Icone({ className }: { className?: string }) {
+    return <IconeDoItem efeito={efeito} className={className} />;
+  }
+  return Icone;
+}
+
+const EFEITOS: Efeito[] = ["RECOVER_LIVES", "HEAL_ONE_LIFE", "FEATHER_SHIELD", "FREEZE_STREAK", "WEEKEND_FREE", "DOUBLE_XP", "DOUBLE_COINS"];
+const DESENHO = Object.fromEntries(EFEITOS.map((efeito) => [efeito, { Icone: iconeDe(efeito), ...COR_DO_ITEM[efeito] }])) as Record<
+  Efeito,
+  { Icone: (p: { className?: string }) => React.ReactElement; cor: string; fundo: string }
+>;
+
+/** A pena da barra, no cartão de quem é PRO. */
+function PenaDoPro({ className }: { className?: string }) {
+  return <PenaDaBarra tema="normal" className={className} />;
+}
 
 /** Em qual seção cada efeito aparece. Vem do que o item faz, e não de uma
  * lista fixa de ids: item novo criado pelo admin cai sozinho no lugar certo. */
@@ -348,7 +357,7 @@ export function PainelMoedas({ moedas, onNavegar }: { moedas: number | null; onN
             <Secao key={secao} titulo={titulo}>
               {secao === "penas" && perfil?.isPro && (
                 <Cartao
-                  Icone={Feather}
+                  Icone={PenaDoPro}
                   cor="text-violet-500"
                   fundo="bg-violet-500/15"
                   titulo="Ilimitadas"

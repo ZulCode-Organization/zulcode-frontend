@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import { DuoDivisao, DuoOfensiva, DuoPodio, DuoXp } from "@/components/shared/icone-duo";
+import { DuoDivisao, DuoPodio, DuoXp } from "@/components/shared/icone-duo";
+import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { PerfilUsuario } from "@/lib/types/perfil";
 import { divisaoDoXp } from "@/lib/divisoes";
 import { cn } from "@/lib/utils";
@@ -29,8 +30,8 @@ export function StatsGrid({ perfil }: StatsGridProps) {
   const cartoes: { id: string; icone: ReactNode; valor: string; rotulo: string }[] = [
     {
       id: "streak",
-      // Azul como a chama da barra de cima, e cinza sem sequência.
-      icone: <DuoOfensiva className={cn(TAMANHO, perfil.streakAtual > 0 ? "text-[#1892ff]" : "text-muted-foreground")} />,
+      // A mesma chama da barra de cima, cinza sem sequência.
+      icone: <ChamaDupla className={TAMANHO} dias={perfil.streakAtual} aceso={perfil.streakAtual > 0} />,
       valor: perfil.streakAtual.toLocaleString("pt-BR"),
       rotulo: perfil.streakAtual === 1 ? "Dia seguido" : "Dias seguidos",
     },

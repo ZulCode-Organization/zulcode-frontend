@@ -1355,8 +1355,84 @@ select,
 }
 @keyframes zc-com-varre { to { left: 130%; } }
 
+/* A chama neon acendendo na comemoração da ofensiva. Primeiro uma faísca na
+   base; dela a chama cresce de baixo para cima, clara e desfocada como fogo
+   pegando, estica, encolhe e assenta. Depois fica viva: tremula sem parar, com
+   o halo respirando atrás e um anel de calor que sai uma vez da base. */
+.zc-chama-faisca {
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, #fff 0%, var(--zc-com-cor) 55%, transparent 100%);
+  opacity: 0;
+  animation: zc-chama-faisca 520ms ease-out both;
+}
+@keyframes zc-chama-faisca {
+  0% { opacity: 0; transform: scale(0.2); }
+  45% { opacity: 1; transform: scale(1.5); }
+  100% { opacity: 0; transform: scale(0.6) translateY(-20px); }
+}
+
+.zc-chama-acende { transform-origin: 50% 92%; animation: zc-chama-acende 1050ms cubic-bezier(0.22, 1, 0.36, 1) 260ms both; }
+@keyframes zc-chama-acende {
+  0% { opacity: 0; transform: scale(0.3, 0.06); filter: brightness(2.4) blur(8px); }
+  28% { opacity: 1; transform: scale(0.72, 0.86); filter: brightness(1.9) blur(3px); }
+  52% { transform: scale(0.92, 1.2); filter: brightness(1.35) blur(0); }
+  70% { transform: scale(1.07, 0.9); filter: brightness(1.1) blur(0); }
+  85% { transform: scale(0.97, 1.04); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+
+.zc-chama-viva { transform-origin: 50% 92%; animation: zc-chama-viva 2.8s ease-in-out 1300ms infinite; }
+@keyframes zc-chama-viva {
+  0%, 100% { transform: scale(1, 1) skewX(0deg); }
+  18% { transform: scale(1.02, 1.05) skewX(-2deg); }
+  36% { transform: scale(0.98, 0.97) skewX(1.5deg); }
+  52% { transform: scale(1.03, 1.07) skewX(-1deg); }
+  70% { transform: scale(0.99, 0.98) skewX(2.2deg); }
+  86% { transform: scale(1.01, 1.03) skewX(-1.2deg); }
+}
+
+.zc-chama-halo {
+  position: absolute;
+  inset: 4% 8% 0;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, var(--zc-com-cor) 0%, transparent 75%);
+  filter: blur(14px);
+  opacity: 0;
+  animation: zc-chama-halo-entra 700ms ease-out 450ms forwards, zc-chama-halo 2.2s ease-in-out 1150ms infinite alternate;
+}
+@keyframes zc-chama-halo-entra { from { opacity: 0; transform: scale(0.5); } to { opacity: 0.55; transform: scale(1); } }
+@keyframes zc-chama-halo { from { opacity: 0.4; transform: scale(0.92); } to { opacity: 0.7; transform: scale(1.08); } }
+
+.zc-chama-onda {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  width: 70%;
+  height: 22%;
+  margin-left: -35%;
+  border-radius: 9999px;
+  border: 2px solid var(--zc-com-cor);
+  box-shadow: 0 0 14px var(--zc-com-cor), inset 0 0 10px var(--zc-com-cor);
+  filter: blur(1px);
+  opacity: 0;
+  animation: zc-chama-onda 900ms cubic-bezier(0.16, 1, 0.3, 1) 620ms both;
+}
+@keyframes zc-chama-onda {
+  0% { opacity: 0.7; transform: scale(0.3); }
+  100% { opacity: 0; transform: scale(1.9); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .zc-com, .zc-com-brilho, .zc-com-nasce, .zc-com-tremula, .zc-com-sobe, .zc-com-hoje, .zc-com-raios { animation: none; }
+  .zc-com, .zc-com-brilho, .zc-com-nasce, .zc-com-tremula, .zc-com-sobe, .zc-com-hoje, .zc-com-raios,
+  .zc-chama-acende, .zc-chama-viva, .zc-chama-halo { animation: none; }
+  .zc-chama-halo { opacity: 0.55; }
+  .zc-chama-faisca, .zc-chama-onda { display: none; }
   .zc-com-rolo > span { animation: none; transform: translateY(-50%); }
   .zc-com-brasa, .zc-com-varre::after { display: none; }
 }

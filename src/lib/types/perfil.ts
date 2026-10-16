@@ -59,6 +59,10 @@ export interface PerfilUsuario {
   /** Dias em que uma proteção impediu a quebra da sequência (YYYY-MM-DD). */
   protectedStreakDays?: string[];
   doubleXpUntil?: string | null;
+  /** Até quando as rupees valem em dobro (a "Chuva de Rupees"). */
+  doubleCoinsUntil?: string | null;
+  /** Escudos de pena guardados: cada um segura um erro. */
+  escudos?: number;
   /** Vidas restantes (as "penas"). null enquanto a API não devolver o campo. */
   vidas: number | null;
   /** Teto de penas. Vem de /user/lives; 5 enquanto a API não disser outro. */

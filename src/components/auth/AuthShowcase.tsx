@@ -1,4 +1,5 @@
-import { Flame, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
+import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { SiPython } from "react-icons/si";
 
 export function AuthShowcase() {
@@ -36,7 +37,7 @@ export function AuthShowcase() {
         </div>
 
         <div className="absolute -right-6 -top-4 flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground shadow-md">
-          <Flame className="size-3.5 text-primary" />
+          <ChamaDupla className="size-4" dias={7} />
           7 dias seguidos
         </div>
         <div className="absolute -bottom-2 -left-6 flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground shadow-md">

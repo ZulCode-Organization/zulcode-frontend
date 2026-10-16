@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { CalendarCheck, CircleDollarSign, Feather, HeartPulse, Pencil, Plus, ShieldCheck, ShoppingBag, Trash2, Zap } from "lucide-react";
+import { Pencil, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { COR_DO_ITEM, IconeDoItem } from "@/components/shared/icone-do-item";
 import { Pagina } from "../shell";
 import { AreaDeTexto, Botao, Cabecalho, Entrada, Erro, Escolha, Esqueleto, Interruptor, Rotulo, Segmentado, Selo, Vazio } from "../ui";
 import { Dialogo, perguntar } from "../dialogo";
 import { apagarComDesfazer, avisar } from "../avisos";
-import { GasOfensiva } from "@/components/shared/gas-ofensiva";
 import { Rupee } from "@/components/shared/rupee";
 import { AVATARES, AvatarIcon } from "@/components/shared/avatar-icon";
 import { invalidar, pedir, trocarNoCache, useDados } from "@/lib/admin/api";
@@ -25,13 +25,7 @@ const EFEITOS: { efeito: EfeitoDaLoja; nome: string; descricao: string }[] = [
 ];
 
 function IconeDoEfeito({ efeito, className }: { efeito: EfeitoDaLoja; className?: string }) {
-  if (efeito === "RECOVER_LIVES") return <Feather className={className} />;
-  if (efeito === "FREEZE_STREAK") return <GasOfensiva className={className} />;
-  if (efeito === "WEEKEND_FREE") return <CalendarCheck className={className} />;
-  if (efeito === "FEATHER_SHIELD") return <ShieldCheck className={className} />;
-  if (efeito === "DOUBLE_COINS") return <CircleDollarSign className={className} />;
-  if (efeito === "HEAL_ONE_LIFE") return <HeartPulse className={className} />;
-  return <Zap className={className} />;
+  return <IconeDoItem efeito={efeito} className={className} />;
 }
 
 /** A situação de venda de um item agora: no ar, desligado, agendado ou encerrado. */
@@ -116,7 +110,7 @@ function Itens({ aoEditar }: { aoEditar: (i: ItemDaLoja) => void }) {
               <tr key={i.id} className="border-b last:border-0">
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-3">
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10"><IconeDoEfeito efeito={i.effect} className="size-5 text-amber-400" /></span>
+                    <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg", COR_DO_ITEM[i.effect].fundo, COR_DO_ITEM[i.effect].cor)}><IconeDoEfeito efeito={i.effect} className="size-5" /></span>
                     <div className="min-w-0">
                       <p className="truncate font-bold">{i.title}</p>
                       <p className="truncate text-xs text-muted-foreground">{EFEITOS.find((e) => e.efeito === i.effect)?.nome}</p>
@@ -239,7 +233,7 @@ function EditorDeItem({ item, aoFechar }: { item: ItemDaLoja | null; aoFechar: (
         </div>
         <Previa titulo="Como aparece na loja" situacao={<Selo tom={s.tom}>{s.texto}</Selo>}>
           <article className="overflow-hidden rounded-[20px] border bg-card">
-            <div className="grid h-24 place-items-center bg-emerald-500/10"><IconeDoEfeito efeito={f.effect} className="size-10 text-amber-400" /></div>
+            <div className={cn("grid h-24 place-items-center", COR_DO_ITEM[f.effect].fundo, COR_DO_ITEM[f.effect].cor)}><IconeDoEfeito efeito={f.effect} className="size-10" /></div>
             <div className="p-4">
               <span className="text-[0.62rem] font-black uppercase tracking-[0.1em] text-amber-400">Power-up</span>
               <h2 className="mt-1 font-black leading-snug">{f.title || "Nome do item"}</h2>

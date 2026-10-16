@@ -279,6 +279,8 @@ function usePerfilData(): PerfilState {
           ofensivaPerfeita: typeof usuario.ofensivaPerfeita === "number" ? usuario.ofensivaPerfeita : 0,
           protectedStreakDays: Array.isArray(usuario.protectedStreakDays) ? usuario.protectedStreakDays : [],
           doubleXpUntil: usuario.doubleXpUntil,
+          doubleCoinsUntil: usuario.doubleCoinsUntil ?? null,
+          escudos: typeof usuario.errorShields === "number" ? usuario.errorShields : 0,
           vidas: numeroOuNulo(vidasState?.lives, usuario.hearts, usuario.vidas),
           maxVidas: typeof vidasState?.maxLives === "number" ? vidasState.maxLives : 5,
           proximaVidaEm: typeof vidasState?.nextRefillAt === "string" ? vidasState.nextRefillAt : null,

@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ChamaDupla, faixaDaChama } from "@/components/shared/chama-dupla";
-import { PenaDesgastada } from "@/components/shared/pena-desgastada";
+import { faixaDaChama } from "@/components/shared/chama-dupla";
 import { SeloPro } from "@/components/shared/selo-pro";
 import { Rupee } from "@/components/shared/rupee";
 import { useMudanca } from "@/lib/motion/mudancas";
@@ -18,6 +17,7 @@ import { MARCOS_DA_SEQUENCIA } from "@/lib/sequencia";
 import { Odometro } from "./odometro";
 import { BarraRecarga } from "./barra-recarga";
 import { Dica, DicaOfensiva, DicaPenas, DicaRupees, useDica } from "./dica";
+import { COR_DA_PENA, COR_DO_RUPEE, ChamaNeon, ComEnfeite, PenaDaBarra, corDaChama, useTemaDaBarra } from "./tema";
 
 /** Quanto tempo segurar para fixar o painel. Curto o bastante para ser
  *  descoberto sem querer, longo o bastante para nunca disparar num clique. */
@@ -188,6 +188,7 @@ export function ChipOfensiva({
   const numero = useRef<HTMLSpanElement>(null);
   const mudanca = useMudanca(contaId ? `${contaId}:sequencia` : null, dias);
   const faixa = faixaDaChama(dias);
+  const tema = useTemaDaBarra();
   // A hora é lida uma vez: a dica não precisa virar "em risco" sozinha às 20h
   // com a tela aberta, e ler o relógio a cada render deixaria o componente
   // impuro.
@@ -199,18 +200,13 @@ export function ChipOfensiva({
     const alvo = icone.current;
     if (!mudanca || !alvo) return;
     if (mudanca.para > mudanca.de) {
-      const brasas = protegido ? ["#34d399", "#a78bfa"]
-        : faixa.id === "dourada" ? ["#fde68a", "#f59e0b"]
-          : faixa.id === "ciano" ? ["#a5f3fc", "#06b6d4"]
-            : ["#7dd3fc", "#3b82f6"];
+      const brasas = protegido ? ["#34d399", "#a78bfa"] : [faixa.cor, "#fde68a"];
       saltarChama(alvo, brasas);
       reagir("ofensiva");
       if (numero.current) mostrarDiferenca(numero.current, `+${mudanca.para - mudanca.de}`, getComputedStyle(numero.current).color, 120);
       const marco = MARCOS_DA_SEQUENCIA.find((dia) => mudanca.de < dia && mudanca.para >= dia);
       if (marco) {
-        const cores = marco >= 100 ? ["#fbbf24", "#fde68a", "#f59e0b", "#ffffff"]
-          : marco >= 30 ? ["#06b6d4", "#a5f3fc", "#22d3ee", "#ffffff"]
-            : ["#2563eb", "#7dd3fc", "#38bdf8", "#ffffff"];
+        const cores = [faixaDaChama(marco).cor, "#fde68a", "#ffffff"];
         const id = setTimeout(() => estourarConfete(alvo, cores), 300);
         return () => clearTimeout(id);
       }
@@ -235,14 +231,14 @@ export function ChipOfensiva({
   return (
     <ChipVivo
       rotulo={acesa ? "Dias seguidos" : "Estude hoje para manter a sequência"}
-      cor={acesa ? faixa.texto : "text-muted-foreground"}
+      cor={acesa ? corDaChama(dias, tema) : "text-muted-foreground"}
       aberto={aberto}
       aoAbrir={aoAbrir}
       aoSegurar={aoSegurar}
       destinoDoNumero="/loja"
       iconeRef={icone}
       numeroRef={numero}
-      icone={<ChamaDupla className="size-6 lg:size-7" aceso={acesa} protegido={protegido} dias={dias} perfeita={perfeita} />}
+      icone={<ChamaNeon className="size-6 lg:size-7" aceso={acesa} protegido={protegido} dias={dias} perfeita={perfeita} tema={tema} />}
       numero={carregando || dias === null ? "…" : (
         <Odometro valor={dias} teto={1000} anterior={mudanca?.de} versao={mudanca?.id} atraso={120} />
       )}
@@ -265,6 +261,7 @@ export function ChipRupees({
   const mudanca = useMudanca(contaId ? `${contaId}:moedas` : null, moedas);
   const zerado = moedas === 0;
   const ganhou = mudanca !== null && mudanca.para > mudanca.de;
+  const tema = useTemaDaBarra();
 
   // 2, 3 e 10.
   useEffect(() => {
@@ -272,14 +269,13 @@ export function ChipRupees({
     const texto = numero.current;
     if (!mudanca || !alvo) return;
     const diferenca = mudanca.para - mudanca.de;
-    const cor = "#10b981";
     if (diferenca > 0) {
       const { primeira, ultima } = voarRupees(alvo, diferenca);
       // O "plim" toca quando a primeira rupee encosta no ícone, não quando sai.
       const plim = setTimeout(() => reagir("rupees"), primeira);
       receber(alvo, primeira, 1);
       if (ultima - primeira > 160) receber(alvo, ultima, 0.45);
-      if (texto) mostrarDiferenca(texto, `+${formato(diferenca)}`, cor, primeira);
+      if (texto) mostrarDiferenca(texto, `+${formato(diferenca)}`, getComputedStyle(texto).color, primeira);
       const marco = MARCOS_DE_RUPEES.find((valor) => mudanca.de < valor && mudanca.para >= valor);
       if (marco) varrerBrilho(alvo, "#ffffff", ultima + 120);
       return () => clearTimeout(plim);
@@ -297,14 +293,18 @@ export function ChipRupees({
   return (
     <ChipVivo
       rotulo="Rupees"
-      cor={zerado ? "text-muted-foreground" : "text-emerald-500"}
+      cor={zerado ? "text-muted-foreground" : COR_DO_RUPEE[tema]}
       aberto={aberto}
       aoAbrir={aoAbrir}
       aoSegurar={aoSegurar}
       destinoDoNumero="/loja"
       iconeRef={icone}
       numeroRef={numero}
-      icone={<Rupee className="size-5.5 lg:size-6" quantidade={moedas} />}
+      icone={(
+        <ComEnfeite enfeite={tema === "halloween" ? "abobora" : null}>
+          <Rupee className="size-5.5 lg:size-6" quantidade={moedas} />
+        </ComEnfeite>
+      )}
       numero={carregando ? "…" : moedas === null ? null : (
         <Odometro
           valor={moedas}
@@ -339,6 +339,7 @@ export function ChipPenas({
   const mudanca = useMudanca(contaId && !pro ? `${contaId}:penas` : null, vidas);
   const restantes = vidas ?? maximo;
   const vazia = !pro && vidas === 0;
+  const tema = useTemaDaBarra();
 
   // 4, 5 e a pena que volta.
   useEffect(() => {
@@ -349,11 +350,11 @@ export function ChipPenas({
     if (diferenca < 0) {
       soltarPena(alvo);
       reagir("perdaDePena");
-      if (texto) mostrarDiferenca(texto, `−${-diferenca}`, "#f43f5e", 80);
+      if (texto) mostrarDiferenca(texto, `−${-diferenca}`, getComputedStyle(texto).color, 80);
       if (mudanca.para === 0) tremer(alvo, 160);
     } else {
       quicar(alvo);
-      if (texto) mostrarDiferenca(texto, `+${diferenca}`, "#f43f5e");
+      if (texto) mostrarDiferenca(texto, `+${diferenca}`, getComputedStyle(texto).color);
     }
   }, [mudanca]);
 
@@ -362,7 +363,7 @@ export function ChipPenas({
   return (
     <ChipVivo
       rotulo={pro ? "Penas ilimitadas" : "Penas"}
-      cor={pro ? "text-violet-500" : vazia ? "text-muted-foreground" : "text-rose-500"}
+      cor={pro ? "text-violet-500" : vazia ? "text-muted-foreground" : COR_DA_PENA[tema]}
       aberto={aberto}
       aoAbrir={aoAbrir}
       aoSegurar={aoSegurar}
@@ -374,7 +375,11 @@ export function ChipPenas({
       // fica só com o selo.
       icone={pro
         ? <SeloPro className="h-5.5 rounded-[3px] lg:h-6" />
-        : <PenaDesgastada restantes={restantes} maximo={maximo} tremer={false} className="size-5.5 lg:size-6" />}
+        : (
+          <ComEnfeite enfeite={tema === "halloween" && !vazia ? "morcego" : null}>
+            <PenaDaBarra tema={tema} vazia={vazia} className="size-5.5 lg:size-6" />
+          </ComEnfeite>
+        )}
       numero={pro ? null : carregando ? "…" : vidas === null ? null : (
         <Odometro valor={vidas} anterior={mudanca?.de} versao={mudanca?.id} atraso={80} />
       )}

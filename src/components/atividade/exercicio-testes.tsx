@@ -23,6 +23,15 @@ type EstadoDoTeste = { estado: "parado" | "rodando" | "passou" | "falhou"; deu?:
 
 const mostrar = (valor: unknown) => (valor === undefined ? "undefined" : JSON.stringify(valor));
 
+/** JSON com as chaves em ordem: o banco reordena as chaves dos objetos
+ *  esperados, então a comparação não pode depender da ordem em que foram escritas. */
+function ordenarChaves(_chave: string, valor: unknown) {
+  if (!valor || typeof valor !== "object" || Array.isArray(valor)) return valor;
+  const objeto = valor as Record<string, unknown>;
+  return Object.fromEntries(Object.keys(objeto).sort().map((chave) => [chave, objeto[chave]]));
+}
+const canonico = (valor: unknown) => (valor === undefined ? "undefined" : JSON.stringify(valor, ordenarChaves));
+
 /**
  * O código que vai para o executor: o da pessoa e, depois, cada teste chamando
  * a função. Um teste que quebra não derruba os outros.
@@ -33,7 +42,7 @@ function montarExecucao(codigo: string, nome: string, testes: PerguntaTestes["te
   try {
     if (typeof ${nome} !== "function") return { erro: "A função ${nome} não existe" };
     const v = ${nome}(...args);
-    return { v: v === undefined ? "__indefinido__" : JSON.stringify(v) };
+    return { v: v === undefined ? "__indefinido__" : JSON.stringify(v, ${ordenarChaves.toString()}) };
   } catch (e) { return { erro: String((e && e.message) || e) }; }
 }));`;
 }
@@ -72,13 +81,13 @@ export function ExercicioTestes({ pergunta, codigoDeInicio, onCodigo, onPassou, 
       timers.current.push(
         window.setTimeout(() => {
           const r = respostas[k];
-          const esperado = mostrar(teste.esperado);
+          const esperado = canonico(teste.esperado);
           const deu = r?.erro ? `erro: ${r.erro}` : r?.v === "__indefinido__" ? "undefined" : r?.v ?? "nada";
           const ok = !!r && !r.erro && deu === esperado;
           setEstados((atual) => atual.map((e, j) => (j === k ? { estado: ok ? "passou" : "falhou", deu } : e)));
           const todos = respostas.length === pergunta.testes.length && pergunta.testes.every((t, j) => {
             const rj = respostas[j];
-            return rj && !rj.erro && (rj.v === "__indefinido__" ? "undefined" : rj.v) === mostrar(t.esperado);
+            return rj && !rj.erro && (rj.v === "__indefinido__" ? "undefined" : rj.v) === canonico(t.esperado);
           });
           if (k === pergunta.testes.length - 1 && todos && !passouRef.current) {
             passouRef.current = true;

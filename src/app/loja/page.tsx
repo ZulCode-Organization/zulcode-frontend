@@ -406,11 +406,11 @@ function Store() {
             })}
           </div>
 
-          {(["THEME", "AVATAR", "BANNER"] as const).map((tipo) => {
+          {(["AVATAR", "BANNER"] as const).map((tipo) => {
             const lista = cosmetics.filter((item) => item.kind === tipo);
             if (!lista.length) return null;
             return (
-              <Carrossel key={tipo} className="mt-7" titulo={tituloDeSecao(tipo === "THEME" ? "Temas" : tipo === "AVATAR" ? "Avatares" : "Banners")}>
+              <Carrossel key={tipo} className="mt-7" titulo={tituloDeSecao(tipo === "AVATAR" ? "Avatares" : "Banners")}>
                 {lista.map((item) => (
                   <CartaoDeCosmetico key={item.id} item={item} saldo={saldo} ocupado={working === item.id} aoAgir={cosmeticAction} />
                 ))}

@@ -57,7 +57,9 @@ export function PagamentoEmbutido({ periodo, forma = "assinatura" }: { periodo: 
   }
 
   return (
-    <div className="zc-pro-sobe relative min-h-[420px] w-full overflow-hidden rounded-2xl bg-white">
+    // shrink-0: sem ele o cartão encolhia até a altura da tela e cortava o formulário;
+    // assim ele fica do tamanho do checkout e quem rola é a área de fora.
+    <div className="zc-pro-sobe relative min-h-[420px] w-full shrink-0 overflow-hidden rounded-2xl bg-white">
       {estado.tipo === "carregando" ? (
         <div className="flex h-[420px] items-center justify-center text-violet-700">
           <Loader2 className="size-7 animate-spin" />

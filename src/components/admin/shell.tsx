@@ -46,6 +46,13 @@ function Casca({ children }: { children: ReactNode }) {
     if (!loading && !podeEntrar) router.replace("/home");
   }, [loading, podeEntrar, router]);
 
+  // No celular a faixa de seções rola de lado: a seção aberta vem para a vista,
+  // senão as do fim (Tema, Ícone, Registro) ficavam escondidas fora da tela.
+  const faixaRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    faixaRef.current?.querySelector("[data-ativa]")?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [caminho, podeEntrar]);
+
   // Professor só tem a área de conteúdo: qualquer outra rota leva para lá.
   useEffect(() => {
     if (papel === "PROFESSOR" && !caminho.startsWith("/admin/conteudo")) router.replace("/admin/conteudo");
@@ -192,20 +199,24 @@ function Casca({ children }: { children: ReactNode }) {
 
       {/* ── Conteúdo ── */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* No celular e no tablet o menu vira uma faixa no topo, rolando de lado. */}
-        <div className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b bg-card px-2 lg:hidden">
-          <Link href="/home" aria-label="Voltar ao ZulCode" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground"><ArrowLeft className="size-4" /></Link>
-          <button type="button" onClick={() => setPaleta(true)} aria-label="Buscar" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground"><Search className="size-4" /></button>
-          {secoes.map(({ href, rotulo, Icone }) => {
-            const ativa = caminho === href || caminho.startsWith(`${href}/`);
-            return (
-              <Link key={href} href={href} className={cn("flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold", ativa ? "bg-primary/10 text-primary" : "text-muted-foreground")}>
-                <Icone className="size-4" /> {rotulo}
-              </Link>
-            );
-          })}
+        {/* No celular e no tablet o menu vira uma faixa no topo, rolando de lado.
+            No app Android a página vai até a borda: o respiro de cima é o da
+            barra de status (relógio e notificações), o de baixo o da barra de gestos. */}
+        <div className="shrink-0 border-b bg-card pt-[env(safe-area-inset-top)] lg:hidden">
+          <div ref={faixaRef} className="zc-scroll-hidden flex h-12 items-center gap-1 overflow-x-auto px-2">
+            <Link href="/home" aria-label="Voltar ao ZulCode" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground"><ArrowLeft className="size-4" /></Link>
+            <button type="button" onClick={() => setPaleta(true)} aria-label="Buscar" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground"><Search className="size-4" /></button>
+            {secoes.map(({ href, rotulo, Icone }) => {
+              const ativa = caminho === href || caminho.startsWith(`${href}/`);
+              return (
+                <Link key={href} href={href} data-ativa={ativa || undefined} className={cn("flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold", ativa ? "bg-primary/10 text-primary" : "text-muted-foreground")}>
+                  <Icone className="size-4" /> {rotulo}
+                </Link>
+              );
+            })}
+          </div>
         </div>
-        <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">{children}</main>
       </div>
 
       <Paleta aberta={paleta} aoFechar={() => setPaleta(false)} ehAdmin={ehAdmin} />

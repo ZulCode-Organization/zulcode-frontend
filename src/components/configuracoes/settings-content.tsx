@@ -87,11 +87,11 @@ export function SettingsContent() {
           titulo={t("aparencia.titulo")}
           // O resumo diz o estado atual, pra pessoa não precisar entrar na
           // tela só pra descobrir em que tema está.
-          descricao={t("aparencia.resumo", { modo: montado && resolvedTheme === "dark" ? "dark" : "light", personalizada: perfil?.themeColor ? "sim" : "nao" })}
+          descricao={t("aparencia.resumo", { modo: montado && resolvedTheme === "dark" ? "dark" : "light" })}
           href="/configuracoes/temas"
           acessorio={
             <span className="flex shrink-0 items-center gap-2">
-              <span className="size-5 rounded-md border border-black/10" style={{ background: perfil?.themeColor ?? "var(--primary)" }} aria-hidden />
+              
               <ChevronRight className="size-4 text-muted-foreground" />
             </span>
           }

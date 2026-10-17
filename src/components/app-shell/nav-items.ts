@@ -56,10 +56,10 @@ export const bottomNavItems: NavItem[] = [
 ];
 
 /** Também aparecem no menu "Mais" do celular, para complementar a barra
- * inferior sem aumentar a quantidade de atalhos fixos. */
+ * inferior sem aumentar a quantidade de atalhos fixos. As Configurações não
+ * entram aqui: no celular elas abrem pela engrenagem do Perfil. */
 export const moreNavItems: NavItem[] = [
   { id: "metas", label: "Metas", href: "/metas", icon: DuoMetas },
   { id: "playground", label: "Playground", href: "/playground", icon: DuoPlayground },
-  { id: "configuracoes", label: "Configurações", href: "/configuracoes", icon: DuoConfiguracoes },
   { id: "reportar-bug", label: "Reportar bug", href: "https://forms.cloud.microsoft/r/FD8MLw693j", external: true, icon: DuoBug },
 ];

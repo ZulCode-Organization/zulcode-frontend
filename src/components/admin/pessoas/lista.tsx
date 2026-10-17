@@ -392,7 +392,8 @@ function LinhaDaPessoa({ p, marcado, aoMarcar }: { p: PessoaDaLista; marcado: bo
         <input type="checkbox" checked={marcado} onChange={aoMarcar} aria-label={`Selecionar ${p.name}`} className="size-4 accent-[var(--primary)]" />
       </td>
       <td className="px-3 py-2">
-        <div className="flex min-w-0 items-center gap-2.5">
+        {/* No celular a célula tem limite: sem ele a tabela crescia e o e-mail cortava na borda em vez de terminar em "…". */}
+        <div className="flex min-w-0 max-w-[calc(100vw-6.5rem)] items-center gap-2.5 sm:max-w-none">
           <AvatarPequeno id={p.avatarId} />
           <div className="min-w-0">
             <Link href={`/admin/pessoas/${p.id}`} className="flex items-center gap-1 font-bold hover:text-primary">

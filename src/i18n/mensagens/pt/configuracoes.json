@@ -12,8 +12,8 @@
     "conta": "Conta"
   },
   "aparencia": {
-    "titulo": "Tema e paleta",
-    "resumo": "{modo, select, dark {Escuro} other {Claro}} · {personalizada, select, sim {paleta personalizada} other {paleta padrão}}"
+    "titulo": "Tema",
+    "resumo": "{modo, select, dark {Escuro} other {Claro}}"
   },
   "idioma": {
     "titulo": "Língua do aplicativo",

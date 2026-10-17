@@ -61,7 +61,7 @@ export function AppBottomNav() {
   const [maisAberto, setMaisAberto] = useState(false);
   const { perfil } = usePerfil();
 
-  // Metas, Playground e Configurações só existem dentro do menu "Mais" no
+  // Metas e Playground só existem dentro do menu "Mais" no
   // celular — sem checar isso aqui, nenhum ícone da barra ficaria "ativo"
   // quando a pessoa estivesse numa dessas telas.
   const maisAtivo = moreNavItems.some((item) => item.href === pathname) || ((perfil?.role === "ADMIN" || perfil?.role === "PROFESSOR") && pathname.startsWith("/admin"));

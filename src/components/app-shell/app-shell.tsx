@@ -50,7 +50,9 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
             um calc() com a altura da barra chutada dentro. */}
         <div className={cn(
           "zc-scroll-hidden flex-1 overflow-y-auto overflow-x-hidden",
-          fixedContent && "flex min-h-0 flex-col overflow-y-hidden",
+          // Sem a barra de cima (que já tem o respiro), a ferramenta de tela
+          // cheia descia por baixo da barra de status do Android.
+          fixedContent && "flex min-h-0 flex-col overflow-y-hidden pt-[env(safe-area-inset-top)]",
         )}>
           {/* Fora da trilha a barra é só um respiro de 16px. Numa ferramenta de
               tela cheia esses 16px viram uma faixa morta no topo, e ela não tem

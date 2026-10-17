@@ -265,6 +265,7 @@ function Previa({ titulo, situacao: s, children }: { titulo: string; situacao?: 
 // ── Cosméticos ───────────────────────────────────────────────────────────
 
 const TIPOS_DE_COSMETICO: { tipo: TipoDeCosmetico; nome: string; cor: string }[] = [
+  // Os temas antigos ainda aparecem na lista (desativados), mas não se criam mais: as paletas saíram do app.
   { tipo: "THEME", nome: "Tema", cor: "text-sky-400" },
   { tipo: "AVATAR", nome: "Avatar", cor: "text-violet-400" },
   { tipo: "BANNER", nome: "Banner", cor: "text-pink-400" },
@@ -351,7 +352,7 @@ function Cosmeticos({ aoEditar }: { aoEditar: (c: Cosmetico) => void }) {
 }
 
 function EditorDeCosmetico({ cosmetico, aoFechar }: { cosmetico: Cosmetico | null; aoFechar: () => void }) {
-  const [kind, setKind] = useState<TipoDeCosmetico>(cosmetico?.kind ?? "THEME");
+  const [kind, setKind] = useState<TipoDeCosmetico>(cosmetico?.kind ?? "AVATAR");
   const [name, setName] = useState(cosmetico?.name ?? "");
   const [description, setDescription] = useState(cosmetico?.description ?? "");
   const [price, setPrice] = useState(String(cosmetico?.price ?? 150));
@@ -401,7 +402,7 @@ function EditorDeCosmetico({ cosmetico, aoFechar }: { cosmetico: Cosmetico | nul
       <div className="grid gap-5 md:grid-cols-[1fr_240px]">
         <div className="space-y-3">
           {!cosmetico && (
-            <Segmentado<TipoDeCosmetico> rotulo="Tipo" valor={kind} aoMudar={setKind} opcoes={TIPOS_DE_COSMETICO.map((t) => ({ valor: t.tipo, texto: t.nome }))} />
+            <Segmentado<TipoDeCosmetico> rotulo="Tipo" valor={kind} aoMudar={setKind} opcoes={TIPOS_DE_COSMETICO.filter((t) => t.tipo !== "THEME").map((t) => ({ valor: t.tipo, texto: t.nome }))} />
           )}
           <Rotulo texto="Nome"><Entrada value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoFocus /></Rotulo>
           <Rotulo texto="Descrição"><Entrada value={description} onChange={(e) => setDescription(e.target.value)} maxLength={300} /></Rotulo>

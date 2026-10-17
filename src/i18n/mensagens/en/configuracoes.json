@@ -12,8 +12,8 @@
     "conta": "Account"
   },
   "aparencia": {
-    "titulo": "Theme and palette",
-    "resumo": "{modo, select, dark {Dark} other {Light}} · {personalizada, select, sim {custom palette} other {default palette}}"
+    "titulo": "Theme",
+    "resumo": "{modo, select, dark {Dark} other {Light}}"
   },
   "idioma": {
     "titulo": "App language",

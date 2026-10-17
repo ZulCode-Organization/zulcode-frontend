@@ -210,15 +210,24 @@ export function FluxoPro({ sessao }: { sessao: string | null }) {
     if (passo.id === "plano") return comTesteNaForma ? `Começar ${DIAS_DE_TESTE} dias grátis` : "Ir para o pagamento";
     return comTeste ? `Teste ${DIAS_DE_TESTE} dias grátis` : "Assinar o PRO";
   })();
+  const noPagamento = fase === "passos" && passo?.id === "pagamento";
 
   return (
     <div className="fixed inset-0 overflow-hidden text-white" style={{ background: ESPACO }}>
       <Cenarios cena={cena} />
       <CampoDeEstrelas dobra={fase === "entrada" || fase === "conferindo" || fase === null} pulso={pulso} />
 
-      <div className="relative z-10 mx-auto flex h-dvh max-w-md flex-col px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[calc(0.75rem+env(safe-area-inset-top))] lg:max-w-lg">
+      {/* No computador o pagamento ganha largura: estreito, o Stripe usa o
+          layout de celular (resumo em cima, formulário embaixo) e a tela corta.
+          Largo, ele põe o resumo à esquerda e o formulário à direita. */}
+      <div
+        className={cn(
+          "relative z-10 mx-auto flex h-dvh max-w-md flex-col px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[calc(0.75rem+env(safe-area-inset-top))]",
+          noPagamento ? "lg:max-w-[1040px]" : "lg:max-w-lg",
+        )}
+      >
         {/* ---------- Topo ---------- */}
-        <header className="flex h-12 shrink-0 items-center gap-4">
+        <header className="mx-auto flex h-12 w-full max-w-lg shrink-0 items-center gap-4">
           <button
             type="button"
             onClick={fechar}

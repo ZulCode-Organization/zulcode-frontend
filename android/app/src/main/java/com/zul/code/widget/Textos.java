@@ -43,15 +43,17 @@ final class Textos {
     }
 
     /**
-     * O que o Zul diz. A frase é sorteada uma vez por dia e estado: o widget é
-     * redesenhado muitas vezes, e trocar de frase a cada vez pareceria defeito.
+     * O que o Zul diz. A frase muda de hora em hora (junto com a pose), e fica
+     * a mesma dentro da hora: o widget é redesenhado muitas vezes, e trocar a
+     * cada redesenho pareceria defeito.
      */
     String falaDoZul(Situacao s, String nome) {
         if (!s.temDados) return caminho("zul.entrar", "Oi! Entra na sua conta pra eu te acompanhar.");
         String grupo = s.feitoHoje ? "feito" : s.dias <= 0 ? "comecar" : s.noite ? "noite" : "risco";
         List<String> frases = lista("zul." + grupo);
         if (frases.isEmpty()) frases.add(reserva(grupo));
-        String frase = frases.get(Math.abs((s.chaveDoDia + grupo).hashCode()) % frases.size());
+        // O 7 desencontra a frase da pose: as duas mudam a cada hora, mas não andam juntas.
+        String frase = frases.get(Math.floorMod(s.horaDoAno * 7 + grupo.hashCode(), frases.size()));
         return preencher(frase, s.dias, nome);
     }
 

@@ -97,8 +97,8 @@ public final class Widgets {
     }
 
     /**
-     * O próximo redesenho sozinho: à meia-noite (a chama apaga, a semana anda)
-     * e às 20h (o Zul passa a avisar que a ofensiva está acabando).
+     * O próximo redesenho sozinho: a cada hora cheia. É o que troca a pose e a
+     * frase do Zul, apaga a chama à meia-noite e deixa o aviso urgente às 20h.
      *
      * O alarme não acorda o celular: com a tela apagada ninguém vê o widget, e
      * ele toca assim que a tela acende.
@@ -114,9 +114,7 @@ public final class Widgets {
             return;
         }
         Calendar quando = Calendar.getInstance();
-        int hora = quando.get(Calendar.HOUR_OF_DAY);
-        if (hora >= 20) quando.add(Calendar.DAY_OF_YEAR, 1);
-        quando.set(Calendar.HOUR_OF_DAY, hora >= 20 ? 0 : 20);
+        quando.add(Calendar.HOUR_OF_DAY, 1);
         quando.set(Calendar.MINUTE, 0);
         quando.set(Calendar.SECOND, 5);
         quando.set(Calendar.MILLISECOND, 0);

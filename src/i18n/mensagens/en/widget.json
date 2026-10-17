@@ -24,23 +24,41 @@
   "zul": {
     "entrar": "Hi! Sign in so I can keep you company.",
     "feito": {
-      "1": "Nice! Your {diasTexto} flame is safe today.",
+      "1": "Nice work! Your {diasTexto} flame is safe today.",
       "2": "Streak saved! See you tomorrow, {nome}.",
-      "3": "Done for today! Tomorrow we keep the fire going."
+      "3": "Done for today! Tomorrow we keep the fire going.",
+      "4": "{diasTexto} in a row. What a streak, {nome}!",
+      "5": "Lesson done. Now enjoy the rest of your day.",
+      "6": "Your brain says thanks. So does the flame!",
+      "7": "One more day: {diasTexto} of streak.",
+      "8": "You are on fire, {nome}! More tomorrow."
     },
     "risco": {
-      "1": "Your {diasTexto} flame is waiting. Ready?",
-      "2": "One quick lesson keeps your {diasTexto} streak going.",
-      "3": "{nome}, I picked a lesson for you today!"
+      "1": "Your {diasTexto} flame is waiting. Shall we?",
+      "2": "One quick lesson and your {diasTexto} streak keeps going.",
+      "3": "{nome}, I picked a lesson for you today!",
+      "4": "Five minutes and the flame stays lit.",
+      "5": "Time to code a little? Your {diasTexto} streak will thank you.",
+      "6": "I am studying here. Join me, {nome}?",
+      "7": "Do not let {diasTexto} of streak slip away!",
+      "8": "One lesson now and the rest of the day is yours."
     },
     "noite": {
-      "1": "Hurry! Your {diasTexto} streak ends at midnight.",
-      "2": "There's still time to save your {diasTexto} flame!"
+      "1": "Hurry! Your {diasTexto} streak goes out at midnight.",
+      "2": "There is still time to save your {diasTexto} flame!",
+      "3": "Last call, {nome}: one lesson saves the day.",
+      "4": "The flame is getting weak... help me save it?",
+      "5": "Just one lesson before bed, come on!",
+      "6": "Midnight is coming and your {diasTexto} streak is at risk!"
     },
     "comecar": {
       "1": "How about starting a streak today?",
       "2": "One lesson today and the flame lights up!",
-      "3": "Ready to learn something new, {nome}?"
+      "3": "Ready to learn something new, {nome}?",
+      "4": "Every programmer started with one line. Shall we?",
+      "5": "Today is a great day for day one.",
+      "6": "I picked a short lesson for you to start.",
+      "7": "Light this flame with me, {nome}!"
     }
   }
 }

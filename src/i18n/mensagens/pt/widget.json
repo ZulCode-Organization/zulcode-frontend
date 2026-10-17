@@ -26,21 +26,39 @@
     "feito": {
       "1": "Mandou bem! Sua chama de {diasTexto} está garantida hoje.",
       "2": "Ofensiva salva! Até amanhã, {nome}.",
-      "3": "Hoje já foi! Amanhã a gente mantém o fogo aceso."
+      "3": "Hoje já foi! Amanhã a gente mantém o fogo aceso.",
+      "4": "Já são {diasTexto} de ofensiva. Que sequência, {nome}!",
+      "5": "Lição feita. Agora é só curtir o resto do dia.",
+      "6": "Seu cérebro agradece. A chama também!",
+      "7": "Mais um dia na conta: {diasTexto} de ofensiva.",
+      "8": "Tá voando, {nome}! Amanhã tem mais."
     },
     "risco": {
       "1": "Sua chama de {diasTexto} está esperando. Bora?",
       "2": "Uma lição rapidinha e a ofensiva de {diasTexto} segue firme.",
-      "3": "{nome}, separei uma lição pra você hoje!"
+      "3": "{nome}, separei uma lição pra você hoje!",
+      "4": "Cinco minutinhos e a chama continua acesa.",
+      "5": "Bora codar um pouco? A ofensiva de {diasTexto} agradece.",
+      "6": "Tô aqui estudando. Vem junto, {nome}?",
+      "7": "Não deixa {diasTexto} de ofensiva escaparem!",
+      "8": "Uma lição agora e o resto do dia fica livre."
     },
     "noite": {
       "1": "Corre! Sua ofensiva de {diasTexto} apaga à meia-noite.",
-      "2": "Ainda dá tempo de salvar a chama de {diasTexto}!"
+      "2": "Ainda dá tempo de salvar a chama de {diasTexto}!",
+      "3": "Última chamada, {nome}: uma lição salva o dia.",
+      "4": "A chama tá fraquinha... me ajuda a salvar?",
+      "5": "Só uma lição antes de dormir, vai!",
+      "6": "Meia-noite chegando e a ofensiva de {diasTexto} em risco!"
     },
     "comecar": {
       "1": "Que tal começar uma ofensiva hoje?",
       "2": "Uma lição hoje e a chama acende!",
-      "3": "Bora aprender algo novo, {nome}?"
+      "3": "Bora aprender algo novo, {nome}?",
+      "4": "Todo programador começou com uma linha. Bora?",
+      "5": "Hoje é um ótimo dia pro primeiro dia de ofensiva.",
+      "6": "Separei uma lição curtinha pra você começar.",
+      "7": "Acende essa chama comigo, {nome}!"
     }
   }
 }

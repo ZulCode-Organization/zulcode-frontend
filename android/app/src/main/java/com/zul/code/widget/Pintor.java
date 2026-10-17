@@ -16,7 +16,6 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 
 import com.zul.code.R;
-import com.zul.code.arte.Chama;
 
 /**
  * Os desenhos dos widgets. O Android só aceita um punhado de componentes
@@ -28,8 +27,6 @@ final class Pintor {
 
     private static final Typeface NEGRITO = Typeface.create("sans-serif", Typeface.BOLD);
     private static final Typeface MEDIO = Typeface.create("sans-serif-medium", Typeface.NORMAL);
-    /** Largura sobre altura do zul_corpo.png. */
-    private static final float PROPORCAO_DO_ZUL = 409f / 373f;
 
     private Pintor() {}
 
@@ -41,7 +38,8 @@ final class Pintor {
         Canvas tela = new Canvas(imagem);
         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
         fundo(tela, w, h, tema, p);
-        int[] cores = s.temDados ? s.coresDaChama(tema) : tema.chamaApagada;
+        int[] cores = { ChamaNeon.cor(s.dias) };
+        boolean acesa = s.temDados && s.feitoHoje;
         float menor = Math.min(w, h);
 
         String numero = s.temDados ? String.valueOf(s.dias) : textos.entrarTitulo();
@@ -52,8 +50,8 @@ final class Pintor {
             float chama = h * 0.6f;
             float x = h * 0.2f;
             float y = (h - chama) / 2f;
-            brilho(tela, x + chama / 2f, y + chama / 2f, chama, cores, s.feitoHoje, tema, p);
-            Chama.desenhar(c, tela, x, y, chama, cores);
+            brilho(tela, x + chama / 2f, y + chama / 2f, chama, cores, acesa, tema, p);
+            ChamaNeon.desenhar(c, tela, x, y, chama, s.dias, acesa, s.protegida);
             float textoX = x + chama + h * 0.14f;
             float largura = w - textoX - h * 0.14f;
             p.setTypeface(NEGRITO);
@@ -71,8 +69,8 @@ final class Pintor {
         float chama = menor * (h > w * 1.3f ? 0.44f : 0.4f);
         float cx = w / 2f;
         float topo = h * 0.11f;
-        brilho(tela, cx, topo + chama / 2f, chama, cores, s.feitoHoje, tema, p);
-        Chama.desenhar(c, tela, cx - chama / 2f, topo, chama, cores);
+        brilho(tela, cx, topo + chama / 2f, chama, cores, acesa, tema, p);
+        ChamaNeon.desenhar(c, tela, cx - chama / 2f, topo, chama, s.dias, acesa, s.protegida);
 
         float base = topo + chama + h * 0.10f;
         p.setTextAlign(Paint.Align.CENTER);
@@ -110,14 +108,14 @@ final class Pintor {
         // dias no meio e a meta embaixo.
         boolean baixo = h < w * 0.36f;
         float margem = Math.min(w, h) * (baixo ? 0.16f : 0.09f);
-        int[] cores = s.coresDaChama(tema);
+        int[] cores = { ChamaNeon.cor(s.dias) };
         String numero = String.valueOf(s.dias);
         String rotulo = textos.rotulo(s);
 
         float linha = baixo ? (h - margem * 2) * 0.8f : h * 0.24f;
         float topo = baixo ? (h - linha) / 2f : margem;
         brilho(tela, margem + linha / 2f, topo + linha / 2f, linha * 0.9f, cores, s.feitoHoje, tema, p);
-        Chama.desenhar(c, tela, margem, topo, linha, cores);
+        ChamaNeon.desenhar(c, tela, margem, topo, linha, s.dias, s.feitoHoje, s.protegida);
         float numeroX = margem + linha + margem * 0.5f;
         p.setTypeface(NEGRITO);
         p.setColor(s.feitoHoje ? tema.texto : tema.textoSuave);
@@ -137,9 +135,9 @@ final class Pintor {
             float zul = linha * 1.05f;
             caber(p, rotulo, w - fimDoNumero - margem * 2.6f - zul, linha * 0.36f, linha * 0.24f);
             tela.drawText(rotulo, fimDoNumero + margem * 0.5f, baseNumero, p);
-            // O Zul espia no canto, do lado do número.
-            Bitmap cabeca = BitmapFactory.decodeResource(c.getResources(), R.drawable.zul_cabeca);
-            desenharZul(tela, cabeca, new RectF(w - margem - zul, topo - linha * 0.05f, w - margem, topo + zul - linha * 0.05f), tema, p);
+            // O Zul no canto, do lado do número, na pose da hora.
+            Bitmap pose = BitmapFactory.decodeResource(c.getResources(), PoseDoZul.escolher(s));
+            desenharZul(tela, pose, caixaDoZul(pose, w - margem - zul, topo - linha * 0.1f, w - margem, topo + zul - linha * 0.1f), tema, p);
             semanaX = margem;
         }
 
@@ -194,17 +192,16 @@ final class Pintor {
         return imagem;
     }
 
-    /** Um dia: chama acesa (roxa se uma proteção o salvou), hoje por fazer, ou apagado. */
+    /** Um dia: chama neon acesa (no verde do gás se uma proteção o salvou), hoje por fazer, ou apagado. */
     private static void dia(Context c, Canvas tela, float cx, float cy, float d, int i, Situacao s, Tema tema, Paint p) {
         float r = d / 2f;
         if (s.semanaAcesa[i]) {
-            // Na cor da faixa da ofensiva; o dia salvo por uma proteção fica roxo, como no app.
-            int[] faixa = Chama.cores(Math.max(1, s.dias), true, s.semanaProtegida[i]);
-            float icone = d * 0.62f;
-            p.setColor(tema == Tema.AZUL ? 0xFFFFFFFF : faixa[0]);
+            // O círculo leva a cor da faixa bem clara; o dia salvo pelo gás fica verde, como no app.
+            int cor = s.semanaProtegida[i] ? ChamaNeon.COR_DO_GAS : ChamaNeon.cor(Math.max(1, s.dias));
+            float icone = d * 0.7f;
+            p.setColor(tema == Tema.AZUL ? 0xFFFFFFFF : (cor & 0x00FFFFFF) | 0x40000000);
             tela.drawCircle(cx, cy, r, p);
-            int[] dentro = tema == Tema.AZUL ? faixa : new int[] { 0xFFFFFFFF, faixa[1] };
-            Chama.desenhar(c, tela, cx - icone / 2f, cy - icone / 2f, icone, dentro);
+            ChamaNeon.desenhar(c, tela, cx - icone / 2f, cy - icone / 2f, icone, Math.max(1, s.dias), true, false);
             return;
         }
         if (i == s.hoje) {
@@ -214,8 +211,8 @@ final class Pintor {
             p.setColor(tema.destaque);
             tela.drawCircle(cx, cy, r - d * 0.05f, p);
             p.setStyle(Paint.Style.FILL);
-            float icone = d * 0.5f;
-            Chama.desenhar(c, tela, cx - icone / 2f, cy - icone / 2f, icone, tema.chamaApagada);
+            float icone = d * 0.55f;
+            ChamaNeon.desenhar(c, tela, cx - icone / 2f, cy - icone / 2f, icone, 0, false, false);
             return;
         }
         p.setColor(tema.trilho);
@@ -231,15 +228,16 @@ final class Pintor {
         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
         fundo(tela, w, h, tema, p);
         String fala = textos.falaDoZul(s, nome);
-        Bitmap zul = BitmapFactory.decodeResource(c.getResources(), poseDoZul(s));
+        Bitmap zul = BitmapFactory.decodeResource(c.getResources(), PoseDoZul.escolher(s));
+        float proporcao = zul == null ? 1f : zul.getWidth() / (float) zul.getHeight();
         float menor = Math.min(w, h);
         float margem = menor * 0.08f;
 
         if (w > h * 1.3f) {
             // Deitado: o Zul à esquerda, o balão à direita apontando para ele.
             float zulAltura = h * 0.74f;
-            float zulLargura = zulAltura * PROPORCAO_DO_ZUL;
-            RectF onde = new RectF(margem, h - margem - zulAltura, margem + zulLargura, h - margem);
+            float zulLargura = Math.min(zulAltura * proporcao, w * 0.4f);
+            RectF onde = caixaDoZul(zul, margem, h - margem - zulAltura, margem + zulLargura, h - margem);
             desenharZul(tela, zul, onde, tema, p);
             float balaoX = onde.right + margem * 0.9f;
             RectF balao = new RectF(balaoX, margem, w - margem, h * (s.temDados ? 0.66f : 0.86f));
@@ -252,8 +250,8 @@ final class Pintor {
         // Em pé: o balão em cima, o Zul embaixo à direita e a chama à esquerda.
         RectF balao = new RectF(margem, margem, w - margem, h * 0.52f);
         float zulAltura = h * 0.38f;
-        float zulLargura = zulAltura * PROPORCAO_DO_ZUL;
-        RectF onde = new RectF(w - margem - zulLargura, h - margem - zulAltura, w - margem, h - margem);
+        float zulLargura = Math.min(zulAltura * proporcao, w * 0.55f);
+        RectF onde = caixaDoZul(zul, w - margem - zulLargura, h - margem - zulAltura, w - margem, h - margem);
         balao(tela, balao, onde.centerX(), balao.bottom, false, tema, p);
         texto(tela, fala, balao, menor * 0.1f, menor * 0.065f, tema.textoDoBalao, menor * 0.06f);
         desenharZul(tela, zul, onde, tema, p);
@@ -261,13 +259,15 @@ final class Pintor {
         return imagem;
     }
 
-    /**
-     * Qual desenho do Zul aparece em cada momento. Por enquanto há um só;
-     * quando chegarem as outras poses (comemorando, preocupado, dormindo),
-     * é só trocar aqui.
-     */
-    private static int poseDoZul(Situacao s) {
-        return R.drawable.zul_corpo;
+    /** A maior caixa com a proporção da arte que cabe no espaço, encostada embaixo e centrada. */
+    private static RectF caixaDoZul(Bitmap zul, float esquerda, float topo, float direita, float base) {
+        float largura = direita - esquerda;
+        float altura = base - topo;
+        float proporcao = zul == null ? 1f : zul.getWidth() / (float) zul.getHeight();
+        float l = Math.min(largura, altura * proporcao);
+        float a = l / proporcao;
+        float x = esquerda + (largura - l) / 2f;
+        return new RectF(x, base - a, x + l, base);
     }
 
     /** O Zul; no visual azul, com um halo claro atrás para não sumir no fundo. */
@@ -285,8 +285,7 @@ final class Pintor {
 
     /** A chama pequena com o número, no pé do widget do Zul. */
     private static void etiqueta(Context c, Canvas tela, float x, float base, float altura, Situacao s, Tema tema, Textos textos, Paint p) {
-        int[] cores = s.coresDaChama(tema);
-        Chama.desenhar(c, tela, x, base - altura, altura, cores);
+        ChamaNeon.desenhar(c, tela, x, base - altura, altura, s.dias, s.feitoHoje, s.protegida);
         p.setTypeface(NEGRITO);
         p.setTextAlign(Paint.Align.LEFT);
         p.setTextSize(altura * 0.72f);
@@ -301,7 +300,7 @@ final class Pintor {
         float menor = Math.min(w, h);
         float chama = menor * 0.42f;
         float x = w > h * 1.5f ? h * 0.2f : (w - chama) / 2f;
-        Chama.desenhar(c, tela, x, (h - chama) / 2f - (w > h * 1.5f ? 0 : menor * 0.12f), chama, tema.chamaApagada);
+        ChamaNeon.desenhar(c, tela, x, (h - chama) / 2f - (w > h * 1.5f ? 0 : menor * 0.12f), chama, 0, false, false);
         p.setTypeface(NEGRITO);
         p.setColor(tema.texto);
         if (w > h * 1.5f) {

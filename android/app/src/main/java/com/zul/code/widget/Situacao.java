@@ -36,6 +36,8 @@ final class Situacao {
     final int hoje = 6;
     /** Depois das 20h a conversa do Zul fica urgente. */
     final boolean noite;
+    /** Horas desde o começo do ano: muda a cada hora, e é o que troca a pose e a frase do Zul. */
+    final int horaDoAno;
     final String chaveDoDia;
 
     Situacao(DadosDaOfensiva d) {
@@ -47,6 +49,7 @@ final class Situacao {
         protegida = d.protecoes > 0;
         meta = Math.max(1, d.metaMinutos);
         noite = agora.get(Calendar.HOUR_OF_DAY) >= 20;
+        horaDoAno = agora.get(Calendar.DAY_OF_YEAR) * 24 + agora.get(Calendar.HOUR_OF_DAY);
 
         String ultimo = d.ultimoEstudo;
         if (ultimo.isEmpty()) {

@@ -6,6 +6,7 @@ import { Check, X } from "lucide-react";
 import { Atividade, Pergunta, TipoDeAula } from "@/data/atividades";
 import { LicaoTrilha } from "@/lib/types/trilha";
 import { ResultadoExecucao } from "@/hooks/use-executar-js";
+import { prepararPython, rodaNoAparelho } from "@/hooks/use-executar-codigo";
 import { CodeBlock } from "./code-block";
 import { SeloPerguntaBadge } from "./selo-pergunta";
 import { ExercicioAlternativa } from "./exercicio-alternativa";
@@ -172,8 +173,12 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   const { introducao, perguntas, tipoDeAula } = atividade;
   const totalPassos = introducao.length + perguntas.length;
   const emProva = !!tipoDeAula && TIPOS_DE_PROVA.includes(tipoDeAula);
-  // Os exemplos e os testes só rodam no aparelho nas aulas de JavaScript.
-  const podeRodar = !atividade.linguagem || atividade.linguagem === "javascript";
+  // Os exemplos e os testes rodam no aparelho em JavaScript, TypeScript e Python.
+  const podeRodar = rodaNoAparelho(atividade.linguagem);
+  // O Python demora a subir na primeira vez: começa a baixar já na abertura.
+  useEffect(() => {
+    if (atividade.linguagem === "python" && tipoDeAula) prepararPython();
+  }, [atividade.linguagem, tipoDeAula]);
   const faseInicial: Fase = tipoDeAula ? "abertura" : introducao.length > 0 ? "introducao" : "quiz";
 
   const [fase, setFase] = useState<Fase>(faseInicial);
@@ -397,7 +402,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
           <p className="text-[1.02rem] font-medium leading-relaxed text-foreground/80">{slide.texto}</p>
           {/* Exemplo vivo: na aula nova de JavaScript dá para mudar e rodar. */}
           {slide.codigo && tipoDeAula && podeRodar ? (
-            <CodeBlock key={`exemplo-${indiceIntro}`} valorInicial={slide.codigo} titulo="Mude e rode" />
+            <CodeBlock key={`exemplo-${indiceIntro}`} valorInicial={slide.codigo} titulo="Mude e rode" linguagem={atividade.linguagem} />
           ) : (
             slide.codigo && (
               <pre className="overflow-x-auto rounded-2xl border-2 border-border bg-muted/50 px-4 py-3.5 font-mono text-[0.85rem] leading-relaxed text-foreground">
@@ -584,6 +589,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
           onCodigo={guardarCodigo}
           onPassou={() => aplicarResultado(true)}
           podeRodar={podeRodar}
+          linguagem={atividade.linguagem}
         />
       )}
 

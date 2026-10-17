@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useExecutarJs, ResultadoExecucao } from "@/hooks/use-executar-js";
+import type { ResultadoExecucao } from "@/hooks/use-executar-js";
+import { useExecutarCodigo } from "@/hooks/use-executar-codigo";
 
 interface CodeBlockProps {
   /** Código inicial no editor. */
@@ -15,6 +16,8 @@ interface CodeBlockProps {
   onExecutar?: (resultado: ResultadoExecucao) => void;
   titulo?: string;
   className?: string;
+  /** A linguagem do código (sem ela, JavaScript). */
+  linguagem?: string;
 }
 
 /**
@@ -28,8 +31,9 @@ export function CodeBlock({
   onExecutar,
   titulo = "Seu código",
   className,
+  linguagem,
 }: CodeBlockProps) {
-  const { executar, executando } = useExecutarJs();
+  const { executar, executando } = useExecutarCodigo(linguagem);
   const [codigo, setCodigo] = useState(valorInicial);
   const [resultados, setResultados] = useState<ResultadoExecucao[]>([]);
   const saidaRef = useRef<HTMLDivElement>(null);

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Lightbulb, Loader2, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PerguntaTestes } from "@/data/atividades";
-import { useExecutarJs } from "@/hooks/use-executar-js";
+import { useExecutarCodigo } from "@/hooks/use-executar-codigo";
 import { EditorDeCodigo } from "./editor-de-codigo";
 
 interface ExercicioTestesProps {
@@ -15,13 +15,27 @@ interface ExercicioTestesProps {
   onCodigo?: (codigo: string) => void;
   /** Chamado quando todos os testes passam. Errar não custa nada aqui. */
   onPassou: () => void;
-  /** O código só roda no aparelho quando a aula é de JavaScript. */
+  /** O código só roda no aparelho em JavaScript, TypeScript e Python. */
   podeRodar: boolean;
+  /** A linguagem da aula (sem ela, JavaScript). */
+  linguagem?: string;
 }
 
 type EstadoDoTeste = { estado: "parado" | "rodando" | "passou" | "falhou"; deu?: string };
 
-const mostrar = (valor: unknown) => (valor === undefined ? "undefined" : JSON.stringify(valor));
+const mostrarJs = (valor: unknown) => (valor === undefined ? "undefined" : JSON.stringify(valor));
+
+/** Um valor escrito como no Python: True, False, None e o resto igual. */
+function mostrarPy(valor: unknown): string {
+  if (valor === null || valor === undefined) return "None";
+  if (valor === true) return "True";
+  if (valor === false) return "False";
+  if (Array.isArray(valor)) return `[${valor.map(mostrarPy).join(", ")}]`;
+  if (typeof valor === "object") return `{${Object.entries(valor).map(([k, v]) => `${JSON.stringify(k)}: ${mostrarPy(v)}`).join(", ")}}`;
+  return JSON.stringify(valor);
+}
+
+const EXTENSAO: Record<string, string> = { javascript: "js", typescript: "ts", python: "py" };
 
 /** JSON com as chaves em ordem: o banco reordena as chaves dos objetos
  *  esperados, então a comparação não pode depender da ordem em que foram escritas. */
@@ -47,9 +61,55 @@ function montarExecucao(codigo: string, nome: string, testes: PerguntaTestes["te
 }));`;
 }
 
+/** A linha que o conferidor do Python imprime com os resultados. */
+const MARCA_PY = "__zulcode_testes__";
+
+/**
+ * O mesmo conferidor, em Python: chama a função com cada teste e imprime os
+ * resultados numa linha marcada. Para comparar com o esperado (que vem do
+ * banco em JSON), o resultado vira JSON com as chaves em ordem, tupla vira
+ * lista e 7.0 vira 7.
+ */
+function montarExecucaoPython(codigo: string, nome: string, testes: PerguntaTestes["testes"]) {
+  const argumentos = JSON.stringify(JSON.stringify(testes.map((t) => t.args)));
+  return `${codigo}
+
+
+import json as _zj
+
+def _zc(v):
+    if isinstance(v, bool) or v is None:
+        return v
+    if isinstance(v, float) and v.is_integer():
+        return int(v)
+    if isinstance(v, (list, tuple)):
+        return [_zc(x) for x in v]
+    if isinstance(v, dict):
+        return {str(k): _zc(x) for k, x in v.items()}
+    return v
+
+def _zt():
+    f = globals().get(${JSON.stringify(nome)})
+    r = []
+    for a in _zj.loads(${argumentos}):
+        if not callable(f):
+            r.append({"erro": "A função ${nome} não existe"})
+            continue
+        try:
+            r.append({"v": _zj.dumps(_zc(f(*a)), sort_keys=True, separators=(",", ":"), ensure_ascii=False)})
+        except Exception as e:
+            r.append({"erro": type(e).__name__ + ": " + str(e)})
+    print("\\n${MARCA_PY}" + _zj.dumps(r, ensure_ascii=False))
+
+_zt()
+`;
+}
+
 /** Escrever uma função de verdade: os testes rodam e cada um diz se passou. */
-export function ExercicioTestes({ pergunta, codigoDeInicio, onCodigo, onPassou, podeRodar }: ExercicioTestesProps) {
-  const { executar, executando } = useExecutarJs();
+export function ExercicioTestes({ pergunta, codigoDeInicio, onCodigo, onPassou, podeRodar, linguagem = "javascript" }: ExercicioTestesProps) {
+  const { executar, executando } = useExecutarCodigo(linguagem);
+  const ehPython = linguagem === "python";
+  const mostrar = ehPython ? mostrarPy : mostrarJs;
   const [codigo, setCodigo] = useState(codigoDeInicio ?? pergunta.codigoInicial);
   const [estados, setEstados] = useState<EstadoDoTeste[]>(() => pergunta.testes.map(() => ({ estado: "parado" })));
   const [erroGeral, setErroGeral] = useState<string | null>(null);
@@ -65,13 +125,18 @@ export function ExercicioTestes({ pergunta, codigoDeInicio, onCodigo, onPassou, 
     if (!podeRodar || executando) return;
     setErroGeral(null);
     setEstados(pergunta.testes.map(() => ({ estado: "rodando" })));
-    const resultado = await executar(montarExecucao(codigo, pergunta.nomeDaFuncao, pergunta.testes));
+    const resultado = await executar(
+      ehPython ? montarExecucaoPython(codigo, pergunta.nomeDaFuncao, pergunta.testes) : montarExecucao(codigo, pergunta.nomeDaFuncao, pergunta.testes)
+    );
+    // No Python, o resultado vem impresso numa linha marcada.
+    const linhaPy = ehPython ? resultado.logs.find((l) => l.texto.startsWith(MARCA_PY)) : undefined;
+    const bruto = ehPython ? linhaPy?.texto.slice(MARCA_PY.length) ?? null : resultado.resultado;
     let respostas: { v?: string; erro?: string }[] = [];
     if (resultado.esgotouTempo) setErroGeral("O código demorou demais (será que tem um laço infinito?).");
     else if (resultado.erro) setErroGeral(resultado.erro);
     else {
       try {
-        respostas = JSON.parse(resultado.resultado ?? "[]");
+        respostas = JSON.parse(bruto ?? "[]");
       } catch {
         setErroGeral("Não deu para ler o resultado dos testes.");
       }
@@ -82,8 +147,9 @@ export function ExercicioTestes({ pergunta, codigoDeInicio, onCodigo, onPassou, 
         window.setTimeout(() => {
           const r = respostas[k];
           const esperado = canonico(teste.esperado);
-          const deu = r?.erro ? `erro: ${r.erro}` : r?.v === "__indefinido__" ? "undefined" : r?.v ?? "nada";
-          const ok = !!r && !r.erro && deu === esperado;
+          const valor = r?.erro ? undefined : r?.v === "__indefinido__" ? "undefined" : r?.v;
+          const ok = !!r && !r.erro && valor === esperado;
+          const deu = r?.erro ? `erro: ${r.erro}` : valor === undefined ? "nada" : ehPython ? mostrarPy(JSON.parse(valor)) : valor;
           setEstados((atual) => atual.map((e, j) => (j === k ? { estado: ok ? "passou" : "falhou", deu } : e)));
           const todos = respostas.length === pergunta.testes.length && pergunta.testes.every((t, j) => {
             const rj = respostas[j];
@@ -106,7 +172,7 @@ export function ExercicioTestes({ pergunta, codigoDeInicio, onCodigo, onPassou, 
         className="mt-4"
         valor={codigo}
         onMudar={setCodigo}
-        rotulo="solucao.js"
+        rotulo={`solucao.${EXTENSAO[linguagem] ?? "js"}`}
         acao={
           <button
             type="button"

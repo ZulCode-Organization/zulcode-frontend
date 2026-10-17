@@ -1,7 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { CodeXml, Lock, Star } from "lucide-react";
+import { BookOpen, Bug, ClipboardCheck, CodeXml, FileCode2, Lock, Star, Trophy } from "lucide-react";
+import type { TipoDeAula } from "@/data/atividades";
+
+/** Um ícone por tipo de aula; as aulas antigas, sem tipo, ficam com o de código. */
+const ICONE_DO_TIPO: Record<TipoDeAula, typeof CodeXml> = {
+  conceito: BookOpen, codigo: CodeXml, depuracao: Bug, prova: ClipboardCheck, projeto: FileCode2, "prova-da-unidade": Trophy,
+};
 import { cn } from "@/lib/utils";
 import { LicaoTrilha } from "@/lib/types/trilha";
 import { LessonPopup } from "./lesson-popup";
@@ -21,6 +27,8 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
   const { estado } = licao;
   const bloqueada = estado === "bloqueada";
   const preenchido = estado === "concluida" || estado === "atual";
+  // A prova da unidade é o "chefe" da unidade: dourada, para se destacar na trilha.
+  const chefe = licao.tipo === "prova-da-unidade";
   const emAndamento = estado === "atual" && licao.subtitulo === "1/2 etapas";
   const [popupAberto, setPopupAberto] = useState(false);
   const [anchor, setAnchor] = useState<DOMRect | null>(null);
@@ -79,7 +87,7 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
         )}
 
         <span
-          className={cn("absolute left-[5px] top-[13px] size-[62px] rounded-[22px] sm:left-[6px] sm:top-[15px] sm:size-[72px] sm:rounded-[26px]", preenchido ? "bg-primary brightness-75" : "bg-border")}
+          className={cn("absolute left-[5px] top-[13px] size-[62px] rounded-[22px] sm:left-[6px] sm:top-[15px] sm:size-[72px] sm:rounded-[26px]", preenchido ? (chefe ? "bg-[#d4a300]" : "bg-primary brightness-75") : "bg-border")}
           aria-hidden
         />
 
@@ -91,7 +99,7 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
           onClick={handleClick}
           className={cn(
             "absolute left-[5px] top-[5px] flex size-[62px] items-center justify-center rounded-[22px] transition-[top] duration-100 active:top-[11px] sm:left-[6px] sm:top-[6px] sm:size-[72px] sm:rounded-[26px] sm:active:top-[13px]",
-            preenchido && "bg-primary text-primary-foreground",
+            preenchido && (chefe ? "bg-[#ffc800] text-amber-950" : "bg-primary text-primary-foreground"),
             estado === "disponivel" && "border-2 border-primary bg-card text-primary",
             bloqueada && "cursor-not-allowed border-2 border-border bg-muted text-muted-foreground/60",
             shaking && "animate-shake"
@@ -100,7 +108,10 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
           {bloqueada ? (
             <Lock className="size-5 sm:size-6" />
           ) : (
-            <CodeXml className="size-6 sm:size-7" strokeWidth={2.75} />
+            (() => {
+              const Icone = licao.tipo ? ICONE_DO_TIPO[licao.tipo] : CodeXml;
+              return <Icone className="size-6 sm:size-7" strokeWidth={2.75} />;
+            })()
           )}
 
           {estado === "concluida" && (

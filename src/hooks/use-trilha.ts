@@ -3,6 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { EstadoLicao, UnidadeTrilha } from "@/lib/types/trilha";
+import type { TipoDeAula } from "@/data/atividades";
+
+/** O tipo de aula do servidor, no nome do app. */
+const TIPO_DE_AULA: Record<string, TipoDeAula> = {
+  CONCEPT: "conceito", CODE: "codigo", DEBUG: "depuracao", EXAM: "prova", PROJECT: "projeto", UNIT_EXAM: "prova-da-unidade",
+};
+/** O que aparece embaixo do nó das aulas novas, no lugar de "1/2 etapas". */
+const NOME_DO_TIPO: Record<TipoDeAula, string> = {
+  conceito: "Conceito", codigo: "Código", depuracao: "Depuração", prova: "Prova", projeto: "Projeto", "prova-da-unidade": "Prova da unidade",
+};
 
 interface LicaoTrack {
   id: string;
@@ -12,6 +22,7 @@ interface LicaoTrack {
   theoryCompleted: boolean;
   stageCount?: number;
   completedStages?: number;
+  kind?: string | null;
 }
 
 interface UnidadeTrack {
@@ -58,6 +69,8 @@ function montarUnidades(track: TrackResponse): UnidadeTrilha[] {
       } else {
         estado = "bloqueada";
       }
+      const tipo = licao.kind ? TIPO_DE_AULA[licao.kind] : undefined;
+      if (tipo) return { id: licao.id, titulo: licao.title, subtitulo: NOME_DO_TIPO[tipo], xp: licao.xpReward, estado, tipo };
       const totalEtapas = Math.max(1, licao.stageCount ?? 2);
       const feitas = licao.completed ? totalEtapas : Math.min(totalEtapas, licao.completedStages ?? (licao.theoryCompleted ? 1 : 0));
       return { id: licao.id, titulo: licao.title, subtitulo: `${feitas}/${totalEtapas} etapas`, xp: licao.xpReward, estado };

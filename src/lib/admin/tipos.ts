@@ -150,10 +150,12 @@ export interface CursoDoAdmin {
   aulas: number; questoes: number; comProblema: number; rascunhos: number;
 }
 
-export type ProblemaDeAula = "sem_questoes" | "questao_invisivel" | "etapa_vazia" | "sem_resposta" | "sem_introducao";
+export type ProblemaDeAula = "sem_questoes" | "questao_invisivel" | "etapa_vazia" | "sem_resposta" | "sem_introducao" | "questao_quebrada";
 
 export interface AulaDaArvore {
   id: string; titulo: string; ordem: number; xp: number; etapas: number; questoes: number; porEtapa: number[];
+  /** Aula do formato novo (CONCEPT, CODE...): sem etapas, só leitura no admin. Nulo nas antigas. */
+  tipo: string | null;
   problemas: ProblemaDeAula[]; temRascunho: boolean; rascunhoSalvoEm: string | null; publicada: boolean; publicadaEm: string | null; alunos: number;
 }
 export interface UnidadeDaArvore { id: string; titulo: string; ordem: number; aulas: AulaDaArvore[] }

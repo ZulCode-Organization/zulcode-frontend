@@ -14,6 +14,7 @@ import { Trilho } from "./trilho";
 import { Palco } from "./palco";
 import { Painel } from "./painel";
 import { Previa } from "./previa";
+import { LeituraDaAula } from "./leitura-da-aula";
 import { ColarPerguntas } from "./colar";
 import { arquivoDaAula, conferir, converterTipo, lerArquivoDaAula, novaQuestao, novoId, ordenadas } from "./regras";
 import { ErroDaApi, invalidar, pedir, salvarArquivo, useDados } from "@/lib/admin/api";
@@ -41,6 +42,8 @@ export function EditorDeAula({ aulaId }: { aulaId: string }) {
   const { dados, erro, recarregar } = useDados<AulaNoEditor>(`/admin/conteudo/aulas/${aulaId}/editor`, { velhoDepoisDe: Infinity });
   const [versao, setVersao] = useState(0);
 
+  // Aula do formato novo (aberta por um link antigo ou pela busca): mostra só para ler.
+  if (erro && !dados && erro.includes("formato novo")) return <LeituraDaAula aulaId={aulaId} />;
   if (erro && !dados) return <div className="p-6"><Erro tentarDeNovo={recarregar}>{erro}</Erro></div>;
   if (!dados) return <div className="p-6"><Esqueleto linhas={10} /></div>;
   // A chave reinicia o editor quando a aula volta do servidor inteira (depois

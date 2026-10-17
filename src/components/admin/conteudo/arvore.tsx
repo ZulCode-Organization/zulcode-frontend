@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type DragEvent, type KeyboardEvent, type ReactNode } from "react";
 import {
-  AlertTriangle, ArrowLeft, ChevronDown, ChevronRight, Copy, FilePenLine, GripVertical, Layers, Plus, Trash2, UsersRound,
+  AlertTriangle, ArrowLeft, ChevronDown, ChevronRight, Copy, Eye, FilePenLine, GripVertical, Layers, Plus, Trash2, UsersRound,
 } from "lucide-react";
 import { Pagina } from "../shell";
 import { Botao, Erro, Esqueleto, Interruptor, Selo, Vazio } from "../ui";
@@ -17,6 +17,7 @@ import { invalidar, pedir, trocarNoCache, useDados } from "@/lib/admin/api";
 import { numero, relativo } from "@/lib/admin/formato";
 import { cn } from "@/lib/utils";
 import type { Arvore, AulaDaArvore, ProblemaDeAula, SecaoDaArvore, UnidadeDaArvore } from "@/lib/admin/tipos";
+import { NOME_DO_TIPO_DE_AULA } from "../editor/leitura-da-aula";
 
 export const PROBLEMAS: Record<ProblemaDeAula, { texto: string; explicacao: string; grave: boolean }> = {
   sem_questoes: { texto: "Sem questões", explicacao: "A aula não tem nenhuma questão publicada.", grave: true },
@@ -24,6 +25,7 @@ export const PROBLEMAS: Record<ProblemaDeAula, { texto: string; explicacao: stri
   etapa_vazia: { texto: "Etapa vazia", explicacao: "Uma das etapas não tem questão: quem chegar nela não tem o que responder.", grave: true },
   sem_resposta: { texto: "Sem resposta certa", explicacao: "Uma questão tem a resposta certa fora das opções.", grave: true },
   sem_introducao: { texto: "Sem explicação", explicacao: "A aula vai direto às questões, sem explicar o conteúdo antes.", grave: false },
+  questao_quebrada: { texto: "Questão sem resposta", explicacao: "Uma questão do formato novo está sem a resposta certa (alternativa fora da lista, linha do erro que não existe ou teste sem função).", grave: true },
 };
 
 type Arrastado = { tipo: "secao" | "unidade" | "aula"; id: string };
@@ -444,6 +446,8 @@ function LinhaDaAula({
 }) {
   const graves = l.problemas.filter((p) => PROBLEMAS[p].grave);
   const leves = l.problemas.filter((p) => !PROBLEMAS[p].grave);
+  // Aula do formato novo: abre só para ler e não se duplica (o conteúdo mora no código).
+  const endereco = l.tipo ? `/admin/conteudo/aula/${l.id}/ver` : `/admin/conteudo/aula/${l.id}`;
   return (
     <li
       draggable
@@ -455,19 +459,20 @@ function LinhaDaAula({
       className={cn("group relative flex flex-wrap items-center gap-2 rounded-md px-2 py-1.5 outline-none hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary/40", className)}
     >
       <GripVertical className="size-4 shrink-0 cursor-grab text-muted-foreground/50" aria-hidden />
-      <Link href={`/admin/conteudo/aula/${l.id}`} className="min-w-0 flex-1 truncate text-sm font-bold hover:text-primary">{l.titulo}</Link>
+      <Link href={endereco} className="min-w-0 flex-1 truncate text-sm font-bold hover:text-primary">{l.titulo}</Link>
       <span className="flex flex-wrap items-center gap-1">
+        {l.tipo && <Selo tom="azul">{NOME_DO_TIPO_DE_AULA[l.tipo] ?? l.tipo}</Selo>}
         {!l.publicada && <Selo tom="neutro">Não publicada</Selo>}
         {l.temRascunho && l.publicada && <Selo tom="roxo" icone={<FilePenLine className="size-3" />}>Rascunho {relativo(l.rascunhoSalvoEm)}</Selo>}
         {graves.map((p) => <Selo key={p} tom="vermelho" icone={<AlertTriangle className="size-3" />}><span title={PROBLEMAS[p].explicacao}>{PROBLEMAS[p].texto}</span></Selo>)}
         {leves.map((p) => <Selo key={p}><span title={PROBLEMAS[p].explicacao}>{PROBLEMAS[p].texto}</span></Selo>)}
-        <span className="ml-1 hidden text-xs tabular-nums text-muted-foreground sm:inline" title="Questões por etapa">
-          {l.porEtapa.map((n, i) => <Contagem key={i} n={n} />)} · {l.xp} XP · {numero(l.alunos)} {l.alunos === 1 ? "aluno" : "alunos"}
+        <span className="ml-1 hidden text-xs tabular-nums text-muted-foreground sm:inline" title={l.tipo ? "Questões da aula" : "Questões por etapa"}>
+          {l.tipo ? `${l.questoes} ${l.questoes === 1 ? "questão" : "questões"}` : l.porEtapa.map((n, i) => <Contagem key={i} n={n} />)} · {l.xp} XP · {numero(l.alunos)} {l.alunos === 1 ? "aluno" : "alunos"}
         </span>
       </span>
       <span className="flex items-center opacity-60 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-        <Link href={`/admin/conteudo/aula/${l.id}`} aria-label={`Editar ${l.titulo}`} className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-background hover:text-primary"><FilePenLine className="size-3.5" /></Link>
-        <button type="button" onClick={aoDuplicar} aria-label={`Duplicar ${l.titulo}`} className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-background hover:text-foreground"><Copy className="size-3.5" /></button>
+        <Link href={endereco} aria-label={`${l.tipo ? "Ver" : "Editar"} ${l.titulo}`} className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-background hover:text-primary">{l.tipo ? <Eye className="size-3.5" /> : <FilePenLine className="size-3.5" />}</Link>
+        {!l.tipo && <button type="button" onClick={aoDuplicar} aria-label={`Duplicar ${l.titulo}`} className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-background hover:text-foreground"><Copy className="size-3.5" /></button>}
         <button type="button" onClick={aoApagar} aria-label={`Apagar ${l.titulo}`} className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-background hover:text-rose-500"><Trash2 className="size-3.5" /></button>
       </span>
     </li>

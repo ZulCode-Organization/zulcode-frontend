@@ -85,7 +85,7 @@ export function PedidoDeAvisos() {
       aria-labelledby="pedido-de-avisos-titulo"
     >
       <div className="zc-aula-entra mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 text-center">
-        <ZulDaAula pose={bloqueadas ? "muletas" : "correndo"} caiu className="size-52" />
+        <ZulDaAula pose={bloqueadas ? "derretido" : "correndo"} caiu className="size-52" />
         <h1 id="pedido-de-avisos-titulo" className="text-[1.75rem] font-black leading-tight text-foreground">
           {bloqueadas ? t("bloqueadasTitulo") : t("titulo")}
         </h1>

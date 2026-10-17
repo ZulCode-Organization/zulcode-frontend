@@ -28,7 +28,7 @@ export function GabaritoDaProva({ perguntas, respostas, minimo, onContinuar, onT
     <div className="zc-aula flex min-h-dvh flex-col bg-background">
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5 px-4 pb-6 pt-[calc(2rem+env(safe-area-inset-top))]">
         <div className="flex flex-col items-center gap-2 text-center">
-          <ZulDaAula pose={passou ? "comemorando" : "derretido"} caiu className="size-36" />
+          <ZulDaAula pose={passou ? "oculos" : "derretido"} caiu className="size-36" />
           <h1 className="text-3xl font-black text-foreground">{passou ? `Aprovado: ${nota}%` : `Faltou pouco: ${nota}%`}</h1>
           <p className="text-sm font-bold text-muted-foreground">
             {minimo !== undefined ? `Mínimo para passar: ${minimo}%. ` : ""}Você acertou {certas} de {perguntas.length}.

@@ -99,7 +99,7 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salv
   return (
     <div className="zc-aula flex min-h-dvh flex-col bg-background">
       <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
-        <ZulDaAula pose="comemorando" caiu className="size-44" />
+        <ZulDaAula pose="oculos" caiu className="size-44" />
         <h1 className="text-3xl font-black text-foreground">Lição concluída!</h1>
 
         <div className="flex gap-4">

@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 /** As artes do Zul (WebP animado em public/zul). */
 export type PoseDoZul =
   | "coco"
-  | "comemorando"
   | "correndo"
   | "derretido"
   | "equilibrio"
@@ -16,7 +15,6 @@ export type PoseDoZul =
   | "lendo"
   | "lupa"
   | "mergulho"
-  | "muletas"
   | "oculos";
 
 export function ZulDaAula({ pose, className, caiu = false }: { pose: PoseDoZul; className?: string; caiu?: boolean }) {

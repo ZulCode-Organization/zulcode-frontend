@@ -11,7 +11,7 @@ final class PoseDoZul {
 
     /** Estudou hoje: o Zul comemora. */
     private static final int[] FEITO = {
-        R.drawable.zul_pose_comemorando, R.drawable.zul_pose_forte, R.drawable.zul_pose_oculos,
+        R.drawable.zul_pose_oculos, R.drawable.zul_pose_forte,
         R.drawable.zul_pose_equilibrio, R.drawable.zul_pose_coco, R.drawable.zul_pose_mergulho,
     };
     /** Tem ofensiva e ainda não estudou: o Zul está estudando, chamando para a lição. */
@@ -21,7 +21,7 @@ final class PoseDoZul {
     };
     /** Depois das 20h, com a ofensiva em risco: pressa. */
     private static final int[] NOITE = {
-        R.drawable.zul_pose_correndo, R.drawable.zul_pose_muletas, R.drawable.zul_pose_derretido,
+        R.drawable.zul_pose_correndo, R.drawable.zul_pose_escrevendo, R.drawable.zul_pose_derretido,
     };
     /** Sem ofensiva: um convite para começar. */
     private static final int[] COMECAR = {

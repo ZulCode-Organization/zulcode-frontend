@@ -283,7 +283,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   if (fase === "sem-penas") {
     return (
       <div className="zc-aula flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center">
-        <ZulDaAula pose="muletas" caiu className="size-44" />
+        <ZulDaAula pose="derretido" caiu className="size-44" />
         <h1 className="mt-4 text-3xl font-black">Suas penas acabaram</h1>
         <p className="mt-3 max-w-md text-muted-foreground">Infelizmente não foi dessa vez. Recupere suas penas e tente novamente mais tarde — cada uma volta em uma hora.</p>
         <button type="button" onClick={sair} className="mt-7 rounded-2xl bg-primary px-7 py-3.5 text-sm font-black text-primary-foreground">Voltar para a jornada</button>

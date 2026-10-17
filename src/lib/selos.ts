@@ -34,14 +34,14 @@ type Familia = { arte: string; cores: CoresDoSelo };
 const FAMILIAS = {
   aulas: { arte: arte("zul-programando"), cores: CORES.azul },
   xp: { arte: arte("zul-mergulho"), cores: CORES.violeta },
-  rank: { arte: arte("zul-comemorando"), cores: CORES.ouro },
+  rank: { arte: arte("zul-oculos"), cores: CORES.ouro },
   unidades: { arte: arte("zul-lupa"), cores: CORES.verde },
   perfeitas: { arte: arte("zul-equilibrio"), cores: CORES.ciano },
   ofensiva: { arte: arte("zul-correndo"), cores: CORES.laranja },
   estudo: { arte: arte("zul-lendo"), cores: CORES.rosa },
-  rupees: { arte: arte("zul-oculos"), cores: CORES.esmeralda },
+  rupees: { arte: arte("zul-coco"), cores: CORES.esmeralda },
   ritmo: { arte: arte("zul-escrevendo"), cores: CORES.ambar },
-  fenix: { arte: arte("zul-muletas"), cores: CORES.vermelho },
+  fenix: { arte: arte("zul-forte"), cores: CORES.vermelho },
   madrugador: { arte: arte("zul-lagarta"), cores: CORES.amarelo },
   coruja: { arte: arte("zul-derretido"), cores: CORES.indigo },
   estilo: { arte: arte("zul-pintando"), cores: CORES.magenta },
@@ -100,7 +100,7 @@ export function seloDaConquista(id: string) {
 
 /** Cada mês tem a sua arte e a sua cor na medalha. */
 const MESES: { arte: string; cor: string }[] = [
-  { arte: arte("zul-comemorando"), cor: "#fb7185" },
+  { arte: arte("zul-forte"), cor: "#fb7185" },
   { arte: arte("zul-pintando"), cor: "#c084fc" },
   { arte: arte("zul-lendo"), cor: "#60a5fa" },
   { arte: arte("zul-lagarta"), cor: "#34d399" },

@@ -9,6 +9,7 @@ import { Botao, Cabecalho, Entrada, Erro, Rotulo, Selo, Vazio } from "../ui";
 import { Dialogo } from "../dialogo";
 import { avisar } from "../avisos";
 import { EscolhaDeLogo, LogoDoCurso } from "./logo";
+import { AulasNovas } from "./aulas-novas";
 import { usePerfil } from "@/hooks/use-perfil";
 import { invalidar, pedir, useDados } from "@/lib/admin/api";
 import { numero } from "@/lib/admin/formato";
@@ -33,6 +34,7 @@ export function ListaDeCursos() {
         descricao="Cursos, seções, unidades e aulas. Abra um curso para ver a árvore inteira e editar as aulas."
         acoes={ehAdmin && <Botao variante="primario" icone={<Plus className="size-4" />} onClick={() => setNovo(true)}>Novo curso</Botao>}
       />
+      {ehAdmin && <AulasNovas />}
       {erro && <Erro tentarDeNovo={recarregar}>{erro}</Erro>}
       {!dados ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <div key={i} className="h-40 animate-pulse rounded-xl bg-muted" />)}</div>

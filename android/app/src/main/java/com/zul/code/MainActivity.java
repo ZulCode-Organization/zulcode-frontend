@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.getcapacitor.BridgeActivity;
 import com.zul.code.avisos.PluginDosAvisos;
+import com.zul.code.pagamento.PluginDePagamento;
 import com.zul.code.sistema.PluginDasCoresDasBarras;
 import com.zul.code.sistema.PluginDoIcone;
 import com.zul.code.widget.PluginDoWidget;
@@ -18,6 +19,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(PluginDasCoresDasBarras.class);
         registerPlugin(PluginDosAvisos.class);
         registerPlugin(PluginDoIcone.class);
+        registerPlugin(PluginDePagamento.class);
         super.onCreate(estadoSalvo);
     }
 

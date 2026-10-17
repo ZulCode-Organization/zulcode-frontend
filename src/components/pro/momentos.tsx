@@ -506,12 +506,15 @@ export function ArtePlano({
   comTeste,
   forma,
   onForma,
+  soAssinatura = false,
 }: {
   periodo: PeriodoCobranca;
   onPeriodo: (p: PeriodoCobranca) => void;
   comTeste: boolean;
   forma: FormaDePagar;
   onForma: (f: FormaDePagar) => void;
+  /** Pela Play Store só há assinatura: some a escolha entre cartão e Pix. */
+  soAssinatura?: boolean;
 }) {
   const anual = precoDoPeriodo("anual");
   const mensal = precoDoPeriodo("mensal");
@@ -571,6 +574,7 @@ export function ArtePlano({
       </p>
       {opcao("anual", "Anual", `${formatarBRL(anual.total)} por ano`, `Economize ${Math.round(DESCONTO_ANUAL * 100)}%`)}
       {opcao("mensal", "Mensal", `${formatarBRL(mensal.total)} por mês`)}
+      {!soAssinatura && (
       <div role="radiogroup" aria-label="Como pagar" className="zc-pro-sobe mt-1 grid w-full grid-cols-2 gap-1 rounded-2xl bg-white/[0.07] p-1">
         {(
           [
@@ -597,6 +601,7 @@ export function ArtePlano({
           </button>
         ))}
       </div>
+      )}
       <p className="mt-1 text-center text-[0.82rem] leading-snug text-white/55">
         {forma === "unico"
           ? `Você paga hoje e tem ${periodo === "anual" ? "1 ano" : `${DIAS_DO_PAGAMENTO_UNICO.mensal} dias`} de PRO. Não renova sozinho.`

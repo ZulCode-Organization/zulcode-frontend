@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
 import { Feather, Loader2, Sparkles, X } from "lucide-react";
 import { usePerfil } from "@/hooks/use-perfil";
@@ -17,6 +17,7 @@ import {
   type FormaDePagar,
   type PeriodoCobranca,
 } from "@/lib/pro/planos";
+import { comprarPeloGoogle, pagamentoPeloGoogle, restaurarComprasDoGoogle } from "@/lib/pro/pagamento-google";
 import { cn } from "@/lib/utils";
 import { CampoDeEstrelas } from "./espaco/campo-de-estrelas";
 import { Cenarios, type Cena } from "./espaco/cenarios";
@@ -33,6 +34,8 @@ import {
 } from "./momentos";
 import { PagamentoEmbutido } from "./pagamento-embutido";
 import { ZulPro } from "./zul-pro";
+
+const semAssinar = () => () => {};
 
 const ESPACO = "radial-gradient(120% 80% at 50% 0%, #1a1145 0%, #0c0824 55%, #06040f 100%)";
 
@@ -95,8 +98,12 @@ export function FluxoPro({ sessao }: { sessao: string | null }) {
   // Quem já usou o teste não pode ver a promessa de "7 dias grátis".
   const comTeste = !assinatura?.jaTeveTeste;
   // O pagamento único não tem teste: a pessoa paga e já é PRO.
-  const comTesteNaForma = comTeste && forma === "assinatura";
-  const passos = PASSOS.filter((p) => p.id !== "teste" || comTeste);
+  // No app Android novo a compra é pela Play Store: sem Pix e sem o passo do
+  // Stripe — o botão do plano já abre a tela de pagamento do Google.
+  const peloGoogle = useSyncExternalStore(semAssinar, pagamentoPeloGoogle, () => false);
+  const [comprando, setComprando] = useState(false);
+  const comTesteNaForma = comTeste && (peloGoogle || forma === "assinatura");
+  const passos = PASSOS.filter((p) => (p.id !== "teste" || comTeste) && (p.id !== "pagamento" || !peloGoogle));
   const passo = passos[Math.min(indice, passos.length - 1)];
 
   useEffect(() => {
@@ -162,6 +169,44 @@ export function FluxoPro({ sessao }: { sessao: string | null }) {
   }, [sessao, faseEscolhida, tentativaConferencia, atualizar, router]);
 
   const fechar = useCallback(() => router.push("/home"), [router]);
+
+  /** Compra pela Play Store; quem decide se virou PRO é o servidor, conferindo no Google. */
+  const comprarNoGoogle = async () => {
+    if (comprando) return;
+    setComprando(true);
+    setAviso("");
+    try {
+      const resultado = await comprarPeloGoogle(periodo);
+      if (resultado.tipo === "pendente") setAviso("Pagamento pendente: o PRO liga assim que o Google confirmar.");
+      if (resultado.tipo === "pro") {
+        setAssinatura(resultado.estado);
+        setFaseEscolhida("boas-vindas");
+        setPulso((n) => n + 1);
+        atualizar();
+      }
+    } catch (e) {
+      setAviso(e instanceof Error ? e.message : "O pagamento não foi concluído.");
+    } finally {
+      setComprando(false);
+    }
+  };
+
+  /** Quem já assinou pela Play Store (aparelho novo, app reinstalado) liga o PRO de novo aqui. */
+  const restaurar = async () => {
+    setAviso("");
+    try {
+      if (await restaurarComprasDoGoogle()) {
+        setAssinatura(await estadoDaAssinatura());
+        setFaseEscolhida("boas-vindas");
+        setPulso((n) => n + 1);
+        atualizar();
+      } else {
+        setAviso("Não achamos uma assinatura do PRO nesta conta do Google.");
+      }
+    } catch (e) {
+      setAviso(e instanceof Error ? e.message : "Não deu para procurar as compras agora.");
+    }
+  };
 
   const irPara = useCallback(
     (destino: number) => {
@@ -304,7 +349,7 @@ export function FluxoPro({ sessao }: { sessao: string | null }) {
                 )}
               >
                 {passo.id === "plano" ? (
-                  <ArtePlano periodo={periodo} onPeriodo={setPeriodo} comTeste={comTesteNaForma} forma={forma} onForma={setForma} />
+                  <ArtePlano periodo={periodo} onPeriodo={setPeriodo} comTeste={comTesteNaForma} forma={peloGoogle ? "assinatura" : forma} onForma={setForma} soAssinatura={peloGoogle} />
                 ) : passo.id === "pagamento" ? (
                   <PagamentoEmbutido periodo={periodo} forma={forma} />
                 ) : (
@@ -329,7 +374,16 @@ export function FluxoPro({ sessao }: { sessao: string | null }) {
                 </button>
               ) : (
                 <>
-                  <BotaoPro onClick={avancar}>{textoDoBotao}</BotaoPro>
+                  <BotaoPro onClick={peloGoogle && passo.id === "plano" ? () => void comprarNoGoogle() : avancar} carregando={comprando}>{textoDoBotao}</BotaoPro>
+                  {peloGoogle && passo.id === "plano" && (
+                    <button
+                      type="button"
+                      onClick={() => void restaurar()}
+                      className="block w-full pt-2 text-center text-[0.72rem] font-black uppercase tracking-[0.06em] text-white/55 transition-colors hover:text-white"
+                    >
+                      Já assino pela Play Store
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => (APRESENTACOES.has(passo.id) ? irPara(passos.findIndex((p) => p.id === "plano")) : fechar())}
@@ -414,9 +468,14 @@ function PainelAssinante({ assinatura, onVoltar }: { assinatura: EstadoAssinatur
   const [abrindo, setAbrindo] = useState(false);
   const [erro, setErro] = useState("");
   const teste = fimDoTeste(assinatura);
-  const temAssinatura = Boolean(assinatura?.status);
+  // Comprado pela Play Store: os dados e o "gerenciar" são do Google.
+  const google = !assinatura?.status && assinatura?.googlePlay ? assinatura.googlePlay : null;
+  const temAssinatura = Boolean(assinatura?.status) || Boolean(google);
 
   const linhas: { rotulo: string; valor: string }[] = [];
+  if (google?.plano) linhas.push({ rotulo: "Plano", valor: google.plano === "anual" ? "Anual" : "Mensal" });
+  if (google?.validoAte) linhas.push({ rotulo: google.renovaSozinha ? "Renova em" : "Termina em", valor: formatarDia(google.validoAte) });
+  if (google) linhas.push({ rotulo: "Pago pela", valor: "Google Play" });
   if (assinatura?.plano) linhas.push({ rotulo: "Plano", valor: assinatura.plano === "anual" ? "Anual" : "Mensal" });
   if (!temAssinatura && assinatura?.pagoAte) linhas.push({ rotulo: "PRO pago até", valor: formatarDia(assinatura.pagoAte) });
   if (assinatura?.validoAte) {
@@ -430,6 +489,11 @@ function PainelAssinante({ assinatura, onVoltar }: { assinatura: EstadoAssinatur
   }
 
   const gerenciar = async () => {
+    if (google) {
+      // A Play Store abre fora do app: é lá que se cancela ou troca de plano.
+      window.open(google.gerenciar, "_blank");
+      return;
+    }
     setAbrindo(true);
     setErro("");
     try {

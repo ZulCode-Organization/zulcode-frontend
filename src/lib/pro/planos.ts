@@ -64,6 +64,16 @@ export interface EstadoAssinatura {
   jaTeveTeste: boolean;
   /** Até quando vale o PRO pago uma vez (Pix), se ainda vale. */
   pagoAte?: string | null;
+  /** A assinatura comprada pela Play Store (app Android), se houver. */
+  googlePlay?: {
+    estado: string;
+    plano: string | null;
+    validoAte: string | null;
+    renovaSozinha: boolean;
+    comTeste: boolean;
+    /** Onde cancelar ou trocar de plano: a própria Play Store. */
+    gerenciar: string;
+  } | null;
 }
 
 async function chamar<T>(caminho: string, init: RequestInit = {}): Promise<T> {

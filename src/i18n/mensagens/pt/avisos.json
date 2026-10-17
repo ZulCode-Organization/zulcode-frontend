@@ -58,5 +58,16 @@
   "unidade": {
     "um": "dia",
     "varios": "dias"
+  },
+  "pedido": {
+    "titulo": "Não deixe a chama apagar",
+    "texto": "Ative as notificações e o Zul te lembra na hora de estudar, avisa quando alguém te passa na liga e conta as novidades.",
+    "ativar": "Ativar notificações",
+    "ativando": "Ativando…",
+    "agoraNao": "Agora não",
+    "bloqueadasTitulo": "As notificações estão bloqueadas",
+    "bloqueadasTexto": "Para receber os lembretes do Zul, libere as notificações do ZulCode nos ajustes do aparelho.",
+    "abrirAjustes": "Abrir ajustes",
+    "falha": "Não deu para ativar agora. Tente de novo pelas Configurações."
   }
 }

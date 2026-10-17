@@ -58,5 +58,16 @@
   "unidade": {
     "um": "day",
     "varios": "days"
+  },
+  "pedido": {
+    "titulo": "Do not let the flame go out",
+    "texto": "Turn on notifications and Zul reminds you when it is time to study, tells you when someone passes you in the league and shares what is new.",
+    "ativar": "Turn on notifications",
+    "ativando": "Turning on…",
+    "agoraNao": "Not now",
+    "bloqueadasTitulo": "Notifications are blocked",
+    "bloqueadasTexto": "To get Zul reminders, allow ZulCode notifications in your device settings.",
+    "abrirAjustes": "Open settings",
+    "falha": "Could not turn them on now. Try again from Settings."
   }
 }

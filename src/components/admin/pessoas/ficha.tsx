@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { DropdownMenu } from "radix-ui";
 import {
-  ArrowLeft, Award, BadgeCheck, Ban, Bell, BookOpen, Code2, Crown, Download, ExternalLink, Feather, Gem, Gift, MoreHorizontal, Pencil, Shield,
+  ArrowLeft, Award, BadgeCheck, Ban, Bell, BookOpen, Code2, Crown, Download, ExternalLink, Gem, Gift, MoreHorizontal, Pencil, Shield,
   ShoppingBag, Sparkles, StickyNote, Trash2, Trophy, Undo2, UserCog, UserPlus, Wallet,
 } from "lucide-react";
 import { ChamaDupla } from "@/components/shared/chama-dupla";
+import { PenaDaBarra } from "@/components/app-shell/barra-viva/tema";
 import { Pagina } from "../shell";
 import { AreaDeTexto, AvatarPequeno, Botao, Cartao, Erro, Esqueleto, Segmentado, Selo, Vazio } from "../ui";
 import { avisar } from "../avisos";
@@ -151,7 +152,7 @@ function Resumo({ p }: { p: FichaDaPessoa }) {
     { rotulo: "XP", valor: numero(p.xp), icone: <Sparkles className="size-4 text-amber-500" /> },
     { rotulo: "Ofensiva", valor: `${numero(p.currentStreak)} ${p.currentStreak === 1 ? "dia" : "dias"}`, nota: `maior: ${numero(p.longestStreak)}`, icone: <ChamaDupla className="size-4" dias={p.currentStreak} aceso={p.currentStreak > 0} /> },
     { rotulo: "Rupees", valor: numero(p.coins), icone: <Gem className="size-4 text-emerald-500" /> },
-    { rotulo: "Penas", valor: `${p.lives}`, nota: `${p.errorShields} escudos · ${p.streakFreezes} protetores`, icone: <Feather className="size-4 text-rose-500" /> },
+    { rotulo: "Penas", valor: `${p.lives}`, nota: `${p.errorShields} escudos · ${p.streakFreezes} protetores`, icone: <PenaDaBarra tema="normal" className="size-4" /> },
   ];
   return (
     <div className="space-y-4">

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Feather, Hammer, X } from "lucide-react";
+import { Hammer, X } from "lucide-react";
+import { PenaDaBarra } from "@/components/app-shell/barra-viva/tema";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { limparPerfilCache } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
@@ -148,7 +149,7 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
 
 function SemPenas({ aoGanharPena }: { aoGanharPena: () => void }) {
   const router = useRouter();
-  return <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center"><span className="flex size-20 items-center justify-center rounded-[28px] bg-rose-500/10 text-rose-500"><Feather className="size-10" /></span><h1 className="mt-6 text-3xl font-black">Sem penas para começar</h1><p className="mt-3 max-w-md text-muted-foreground">Você precisa ter ao menos uma pena para iniciar uma aula. A próxima pena será recuperada em até uma hora.</p><button type="button" onClick={() => router.push("/home")} className="mt-7 rounded-2xl bg-primary px-7 py-3.5 text-sm font-black text-primary-foreground">Voltar para a jornada</button><PenaPorAnuncio visual="botao" aoGanhar={aoGanharPena} /></div>;
+  return <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 text-center"><span className="flex size-20 items-center justify-center rounded-[28px] bg-violet-500/10"><PenaDaBarra tema="normal" vazia className="size-10" /></span><h1 className="mt-6 text-3xl font-black">Sem penas para começar</h1><p className="mt-3 max-w-md text-muted-foreground">Você precisa ter ao menos uma pena para iniciar uma aula. A próxima pena será recuperada em até uma hora.</p><button type="button" onClick={() => router.push("/home")} className="mt-7 rounded-2xl bg-primary px-7 py-3.5 text-sm font-black text-primary-foreground">Voltar para a jornada</button><PenaPorAnuncio visual="botao" aoGanhar={aoGanharPena} /></div>;
 }
 
 /**

@@ -3,7 +3,8 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { CodeXml, Feather } from "lucide-react";
+import { CodeXml } from "lucide-react";
+import { PenaDaBarra } from "@/components/app-shell/barra-viva/tema";
 import { LicaoTrilha } from "@/lib/types/trilha";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 
@@ -122,7 +123,7 @@ export function LessonPopup({ licao, anchor, onClose }: LessonPopupProps) {
           )}
           <p className="mt-1.5 text-[0.82rem] font-extrabold text-primary">+{licao.xp} XP</p>
 
-          {semPenas && <p className="mt-3 flex items-center justify-center gap-1.5 text-xs font-bold text-rose-500"><Feather className="size-4" />Sem penas. A próxima volta em até 1 hora.</p>}
+          {semPenas && <p className="mt-3 flex items-center justify-center gap-1.5 text-xs font-bold text-muted-foreground"><PenaDaBarra tema="normal" vazia className="size-4" />Sem penas. A próxima volta em até 1 hora.</p>}
           <button
             type="button"
             disabled={iniciando}

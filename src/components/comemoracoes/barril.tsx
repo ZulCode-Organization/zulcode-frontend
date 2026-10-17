@@ -2,14 +2,15 @@
 
 import { useState, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
-import { Barrel, Feather, ShieldCheck, Zap } from "lucide-react";
+import { Barrel, ShieldCheck, Zap } from "lucide-react";
+import { PenaDaBarra } from "@/components/app-shell/barra-viva/tema";
 import { GasOfensiva } from "@/components/shared/gas-ofensiva";
 import { Rupee } from "@/components/shared/rupee";
 import { COR_DA_RARIDADE, abrirBarril, type Barril, type ConteudoDoBarril, type ItemDoBarril } from "@/lib/barril";
 import { MolduraDeComemoracao } from "./moldura";
 
 function IconeDoItem({ item, className }: { item: ItemDoBarril; className?: string }) {
-  if (item === "pena") return <Feather className={className} />;
+  if (item === "pena") return <PenaDaBarra tema="normal" className={className} />;
   if (item === "gas") return <GasOfensiva className={className} />;
   if (item === "escudo") return <ShieldCheck className={className} />;
   return <Zap className={className} />;

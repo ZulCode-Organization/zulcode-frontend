@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { PenaDesgastada, PenaInfinita } from "@/components/shared/pena-desgastada";
 import { ChamaDupla } from "@/components/shared/chama-dupla";
+import { COR_DA_PENA_NO_TEMA, useTemaDaBarra } from "@/components/app-shell/barra-viva/tema";
+import { cn } from "@/lib/utils";
 
 interface BarraDaAulaProps {
   progresso: number;
@@ -19,6 +21,7 @@ interface BarraDaAulaProps {
  * balança quando ela sobe), brilha a cada passo e esquenta com acertos seguidos.
  */
 export function BarraDaAula({ progresso, seguidas, vidas, vidasIlimitadas, onSair }: BarraDaAulaProps) {
+  const tema = useTemaDaBarra();
   const cheio = useRef<HTMLDivElement>(null);
   const anterior = useRef(progresso);
 
@@ -70,7 +73,7 @@ export function BarraDaAula({ progresso, seguidas, vidas, vidasIlimitadas, onSai
       </div>
 
       <span
-        className="flex shrink-0 items-center gap-1.5 text-sm font-black text-rose-500"
+        className={cn("flex shrink-0 items-center gap-1.5 text-sm font-black", COR_DA_PENA_NO_TEMA[vidas <= 0 && !vidasIlimitadas ? "vazia" : tema])}
         title={vidasIlimitadas ? "Penas ilimitadas" : `${vidas} penas restantes`}
       >
         {vidasIlimitadas ? (

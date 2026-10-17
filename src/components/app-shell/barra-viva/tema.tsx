@@ -127,7 +127,7 @@ const LADO_DE_CIMA = "M3 45C8 30.5 24 18 37 11L56 1V-8H-8V56Z";
 const LADO_DE_BAIXO = "M3 45C8 30.5 24 18 37 11L56 1V56H-6Z";
 
 /** A cor da pena em cada tema. As classes são literais para o Tailwind gerar. */
-const COR_DA_PENA_NO_TEMA = {
+export const COR_DA_PENA_NO_TEMA = {
   normal: "text-violet-500",
   halloween: "text-violet-600 dark:text-violet-400",
   natal: "text-green-600 dark:text-green-500",

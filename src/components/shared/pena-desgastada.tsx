@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Feather, Infinity as Infinito } from "lucide-react";
+import { Infinity as Infinito } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PenaDaBarra, useTemaDaBarra } from "@/components/app-shell/barra-viva/tema";
 
 /** Dispara uma vez quando o número cai, e não quando ele apenas é baixo. */
 function useTremorAoPerder(valor: number) {
@@ -25,7 +26,8 @@ function useTremorAoPerder(valor: number) {
 /**
  * A pena da vida.
  *
- * O desenho é o `Feather` do lucide, limpo e sem nada por cima. Houve uma
+ * O desenho é o mesmo da barra de cima (`PenaDaBarra`), com a cor do tema
+ * do momento (Halloween, Natal). Houve uma
  * tentativa de gastar a pena conforme as vidas caíam, com máscara: ficou ruim
  * em qualquer tamanho que a barra usa, então saiu inteira.
  *
@@ -52,19 +54,14 @@ export function PenaDesgastada({
 }) {
   const tremendo = useTremorAoPerder(restantes) && tremer;
   const vazia = restantes <= 0;
+  const tema = useTemaDaBarra();
 
   return (
     <span
       className={cn("relative inline-flex", tremendo && "zc-pena-desgasta")}
       title={`${restantes} de ${maximo} penas`}
     >
-      <Feather
-        className={cn(
-          "size-5 transition-[fill,color] duration-500",
-          vazia ? "fill-muted-foreground/35 text-muted-foreground/60" : "fill-rose-500 text-rose-800",
-          className,
-        )}
-      />
+      <PenaDaBarra tema={tema} vazia={vazia} className={cn("size-5 transition-colors duration-500", className)} />
     </span>
   );
 }
@@ -82,7 +79,7 @@ export function PenaDesgastada({
 export function PenaInfinita({ className }: { className?: string }) {
   return (
     <span className={cn("relative inline-flex text-violet-500", className)} title="Penas ilimitadas">
-      <Feather className={cn("size-5 fill-violet-500 text-violet-800", className)} />
+      <PenaDaBarra tema="normal" className={cn("size-5", className)} />
       <Infinito
         aria-hidden
         // Canto de cima à direita, meio pra fora da pena, como um selo.

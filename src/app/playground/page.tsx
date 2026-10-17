@@ -45,6 +45,7 @@ import { PainelBibliotecas } from "@/components/playground/painel-bibliotecas";
 import { PainelProjetos } from "@/components/playground/painel-projetos";
 import { PainelCompartilhar } from "@/components/playground/painel-compartilhar";
 import { PainelSnippets } from "@/components/playground/painel-snippets";
+import { DialogoNovo } from "@/components/playground/dialogo-novo";
 
 /** O playground.
  *
@@ -56,7 +57,7 @@ import { PainelSnippets } from "@/components/playground/painel-snippets";
 
 type Painel =
   | null | "comandos" | "temas" | "ajustes" | "bibliotecas" | "projetos"
-  | "compartilhar" | "snippets" | "arquivo" | "nome-projeto";
+  | "compartilhar" | "snippets" | "arquivo" | "nome-projeto" | "novo";
 
 /** Comandos que só fazem sentido com uma página (HTML/CSS/JS): somem em Python. */
 const SO_DA_PAGINA = new Set(["sozinho", "fora", "bibliotecas", "modo", "html", "baixar-nada", "mover-esquerda", "mover-direita"]);
@@ -510,6 +511,8 @@ function Playground() {
         rodando={status === "running"}
         rodarSozinho={ajustes.rodarSozinho}
         podeParar={emPython ? status === "running" : !!preview}
+        comRodarSozinho={!emPython}
+        aoNovo={() => setPainel("novo")}
         aoRenomear={() => setPainel("nome-projeto")}
         aoRodar={rodar}
         aoParar={stop}
@@ -549,12 +552,12 @@ function Playground() {
             type="button"
             aria-pressed={painelMovel === id}
             onClick={() => setPainelMovel(id)}
-            className="zc-pg-botao h-8 flex-1 gap-1.5 rounded-none text-[0.72rem]"
+            className="zc-pg-botao h-11 flex-1 gap-1.5 rounded-none text-[0.75rem] font-black uppercase tracking-[0.04em]"
             style={painelMovel === id
-              ? { borderBottom: "2px solid var(--pg-acento)", color: "var(--pg-acento)" }
-              : { borderBottom: "2px solid transparent" }}
+              ? { borderBottom: "3px solid var(--pg-acento)", color: "var(--pg-acento)" }
+              : { borderBottom: "3px solid transparent" }}
           >
-            <Icone className="size-3.5" />
+            <Icone className="size-4" />
             {rotulo}
           </button>
         ))}
@@ -715,6 +718,12 @@ function Playground() {
         />
       )}
       {painel === "snippets" && <PainelSnippets aoFechar={() => setPainel(null)} />}
+      {painel === "novo" && (
+        <DialogoNovo
+          aoEscolher={(modo) => { novoProjeto(modo); setPainel(null); }}
+          aoFechar={() => setPainel(null)}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Ban, Trash2 } from "lucide-react";
+import { ZulDaAula } from "@/components/atividade/zul-da-aula";
 import { cn } from "@/lib/utils";
 import type { ConsoleEntry } from "@/lib/playground/executor";
 
@@ -65,10 +66,18 @@ export function ConsolePlayground({
             </pre>
           </div>
         )) : (
-          <p className="zc-pg-apagado flex items-center gap-2">
-            <Ban className="size-3" />
-            {rodando ? "Executando…" : "Nada no console ainda."}
-          </p>
+          rodando ? (
+            <p className="zc-pg-apagado flex items-center gap-2">
+              <Ban className="size-3" />
+              Executando…
+            </p>
+          ) : (
+            // Vazio: o Zul lendo, à espera do que o código vai mostrar.
+            <div className="zc-pg-apagado flex h-full min-h-28 flex-col items-center justify-center gap-2 text-center font-sans text-[0.8rem] font-bold">
+              <ZulDaAula pose="lendo" className="size-16 opacity-90" />
+              Toque em Rodar para ver o que o código mostra.
+            </div>
+          )
         )}
       </div>
     </section>

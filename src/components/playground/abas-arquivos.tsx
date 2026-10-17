@@ -30,7 +30,7 @@ export function AbasArquivos({
     <div
       role="tablist"
       aria-label="Arquivos do projeto"
-      className="zc-pg-barra zc-pg-borda zc-barra-teclas flex h-9 shrink-0 items-stretch overflow-x-auto border-b"
+      className="zc-pg-barra zc-pg-borda zc-barra-teclas flex h-10 shrink-0 items-stretch overflow-x-auto border-b"
     >
       {arquivos.map((arquivo) => {
         const ativo = arquivo.id === ativoId;
@@ -50,7 +50,7 @@ export function AbasArquivos({
               // pessoas já tentam por conta própria.
               onClick={() => aoEscolher(arquivo.id)}
               onDoubleClick={() => aoRenomear(arquivo.id)}
-              className="zc-pg-mono flex items-center gap-2 py-1.5 text-[0.78rem]"
+              className="zc-pg-mono flex items-center gap-2 py-1.5 text-[0.82rem] font-bold"
               title={`${arquivo.nome} — dois cliques para renomear`}
             >
               <span

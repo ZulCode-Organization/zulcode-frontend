@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, Monitor, RotateCw, Smartphone, Square, Tablet } from "lucide-react";
+import { ExternalLink, Monitor, RotateCw, Smartphone, Tablet } from "lucide-react";
+import { ZulDaAula } from "@/components/atividade/zul-da-aula";
 import { cn } from "@/lib/utils";
 import type { ExecutionStatus, PreviewDescriptor } from "@/lib/playground/executor";
 
@@ -119,10 +120,10 @@ export function MolduraPreview({
             style={fixo ? { width: largura ?? 0, height: altura ?? 0, maxWidth: "100%" } : undefined}
           />
         ) : (
-          <div className="zc-pg-apagado grid size-full place-items-center p-4 text-center text-[0.8rem]">
+          <div className="zc-pg-apagado grid size-full place-items-center p-4 text-center text-[0.85rem] font-bold">
             <span className="flex flex-col items-center gap-2">
-              <Square className="size-5" />
-              Aperte Ctrl+Enter para rodar.
+              <ZulDaAula pose="escrevendo" className="size-24 opacity-90" />
+              Toque em Rodar para ver sua página.
             </span>
           </div>
         )}

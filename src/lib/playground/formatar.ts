@@ -34,10 +34,12 @@ function carregar() {
   return carregando;
 }
 
-const PARSERS: Record<Linguagem, string> = {
+/** O Prettier não formata Python: nesse caso a resposta é um aviso, não um erro de sintaxe. */
+const PARSERS: Record<Linguagem, string | null> = {
   html: "html",
   css: "css",
   javascript: "babel",
+  python: null,
 };
 
 /** Etiqueta de texto em vez de um booleano `ok`: este projeto compila com
@@ -49,9 +51,11 @@ export type ResultadoFormatacao =
   | { tipo: "erro"; mensagem: string };
 
 export async function formatar(codigo: string, linguagem: Linguagem): Promise<ResultadoFormatacao> {
+  const parser = PARSERS[linguagem];
+  if (!parser) return { tipo: "erro", mensagem: "Formatar ainda não funciona em Python." };
   try {
     const formatador = await carregar();
-    return { tipo: "ok", codigo: await formatador(codigo, PARSERS[linguagem]) };
+    return { tipo: "ok", codigo: await formatador(codigo, parser) };
   } catch (erro) {
     // Quase sempre é erro de sintaxe: o Prettier precisa entender o código para
     // reescrevê-lo. A mensagem dele aponta a linha, então vale repassar.

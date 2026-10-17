@@ -23,6 +23,7 @@ import {
 import { html, htmlLanguage } from "@codemirror/lang-html";
 import { css, cssLanguage } from "@codemirror/lang-css";
 import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
 import { abbreviationTracker, expandAbbreviation } from "@emmetio/codemirror6-plugin";
 import { sugestoesDeSnippet, sugestoesJs } from "@/lib/playground/autocomplete";
 import { errosDeSintaxe } from "@/lib/playground/lint-sintaxe";
@@ -78,7 +79,9 @@ function extensoesDaLinguagem(linguagem: Linguagem, emmet: boolean): Extension {
         ]
       : linguagem === "css"
         ? [css(), cssLanguage.data.of({ autocomplete: sugestoesDeSnippet("css") })]
-        : [
+        : linguagem === "python"
+          ? [python()]
+          : [
             javascript(),
             javascriptLanguage.data.of({ autocomplete: sugestoesDeSnippet("javascript") }),
             javascriptLanguage.data.of({ autocomplete: sugestoesJs }),
@@ -86,7 +89,7 @@ function extensoesDaLinguagem(linguagem: Linguagem, emmet: boolean): Extension {
 
   // O Emmet só faz sentido em HTML e CSS; em JavaScript ele disputaria o Tab
   // com a indentação sem nunca ter o que expandir.
-  if (emmet && linguagem !== "javascript") extensoes.push(abbreviationTracker());
+  if (emmet && (linguagem === "html" || linguagem === "css")) extensoes.push(abbreviationTracker());
   extensoes.push(linter((view) => errosDeSintaxe(view, linguagem), { delay: 500 }));
   return extensoes;
 }

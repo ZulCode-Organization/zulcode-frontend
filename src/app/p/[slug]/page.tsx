@@ -43,7 +43,10 @@ function Publico({ slug }: { slug: string }) {
         if (!valeu) return;
         setProjeto(aberto);
         setAtivoId(aberto.arquivos[0]?.id ?? "");
-        run({ files: paraOPreview({ ...aberto, id: null, slugPublico: slug }) });
+        // Python de outra pessoa não roda sozinho aqui: quem abriu vê o código
+        // e leva uma cópia para rodar no próprio playground.
+        if (aberto.modo === "python") setPainelMovel("codigo");
+        else run({ files: paraOPreview({ ...aberto, id: null, slugPublico: slug }) });
       })
       .catch((falha: unknown) => {
         if (valeu) setErro(falha instanceof Error ? falha.message : "Não deu para abrir este link.");

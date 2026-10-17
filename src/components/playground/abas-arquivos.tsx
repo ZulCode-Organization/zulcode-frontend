@@ -13,6 +13,7 @@ const COR: Record<Linguagem, string> = {
   html: "#e8743b",
   css: "#3b82c4",
   javascript: "#e0b336",
+  python: "#3776ab",
 };
 
 export function AbasArquivos({

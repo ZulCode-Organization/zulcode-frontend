@@ -153,7 +153,7 @@ export function PainelProjetos({
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-bold">{projeto.nome}</span>
                   <span className="zc-pg-apagado block text-[0.68rem]">
-                    {projeto.modo === "js" ? "JavaScript" : "página"} · {quando(projeto.atualizadoEm)}
+                    {projeto.modo === "js" ? "JavaScript" : projeto.modo === "python" ? "Python" : "página"} · {quando(projeto.atualizadoEm)}
                     {projeto.slugPublico && " · público"}
                   </span>
                 </span>

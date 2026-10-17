@@ -32,6 +32,20 @@ const COMUNS: Tecla[] = [
 ];
 
 const POR_LINGUAGEM: Record<Linguagem, Tecla[]> = {
+  python: [
+    { rotulo: ":" },
+    { rotulo: "(", texto: "()", voltar: 1 },
+    { rotulo: "[", texto: "[]", voltar: 1 },
+    { rotulo: "{", texto: "{}", voltar: 1 },
+    { rotulo: "=" },
+    { rotulo: "==", texto: " == ", largo: true },
+    { rotulo: "#" },
+    { rotulo: "_" },
+    { rotulo: "print", texto: "print()", voltar: 1, largo: true },
+    { rotulo: "def", texto: "def ", largo: true },
+    { rotulo: "for", texto: "for  in :", voltar: 5, largo: true },
+    { rotulo: "if", texto: "if :", voltar: 1, largo: true },
+  ],
   html: [
     { rotulo: "<" },
     { rotulo: ">" },

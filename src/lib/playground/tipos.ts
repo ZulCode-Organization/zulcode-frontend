@@ -1,11 +1,12 @@
 /** O que o playground manipula. Um projeto é uma lista de arquivos com nome —
  *  a extensão decide a linguagem, como em qualquer editor de verdade. */
 
-export type Linguagem = "html" | "css" | "javascript";
+export type Linguagem = "html" | "css" | "javascript" | "python";
 
 /** "web" monta uma página; "js" esconde o preview e deixa o console no centro,
- *  para exercício de lógica que não precisa de HTML nenhum. */
-export type Modo = "web" | "js";
+ *  para exercício de lógica que não precisa de HTML nenhum; "python" é igual ao
+ *  "js", mas roda Python no próprio aparelho (Pyodide). */
+export type Modo = "web" | "js" | "python";
 
 export type Arquivo = { id: string; nome: string; conteudo: string };
 

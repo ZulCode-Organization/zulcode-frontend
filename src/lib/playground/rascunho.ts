@@ -77,7 +77,7 @@ export function lerRascunho(): Projeto {
         return {
           id: typeof projeto.id === "string" ? projeto.id : null,
           nome: typeof projeto.nome === "string" ? projeto.nome : "Meu projeto",
-          modo: projeto.modo === "js" ? "js" : "web",
+          modo: projeto.modo === "js" || projeto.modo === "python" ? projeto.modo : "web",
           bibliotecas: Array.isArray(projeto.bibliotecas)
             ? projeto.bibliotecas.filter((id): id is string => typeof id === "string")
             : [],

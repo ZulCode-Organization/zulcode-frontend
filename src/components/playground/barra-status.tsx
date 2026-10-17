@@ -23,6 +23,7 @@ const NOME_DA_LINGUAGEM: Record<Linguagem, string> = {
   html: "HTML",
   css: "CSS",
   javascript: "JavaScript",
+  python: "Python",
 };
 
 function Item({
@@ -72,11 +73,12 @@ export function BarraStatus({
     <div
       className="zc-pg-barra zc-pg-borda zc-barra-teclas flex h-7 shrink-0 items-stretch gap-0.5 overflow-x-auto border-t text-[0.7rem]"
     >
+      {/* Python não alterna: os arquivos dele não viram página nem JavaScript. */}
       <Item
-        aoClicar={aoAlternarModo}
-        titulo={modo === "web" ? "Modo página: HTML, CSS e JavaScript" : "Modo JavaScript: só o console"}
+        aoClicar={modo === "python" ? undefined : aoAlternarModo}
+        titulo={modo === "web" ? "Modo página: HTML, CSS e JavaScript" : modo === "python" ? "Python, rodando no próprio aparelho" : "Modo JavaScript: só o console"}
       >
-        <span className="zc-pg-acento font-bold">{modo === "web" ? "PÁGINA" : "JS"}</span>
+        <span className="zc-pg-acento font-bold">{modo === "web" ? "PÁGINA" : modo === "python" ? "PYTHON" : "JS"}</span>
       </Item>
 
       <Item titulo="Linguagem do arquivo aberto">{NOME_DA_LINGUAGEM[linguagem]}</Item>

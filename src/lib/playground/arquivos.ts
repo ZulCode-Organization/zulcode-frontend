@@ -10,6 +10,7 @@ const EXTENSOES: Record<string, Linguagem> = {
   css: "css",
   js: "javascript",
   mjs: "javascript",
+  py: "python",
 };
 
 export function linguagemDe(nome: string): Linguagem {
@@ -30,7 +31,7 @@ export function erroDeNome(nome: string, existentes: Arquivo[], ignorarId?: stri
   if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(limpo)) {
     return "Use letras, números, ponto, hífen e sublinhado — sem espaço nem barra.";
   }
-  if (!extensaoValida(limpo)) return "Termine em .html, .css ou .js.";
+  if (!extensaoValida(limpo)) return "Termine em .html, .css, .js ou .py.";
   if (existentes.some((arquivo) => arquivo.id !== ignorarId && arquivo.nome.toLowerCase() === limpo.toLowerCase())) {
     return "Já existe um arquivo com esse nome.";
   }
@@ -127,7 +128,20 @@ ${scripts}
 `;
 }
 
+/** Os arquivos .py do projeto e o que roda primeiro: o main.py, ou o primeiro .py da lista. */
+export function arquivosPython(projeto: Projeto) {
+  const arquivos = porLinguagem(projeto, "python").map((arquivo) => ({ nome: arquivo.nome, conteudo: arquivo.conteudo }));
+  const entrada = arquivos.find((arquivo) => arquivo.nome === "main.py")?.nome ?? arquivos[0]?.nome ?? null;
+  return { arquivos, entrada };
+}
+
 export function projetoVazio(modo: Modo): Projeto {
+  if (modo === "python") {
+    return {
+      id: null, nome: "Programa em Python", modo, bibliotecas: [], slugPublico: null,
+      arquivos: [{ id: novoId(), nome: "main.py", conteudo: EXEMPLO_PY }],
+    };
+  }
   return {
     id: null,
     nome: modo === "js" ? "Exercício de lógica" : "Meu projeto",
@@ -185,6 +199,14 @@ botao.addEventListener("click", () => {
 });
 
 console.log("Preview carregado.");`;
+
+const EXEMPLO_PY = `# O resultado sai no console.
+nomes = ["Ana", "Bruno", "Carla"]
+
+for nome in nomes:
+    print("Oi,", nome)
+
+print("Total:", len(nomes))`;
 
 const EXEMPLO_JS = `// Sem HTML: o resultado sai no console.
 const nomes = ["Ana", "Bruno", "Carla"];

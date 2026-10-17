@@ -12,10 +12,10 @@ import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { useMontado } from "@/hooks/use-montado";
 import { useDivisao } from "@/hooks/use-divisao";
 import { useConsultaDeMidia } from "@/hooks/use-consulta-de-midia";
-import { usePlaygroundExecutor } from "@/hooks/usePlaygroundExecutor";
+import { usePlaygroundExecutor, usePythonExecutor } from "@/hooks/usePlaygroundExecutor";
 import { cn } from "@/lib/utils";
 import {
-  linguagemDe, MAX_ARQUIVOS, novoId, paraOPreview, projetoVazio,
+  arquivosPython, linguagemDe, MAX_ARQUIVOS, novoId, paraOPreview, projetoVazio,
 } from "@/lib/playground/arquivos";
 import { lerAjustes, salvarAjustes, FONTE_MAX, FONTE_MIN, type Ajustes } from "@/lib/playground/ajustes";
 import { lerRascunho, salvarRascunho } from "@/lib/playground/rascunho";
@@ -27,7 +27,7 @@ import {
   abrirProjeto, criarProjeto, restaurarVersao, salvarProjeto,
 } from "@/lib/playground/projetos";
 import { CHAVE_PREVIEW_AVULSO } from "@/lib/playground/preview-avulso";
-import type { Arquivo, Projeto } from "@/lib/playground/tipos";
+import type { Arquivo, Modo, Projeto } from "@/lib/playground/tipos";
 import { EditorCodigo, type ApiEditor } from "@/components/playground/editor-codigo";
 import { BarraDeTeclas } from "@/components/playground/barra-teclas";
 import { BarraSuperior } from "@/components/playground/barra-superior";
@@ -58,17 +58,25 @@ type Painel =
   | null | "comandos" | "temas" | "ajustes" | "bibliotecas" | "projetos"
   | "compartilhar" | "snippets" | "arquivo" | "nome-projeto";
 
+/** Comandos que só fazem sentido com uma página (HTML/CSS/JS): somem em Python. */
+const SO_DA_PAGINA = new Set(["sozinho", "fora", "bibliotecas", "modo", "html", "baixar-nada", "mover-esquerda", "mover-direita"]);
+
 const ESPERA_PARA_RODAR = 700;
 const ESPERA_DO_RASCUNHO = 500;
 const ESPERA_DA_CONTA = 4000;
 
 function Playground() {
   const executor = usePlaygroundExecutor();
-  const { preview, logs, status, stop, clearLogs, bindFrame, onFrameLoad } = executor;
+  const pythonExec = usePythonExecutor();
+  const { preview, bindFrame, onFrameLoad } = executor;
 
   // Os inicializadores leem localStorage. Só rodam aqui porque este componente
   // monta depois da hidratação — ver `useMontado` lá embaixo.
   const [projeto, setProjeto] = useState<Projeto>(() => lerRascunho());
+  // Python roda no próprio aparelho (Pyodide) e só tem console; o resto passa
+  // pelo preview isolado. O console, o estado e o "parar" são do executor do modo.
+  const emPython = projeto.modo === "python";
+  const { logs, status, stop, clearLogs } = emPython ? pythonExec : executor;
   const [ajustes, setAjustes] = useState<Ajustes>(() => lerAjustes());
   const [ativoId, setAtivoId] = useState(() => projeto.arquivos[0]?.id ?? "");
   const [painel, setPainel] = useState<Painel>(null);
@@ -84,6 +92,8 @@ function Playground() {
   const linguagem = ativo ? linguagemDe(ativo.nome) : "javascript";
   const cores = paleta(ajustes.tema);
   const modoJs = projeto.modo === "js";
+  // Sem página para mostrar: o console fica no lugar do preview.
+  const soConsole = modoJs || emPython;
 
   // Um layout de cada vez, escolhido aqui e não por classe: com "lg:hidden" os
   // dois ramos montam, e dois editores de verdade disputariam o foco, a barra
@@ -115,10 +125,22 @@ function Playground() {
   // ---- rodar ----
 
   const rodar = useCallback(() => {
-    executor.run({ files: paraOPreview(projeto) });
+    if (projeto.modo === "python") {
+      const { arquivos, entrada } = arquivosPython(projeto);
+      if (!entrada) return mostrar("Crie um arquivo .py para rodar.", true);
+      pythonExec.run(arquivos, entrada);
+    } else {
+      executor.run({ files: paraOPreview(projeto) });
+    }
     setSujo(false);
-    setPainelMovel(projeto.modo === "js" ? "console" : "preview");
-  }, [executor, projeto]);
+    setPainelMovel(projeto.modo === "web" ? "preview" : "console");
+  }, [executor, pythonExec, projeto, mostrar]);
+
+  // Abrindo um projeto Python, o Python já começa a baixar: o primeiro "Rodar" sai mais rápido.
+  const { preparar: prepararPython } = pythonExec;
+  useEffect(() => {
+    if (emPython) prepararPython();
+  }, [emPython, prepararPython]);
 
   // O valor inicial já serve; o efeito mantém a caixa em dia sem escrever em
   // ref durante a renderização.
@@ -128,15 +150,16 @@ function Playground() {
   // Rodar sozinho. Um erro de escrita no arquivo aberto segura a execução: sem
   // isso, cada tecla no meio de uma linha incompleta encheria o console de
   // erro que a pessoa já está corrigindo.
+  // Em Python não: cada tecla carregaria o Python para rodar um código pela metade.
   useEffect(() => {
-    if (!ajustes.rodarSozinho || !sujo) return;
+    if (!ajustes.rodarSozinho || !sujo || emPython) return;
     const relogio = window.setTimeout(() => {
       if (lerEstadoEditor().erros > 0) return;
       executor.run({ files: paraOPreview(projetoRef.current) });
       setSujo(false);
     }, ESPERA_PARA_RODAR);
     return () => window.clearTimeout(relogio);
-  }, [ajustes.rodarSozinho, sujo, projeto, executor]);
+  }, [ajustes.rodarSozinho, sujo, projeto, executor, emPython]);
 
   // ---- guardar ----
 
@@ -303,7 +326,7 @@ function Playground() {
     }
   };
 
-  const novoProjeto = (modo: "web" | "js") => {
+  const novoProjeto = (modo: Modo) => {
     const novo = projetoVazio(modo);
     setProjeto(novo);
     setAtivoId(novo.arquivos[0]?.id ?? "");
@@ -413,6 +436,7 @@ function Playground() {
     { id: "compartilhar", secao: "Projeto", titulo: "Compartilhar com um link", Icone: Globe, busca: "publico remix", executar: () => setPainel("compartilhar") },
     { id: "novo-web", secao: "Projeto", titulo: "Novo projeto de página", Icone: Sparkles, executar: () => novoProjeto("web") },
     { id: "novo-js", secao: "Projeto", titulo: "Novo exercício de JavaScript", Icone: Sparkles, executar: () => novoProjeto("js") },
+    { id: "novo-python", secao: "Projeto", titulo: "Novo programa em Python", Icone: Sparkles, busca: "py", executar: () => novoProjeto("python") },
 
     { id: "temas", secao: "Aparência", titulo: "Tema do código", Icone: Palette, detalhe: cores.nome, busca: "cor dracula monokai nord", executar: () => setPainel("temas") },
     { id: "ajustes", secao: "Aparência", titulo: "Ajustes do editor", Icone: Settings, busca: "fonte tabulacao emmet", executar: () => setPainel("ajustes") },
@@ -425,6 +449,12 @@ function Playground() {
     { id: "baixar-nada", secao: "Exportar", titulo: "Abrir em outra aba", Icone: Download, busca: "ver resultado", executar: abrirPreviewFora },
     // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [ajustes, ativo, api, cores.nome, modoJs, projeto, rodar, stop, clearLogs, formatarAtivo, mudarAjustes]);
+
+  // Em Python não há página: somem os comandos de preview, bibliotecas da web, modo e .html.
+  const comandosDoModo = useMemo(
+    () => (emPython ? comandos.filter((comando) => !SO_DA_PAGINA.has(comando.id)) : comandos),
+    [comandos, emPython],
+  );
 
   // Ctrl+K em qualquer lugar da tela, não só com o foco no editor.
   useEffect(() => {
@@ -479,7 +509,7 @@ function Playground() {
         sujo={sujo}
         rodando={status === "running"}
         rodarSozinho={ajustes.rodarSozinho}
-        podeParar={!!preview}
+        podeParar={emPython ? status === "running" : !!preview}
         aoRenomear={() => setPainel("nome-projeto")}
         aoRodar={rodar}
         aoParar={stop}
@@ -543,13 +573,13 @@ function Playground() {
         </div>
         <div className={cn(
           "flex min-h-0 flex-col",
-          painelMovel === "preview" && !modoJs ? "flex-1" : "hidden",
+          painelMovel === "preview" && !soConsole ? "flex-1" : "hidden",
         )}>
           {painelDePreview}
         </div>
-        {painelMovel === "preview" && modoJs && (
+        {painelMovel === "preview" && soConsole && (
           <div className="zc-pg-apagado grid flex-1 place-items-center p-6 text-center text-[0.78rem]">
-            No modo só JavaScript o resultado sai no console.
+            {emPython ? "Em Python o resultado sai no console." : "No modo só JavaScript o resultado sai no console."}
           </div>
         )}
         <div className={cn("flex min-h-0 flex-col", painelMovel === "console" ? "flex-1" : "hidden")}>
@@ -573,7 +603,7 @@ function Playground() {
           aoTeclar={teclarColunas}
           rotulo="Largura do editor"
         />
-        {modoJs ? (
+        {soConsole ? (
           <div className="flex min-h-0 min-w-0 flex-col">
             {painelDeConsole}
             {/* Sem HTML na tela, mas o preview é quem roda o código e devolve
@@ -630,7 +660,7 @@ function Playground() {
       )}
 
       {painel === "comandos" && (
-        <PaletaComandos comandos={comandos} aoFechar={() => setPainel(null)} />
+        <PaletaComandos comandos={comandosDoModo} aoFechar={() => setPainel(null)} />
       )}
       {painel === "arquivo" && (
         <DialogoArquivo

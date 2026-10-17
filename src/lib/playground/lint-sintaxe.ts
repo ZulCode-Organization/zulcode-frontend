@@ -31,12 +31,23 @@ function erroDeEquilibrio(codigo: string, linguagem: Linguagem): Diagnostic | nu
     const char = codigo[i];
     const proximo = codigo[i + 1];
 
+    // Em Python o comentário é o #, e as aspas triplas atravessam linhas.
+    if (linguagem === "python" && char === "#") {
+      const fim = codigo.indexOf("\n", i);
+      i = fim === -1 ? codigo.length : fim + 1;
+      continue;
+    }
+    if (linguagem === "python" && (codigo.startsWith('"""', i) || codigo.startsWith("'''", i))) {
+      const fim = codigo.indexOf(codigo.slice(i, i + 3), i + 3);
+      i = fim === -1 ? codigo.length : fim + 3;
+      continue;
+    }
     if (char === "/" && proximo === "/" && linguagem === "javascript") {
       const fim = codigo.indexOf("\n", i);
       i = fim === -1 ? codigo.length : fim + 1;
       continue;
     }
-    if (char === "/" && proximo === "*") {
+    if (char === "/" && proximo === "*" && linguagem !== "python") {
       const fim = codigo.indexOf("*/", i + 2);
       i = fim === -1 ? codigo.length : fim + 2;
       continue;
@@ -86,7 +97,7 @@ function mensagemDaArvore(trecho: string, linguagem: Linguagem) {
       ? "Falta algo aqui — talvez o ponto e vírgula do fim da linha."
       : "Falta algo aqui para a linha ficar completa.";
   }
-  return `"${limpo}" está em um lugar que o navegador não entende.`;
+  return `"${limpo}" está em um lugar que o ${linguagem === "python" ? "Python" : "navegador"} não entende.`;
 }
 
 /** As posições inválidas que a árvore marca, uma por linha. Mais de uma marca

@@ -4,6 +4,9 @@ import {
   DuoBug, DuoConfiguracoes, DuoElementos, DuoJornada, DuoLideres, DuoLoja, DuoMetas, DuoPerfil, DuoPlayground,
 } from "@/components/shared/icone-duo";
 
+/** O formulário de problemas e sugestões (o "Reportar bug"). */
+export const FORMULARIO_DE_RETORNO = "https://forms.cloud.microsoft/r/FD8MLw693j";
+
 export interface NavItem {
   id: string;
   label: string;
@@ -30,7 +33,7 @@ export const sidebarNavItems: NavItem[] = [
 export const sidebarMoreItems: NavItem[] = [
   { id: "playground", label: "Playground", href: "/playground", icon: DuoPlayground },
   { id: "configuracoes", label: "Configurações", href: "/configuracoes", icon: DuoConfiguracoes },
-  { id: "reportar-bug", label: "Reportar bug", href: "https://forms.cloud.microsoft/r/FD8MLw693j", external: true, icon: DuoBug },
+  { id: "reportar-bug", label: "Reportar bug", href: FORMULARIO_DE_RETORNO, external: true, icon: DuoBug },
 ];
 
 export const adminNavItems: NavItem[] = [
@@ -61,5 +64,5 @@ export const bottomNavItems: NavItem[] = [
 export const moreNavItems: NavItem[] = [
   { id: "metas", label: "Metas", href: "/metas", icon: DuoMetas },
   { id: "playground", label: "Playground", href: "/playground", icon: DuoPlayground },
-  { id: "reportar-bug", label: "Reportar bug", href: "https://forms.cloud.microsoft/r/FD8MLw693j", external: true, icon: DuoBug },
+  { id: "reportar-bug", label: "Reportar bug", href: FORMULARIO_DE_RETORNO, external: true, icon: DuoBug },
 ];

@@ -9,7 +9,10 @@
     "som": "Sound and vibration",
     "avisos": "Notifications",
     "widgets": "Widgets",
-    "conta": "Account"
+    "conta": "Account",
+    "assinatura": "Subscription",
+    "suporte": "Support",
+    "aula": "Lessons"
   },
   "aparencia": {
     "titulo": "Theme",
@@ -109,5 +112,94 @@
     "sair": "Sign out",
     "sairDescricao": "Ends the session on this device."
   },
-  "creditos": "Icons: Solar, by 480 Design, and Streamline (CC BY 4.0); Phosphor Icons, Hugeicons, Duo Icons and Fluent Emoji, by Microsoft (MIT)."
+  "creditos": "Icons: Solar, by 480 Design, and Streamline (CC BY 4.0); Phosphor Icons, Hugeicons, Duo Icons and Fluent Emoji, by Microsoft (MIT).",
+  "pronto": "Done",
+  "voltar": "Back to settings",
+  "linhas": {
+    "preferencias": "Preferences",
+    "perfil": "Profile",
+    "notificacoes": "Notifications",
+    "cursos": "Courses",
+    "widgets": "Widgets",
+    "privacidade": "Privacy",
+    "plano": "Choose a plan",
+    "assinatura": "My subscription",
+    "ajuda": "Help center",
+    "problema": "Report a problem",
+    "comentarios": "Send feedback"
+  },
+  "sair": "Sign out",
+  "links": {
+    "termos": "Terms of use",
+    "politica": "Privacy policy",
+    "agradecimentos": "Acknowledgements"
+  },
+  "preferencias": {
+    "modoEscuro": "Dark mode",
+    "codigo": "Account code"
+  },
+  "cursos": {
+    "titulo": "Courses",
+    "descricao": "The course shown on your Journey. Progress in each one is kept.",
+    "atual": "Current",
+    "trocar": "Study this",
+    "erro": "Could not switch courses right now. Try again.",
+    "outros": "Other courses",
+    "vazio": "No courses available right now."
+  },
+  "privacidade": {
+    "dados": "Download my data",
+    "dadosDescricao": "A file with everything ZulCode stores about you.",
+    "baixando": "Preparing the file…",
+    "erroDados": "Could not generate the file right now. Try again.",
+    "excluir": "Delete my account",
+    "excluirDescricao": "Deletes the account and all progress. This cannot be undone.",
+    "confirmarTitulo": "Delete your account forever?",
+    "confirmarTexto": "Your progress, XP, rupees, achievements and projects will be deleted. If you have PRO, the subscription is cancelled first. To confirm, type the account email: {email}",
+    "confirmarCampo": "Account email",
+    "confirmarBotao": "Delete forever",
+    "cancelar": "Cancel",
+    "excluindo": "Deleting…",
+    "erroExcluir": "Could not delete the account right now. Try again.",
+    "adminNao": "Administrator accounts cannot be deleted here."
+  },
+  "ajuda": {
+    "titulo": "Help center",
+    "maisAjuda": "Did not find what you were looking for?",
+    "escrever": "Contact us",
+    "perguntas": {
+      "1": {
+        "pergunta": "What are feathers?",
+        "resposta": "You have up to 5 feathers. Each mistake in a lesson costs one, and one feather comes back every hour. You can also get feathers in the shop or by watching an ad. With PRO, feathers are unlimited."
+      },
+      "2": {
+        "pergunta": "How does the streak work?",
+        "resposta": "Your streak counts the days in a row in which you finish at least one lesson. If a day goes by without study, it resets to zero, unless you have gas saved."
+      },
+      "3": {
+        "pergunta": "What is streak gas?",
+        "resposta": "Each gas covers one day without study, and you can keep up to 2. You buy it in the shop with rupees. PRO members get one protected day per week."
+      },
+      "4": {
+        "pergunta": "How do I earn rupees?",
+        "resposta": "By finishing lessons, completing goals and opening barrels. Rupees buy shop items such as feathers and gas. They are never sold for money."
+      },
+      "5": {
+        "pergunta": "How do divisions work?",
+        "resposta": "Your division depends on the XP you have collected. Every week there is a table with people in the same division, and the top 3 reach the podium."
+      },
+      "6": {
+        "pergunta": "What does PRO include?",
+        "resposta": "Unlimited feathers, double XP and rupees, one protected streak day per week and no ads. You can try it free for 7 days and cancel anytime in Settings, My subscription."
+      },
+      "7": {
+        "pergunta": "Does switching courses erase my progress?",
+        "resposta": "No. Each course keeps its own progress; switching only changes what shows on your Journey."
+      },
+      "8": {
+        "pergunta": "I forgot my password. What now?",
+        "resposta": "On the sign-in screen, tap \"Forgot password\". A code arrives in your email so you can create a new password."
+      }
+    }
+  }
 }

@@ -9,7 +9,10 @@
     "som": "Som e vibração",
     "avisos": "Avisos",
     "widgets": "Widgets",
-    "conta": "Conta"
+    "conta": "Conta",
+    "assinatura": "Assinatura",
+    "suporte": "Suporte",
+    "aula": "Aula"
   },
   "aparencia": {
     "titulo": "Tema",
@@ -109,5 +112,94 @@
     "sair": "Sair da conta",
     "sairDescricao": "Encerra a sessão neste aparelho."
   },
-  "creditos": "Ícones: Solar, por 480 Design, e Streamline (CC BY 4.0); Phosphor Icons, Hugeicons, Duo Icons e Fluent Emoji, da Microsoft (MIT)."
+  "creditos": "Ícones: Solar, por 480 Design, e Streamline (CC BY 4.0); Phosphor Icons, Hugeicons, Duo Icons e Fluent Emoji, da Microsoft (MIT).",
+  "pronto": "Pronto",
+  "voltar": "Voltar para as configurações",
+  "linhas": {
+    "preferencias": "Preferências",
+    "perfil": "Perfil",
+    "notificacoes": "Notificações",
+    "cursos": "Cursos",
+    "widgets": "Widgets",
+    "privacidade": "Privacidade",
+    "plano": "Escolha um plano",
+    "assinatura": "Minha assinatura",
+    "ajuda": "Central de ajuda",
+    "problema": "Reportar um problema",
+    "comentarios": "Fazer comentários"
+  },
+  "sair": "Sair",
+  "links": {
+    "termos": "Termos de uso",
+    "politica": "Política de privacidade",
+    "agradecimentos": "Agradecimentos"
+  },
+  "preferencias": {
+    "modoEscuro": "Modo escuro",
+    "codigo": "Código da conta"
+  },
+  "cursos": {
+    "titulo": "Cursos",
+    "descricao": "O curso que aparece na sua Jornada. O progresso de cada um fica guardado.",
+    "atual": "Atual",
+    "trocar": "Estudar este",
+    "erro": "Não deu para trocar de curso agora. Tente de novo.",
+    "outros": "Outros cursos",
+    "vazio": "Nenhum curso disponível agora."
+  },
+  "privacidade": {
+    "dados": "Baixar meus dados",
+    "dadosDescricao": "Um arquivo com tudo que o ZulCode guarda sobre você.",
+    "baixando": "Preparando o arquivo…",
+    "erroDados": "Não deu para gerar o arquivo agora. Tente de novo.",
+    "excluir": "Excluir minha conta",
+    "excluirDescricao": "Apaga a conta e todo o progresso. Não dá para desfazer.",
+    "confirmarTitulo": "Excluir a conta para sempre?",
+    "confirmarTexto": "Seu progresso, XP, rupees, conquistas e projetos serão apagados. Se você tiver o PRO, a assinatura é cancelada antes. Para confirmar, digite o e-mail da conta: {email}",
+    "confirmarCampo": "E-mail da conta",
+    "confirmarBotao": "Excluir para sempre",
+    "cancelar": "Cancelar",
+    "excluindo": "Excluindo…",
+    "erroExcluir": "Não deu para excluir a conta agora. Tente de novo.",
+    "adminNao": "Contas de administrador não se excluem por aqui."
+  },
+  "ajuda": {
+    "titulo": "Central de ajuda",
+    "maisAjuda": "Não achou o que procurava?",
+    "escrever": "Fale com a gente",
+    "perguntas": {
+      "1": {
+        "pergunta": "O que são as penas?",
+        "resposta": "Você tem até 5 penas. Cada erro numa lição gasta uma, e uma pena volta a cada hora. Também dá para recuperar penas na loja ou assistindo a um anúncio. Com o PRO, as penas são ilimitadas."
+      },
+      "2": {
+        "pergunta": "Como funciona a ofensiva?",
+        "resposta": "A ofensiva conta os dias seguidos em que você conclui pelo menos uma lição. Se um dia passa sem estudo, ela volta a zero, a não ser que você tenha gás guardado."
+      },
+      "3": {
+        "pergunta": "O que é o gás de ofensiva?",
+        "resposta": "Cada gás segura um dia sem estudo, e você pode guardar até 2. Ele é comprado na loja com rupees. Quem tem o PRO tem um dia protegido por semana."
+      },
+      "4": {
+        "pergunta": "Como ganho rupees?",
+        "resposta": "Concluindo lições, cumprindo metas e abrindo barris. Os rupees compram itens na loja, como penas e gás. Eles não são vendidos por dinheiro."
+      },
+      "5": {
+        "pergunta": "Como funcionam as divisões?",
+        "resposta": "Sua divisão depende do XP que você já juntou. Toda semana há uma tabela com quem está na mesma divisão, e os 3 primeiros sobem ao pódio."
+      },
+      "6": {
+        "pergunta": "O que vem no PRO?",
+        "resposta": "Penas ilimitadas, XP e rupees em dobro, um dia de ofensiva protegido por semana e nada de anúncios. Dá para testar 7 dias grátis e cancelar quando quiser em Configurações, Minha assinatura."
+      },
+      "7": {
+        "pergunta": "Trocar de curso apaga meu progresso?",
+        "resposta": "Não. Cada curso guarda o próprio progresso; trocar só muda o que aparece na Jornada."
+      },
+      "8": {
+        "pergunta": "Esqueci minha senha. E agora?",
+        "resposta": "Na tela de entrar, toque em \"Esqueci a senha\". Um código chega no seu e-mail para você criar uma senha nova."
+      }
+    }
+  }
 }

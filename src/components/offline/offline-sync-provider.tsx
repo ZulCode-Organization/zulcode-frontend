@@ -44,5 +44,5 @@ export function OfflineSyncProvider({ children }: { children: React.ReactNode })
     };
   }, []);
 
-  return <>{children}{(offline || pending > 0) && <div className="fixed inset-x-3 bottom-3 z-[100] mx-auto flex w-fit max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold shadow-xl"><CloudOff className="size-4 text-primary" />{offline ? "Você está offline. Seus dados serão sincronizados quando a conexão voltar." : <><RefreshCw className="size-3.5 animate-spin text-primary" />Sincronizando {pending} ação{pending === 1 ? "" : "ões"}…</>}</div>}</>;
+  return <>{children}{(offline || pending > 0) && <div className="fixed inset-x-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-[100] lg:bottom-3 mx-auto flex w-fit max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold shadow-xl"><CloudOff className="size-4 text-primary" />{offline ? "Você está offline. Seus dados serão sincronizados quando a conexão voltar." : <><RefreshCw className="size-3.5 animate-spin text-primary" />Sincronizando {pending} ação{pending === 1 ? "" : "ões"}…</>}</div>}</>;
 }

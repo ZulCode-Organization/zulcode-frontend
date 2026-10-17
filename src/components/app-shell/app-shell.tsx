@@ -5,6 +5,7 @@ import { AppBottomNav } from "./app-bottom-nav";
 import { AvisoFimDoTeste } from "@/components/pro/aviso-fim-do-teste";
 import { AvisoDaOfensiva } from "@/components/comemoracoes/aviso-da-ofensiva";
 import { PedidoDeAvisos } from "@/components/avisos/pedido-de-avisos";
+import { ConteudoComConexao } from "@/components/offline/sem-internet";
 import { AppTopBar } from "./app-topbar";
 import { StickyBottomPanel } from "./sticky-bottom-panel";
 import { EventoNoApp } from "./barra-viva/tema";
@@ -74,7 +75,10 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
               // bordas e o que sobra de altura é dela.
               fixedContent && "min-h-0 overflow-hidden px-0 pb-0 lg:px-0",
             )}>
-              <div className={cn("mx-auto", contentClassName, fixedContent && "h-full min-h-0")}>{children}</div>
+              <div className={cn("mx-auto", contentClassName, fixedContent && "h-full min-h-0")}>
+                {/* Sem internet, a tela de aviso entra no lugar do conteúdo e a navegação continua em volta. */}
+                <ConteudoComConexao funcionaOffline={fixedContent}>{children}</ConteudoComConexao>
+              </div>
             </main>
 
             {/* As duas colunas laterais nascem no mesmo ponto (lg): é de lá pra

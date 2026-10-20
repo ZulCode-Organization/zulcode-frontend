@@ -12,6 +12,35 @@ import { MolduraDeComemoracao } from "./moldura";
 
 type Recuperacao = { aberta: boolean; ofensiva: number; ate: string | null; precoEmRupees: number; podePagar: boolean; proLiberado: boolean };
 
+/** O último aviso que a pessoa já viu neste aparelho. Se o servidor ainda o
+ *  devolver (o "visto" não chegou, sem internet por exemplo), ele não volta. */
+const CHAVE_DO_VISTO = "zc-aviso-ofensiva-visto";
+function jaVisto(aviso: unknown) {
+  try {
+    return localStorage.getItem(CHAVE_DO_VISTO) === JSON.stringify(aviso);
+  } catch {
+    return false;
+  }
+}
+
+/** Conta ao servidor que o aviso foi visto. Com a confirmação, a marca local
+ *  sai: ela só serve enquanto o servidor ainda não sabe, e um aviso novo igual
+ *  (outra ofensiva perdida com os mesmos números) precisa aparecer. */
+function avisarVisto() {
+  const headers = cabecalhos();
+  if (!headers) return;
+  void fetchComTimeout(`${API_BASE_URL}/user/ofensiva/aviso-visto`, { method: "POST", headers })
+    .then((r) => {
+      if (!r.ok) return;
+      try {
+        localStorage.removeItem(CHAVE_DO_VISTO);
+      } catch {
+        // Sem armazenamento, não há marca para tirar.
+      }
+    })
+    .catch(() => null);
+}
+
 function cabecalhos(): Record<string, string> | null {
   const token = localStorage.getItem("accessToken");
   return token ? { Authorization: `Bearer ${token}` } : null;
@@ -27,7 +56,7 @@ function cabecalhos(): Record<string, string> | null {
 export function AvisoDaOfensiva() {
   const t = useTranslations("comemoracoes.avisoDaOfensiva");
   const formato = useFormatter();
-  const { perfil, atualizar } = usePerfil();
+  const { perfil, atualizar, esconderAvisoDaOfensiva } = usePerfil();
   const [fechado, setFechado] = useState(false);
   const [recuperacao, setRecuperacao] = useState<Recuperacao | null>(null);
   const [comAnuncio, setComAnuncio] = useState(false);
@@ -35,7 +64,8 @@ export function AvisoDaOfensiva() {
   const [erro, setErro] = useState<string | null>(null);
   const [recuperada, setRecuperada] = useState<number | null>(null);
   const aviso = perfil?.ofensivaAviso;
-  const perdida = aviso?.tipo === "perdida" && !fechado;
+  const visto = Boolean(aviso) && jaVisto(aviso);
+  const perdida = aviso?.tipo === "perdida" && !fechado && !visto;
 
   useEffect(() => {
     if (!perdida) return;
@@ -53,12 +83,24 @@ export function AvisoDaOfensiva() {
     };
   }, [perdida, perfil?.isPro]);
 
-  if (!aviso || fechado) return null;
+  // Já visto neste aparelho: some e repete o "visto" para o servidor.
+  useEffect(() => {
+    if (!visto) return;
+    esconderAvisoDaOfensiva();
+    avisarVisto();
+  }, [visto, esconderAvisoDaOfensiva]);
+
+  if (!aviso || fechado || visto) return null;
 
   const continuar = () => {
     setFechado(true);
-    const headers = cabecalhos();
-    if (headers) void fetchComTimeout(`${API_BASE_URL}/user/ofensiva/aviso-visto`, { method: "POST", headers }).catch(() => null);
+    try {
+      localStorage.setItem(CHAVE_DO_VISTO, JSON.stringify(aviso));
+    } catch {
+      // Sem armazenamento: o perfil sem o aviso já basta enquanto o app estiver aberto.
+    }
+    esconderAvisoDaOfensiva();
+    avisarVisto();
     if (recuperada !== null) atualizar();
   };
 

@@ -115,6 +115,9 @@ interface PerfilState {
    *  lá enquanto a resposta não chega, e só trocam quando ela chega. É o que
    *  deixa a barra animar a diferença em vez de piscar. */
   atualizar: () => void;
+  /** Tira o aviso da ofensiva do perfil (na tela e no cache): visto uma vez,
+   *  ele não pode voltar ao trocar de tela, que remonta o aviso do zero. */
+  esconderAvisoDaOfensiva: () => void;
   /** Salva dados do perfil em PUT /user e atualiza a tela e o cache. */
   salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null; idioma?: "pt" | "en"; metaDiaria?: number }) => Promise<ResultadoSalvar>;
 }
@@ -258,6 +261,11 @@ function usePerfilData(): PerfilState {
 
   const atualizar = useCallback(() => load(true), [load]);
 
+  const esconderAvisoDaOfensiva = useCallback(() => {
+    setPerfil((atual) => (atual?.ofensivaAviso ? { ...atual, ofensivaAviso: null } : atual));
+    if (perfilCache?.perfil.ofensivaAviso) perfilCache = { ...perfilCache, perfil: { ...perfilCache.perfil, ofensivaAviso: null } };
+  }, []);
+
   useEffect(() => {
     // Já tem cache válido (mesmo token) de uma tela anterior: usa ele e nem
     // dispara a requisição.
@@ -348,7 +356,7 @@ function usePerfilData(): PerfilState {
     [cursos]
   );
 
-  return { loading, error, perfil, cursosEmAndamento, cursosConcluidos, retry: () => load(), atualizar, salvarDados };
+  return { loading, error, perfil, cursosEmAndamento, cursosConcluidos, retry: () => load(), atualizar, esconderAvisoDaOfensiva, salvarDados };
 }
 
 const PerfilContext = createContext<PerfilState | null>(null);

@@ -1,5 +1,15 @@
 apply plugin: 'com.android.application'
 
+// A chave de envio da Play Store. O caminho e as senhas ficam em
+// android/keystore.properties, que o Git ignora (modelo em
+// keystore.properties.exemplo). Sem esse arquivo, a versão de publicação sai
+// sem assinatura e a Play recusa: o build avisa.
+def assinatura = new Properties()
+def arquivoDaAssinatura = rootProject.file('keystore.properties')
+if (arquivoDaAssinatura.exists()) {
+    arquivoDaAssinatura.withInputStream { assinatura.load(it) }
+}
+
 android {
     namespace = "com.zul.code"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -22,8 +32,23 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (assinatura['storeFile']) {
+                storeFile file(assinatura['storeFile'])
+                storePassword assinatura['storePassword']
+                keyAlias assinatura['keyAlias']
+                keyPassword assinatura['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
+            if (assinatura['storeFile']) {
+                signingConfig signingConfigs.release
+            } else {
+                logger.warn('ZulCode: android/keystore.properties não existe; a versão de publicação vai sair sem assinatura.')
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

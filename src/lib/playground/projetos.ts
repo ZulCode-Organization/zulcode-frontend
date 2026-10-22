@@ -150,3 +150,21 @@ export async function verPublico(slug: string): Promise<ProjetoPublico> {
 export async function remixar(slug: string): Promise<Projeto> {
   return paraProjeto(await pedir<ProjetoDaApi>(`/playground/projects/remix/${slug}`, { method: "POST" }));
 }
+
+export const MOTIVOS_DE_DENUNCIA = [
+  { valor: "ofensivo", texto: "Ofensivo, ódio ou assédio" },
+  { valor: "sexual", texto: "Conteúdo sexual" },
+  { valor: "golpe", texto: "Golpe, vírus ou link perigoso" },
+  { valor: "dados_pessoais", texto: "Expõe dados de alguém" },
+  { valor: "outro", texto: "Outro motivo" },
+] as const;
+
+export type MotivoDaDenuncia = (typeof MOTIVOS_DE_DENUNCIA)[number]["valor"];
+
+/** A equipe recebe no admin e decide se o link sai do ar. Exige conta. */
+export async function denunciar(slug: string, motivo: MotivoDaDenuncia, detalhe: string) {
+  await pedir<{ recebida: boolean }>(`/playground/public/${slug}/denunciar`, {
+    method: "POST",
+    body: JSON.stringify({ motivo, ...(detalhe.trim() && { detalhe: detalhe.trim() }) }),
+  });
+}

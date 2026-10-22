@@ -20,6 +20,7 @@ const ALVOS = [
   { valor: "aula", texto: "Aulas" },
   { valor: "loja", texto: "Loja" },
   { valor: "segmento", texto: "Segmentos" },
+  { valor: "projeto", texto: "Projetos" },
 ];
 
 /** Para onde leva cada linha: a pessoa, a aula, o curso. */

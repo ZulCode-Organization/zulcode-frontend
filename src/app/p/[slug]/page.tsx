@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Code2, Copy, GitFork, Loader2, Monitor, Terminal } from "lucide-react";
+import { Code2, Copy, Flag, GitFork, Loader2, Monitor, Terminal } from "lucide-react";
 import { useMontado } from "@/hooks/use-montado";
 import { usePlaygroundExecutor } from "@/hooks/usePlaygroundExecutor";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ import { EditorCodigo } from "@/components/playground/editor-codigo";
 import { AbasArquivos } from "@/components/playground/abas-arquivos";
 import { ConsolePlayground } from "@/components/playground/console-playground";
 import { MolduraPreview } from "@/components/playground/moldura-preview";
+import { DialogoDenuncia } from "@/components/playground/dialogo-denuncia";
 
 /** A página de um projeto compartilhado.
  *
@@ -32,6 +33,7 @@ function Publico({ slug }: { slug: string }) {
   const [remixando, setRemixando] = useState(false);
   const [painelMovel, setPainelMovel] = useState<"codigo" | "preview" | "console">("preview");
   const [copiado, setCopiado] = useState(false);
+  const [denunciando, setDenunciando] = useState(false);
   const ajustes = lerAjustes();
   const cores = paleta(ajustes.tema);
   const router = useRouter();
@@ -70,6 +72,15 @@ function Publico({ slug }: { slug: string }) {
       setErro(falha instanceof Error ? falha.message : "Não deu para remixar.");
       setRemixando(false);
     }
+  };
+
+  // Denunciar pede conta: é o que segura a enxurrada de denúncias falsas.
+  const abrirDenuncia = () => {
+    if (!localStorage.getItem("accessToken")) {
+      router.push("/welcome");
+      return;
+    }
+    setDenunciando(true);
   };
 
   const copiarCodigo = async () => {
@@ -132,6 +143,16 @@ function Publico({ slug }: { slug: string }) {
         </div>
         <button
           type="button"
+          onClick={abrirDenuncia}
+          className="zc-pg-botao zc-pg-borda h-7 border px-2 text-[0.72rem]"
+          title="Denunciar este projeto"
+          aria-label="Denunciar este projeto"
+        >
+          <Flag className="size-3" />
+          <span className="hidden sm:inline">Denunciar</span>
+        </button>
+        <button
+          type="button"
           onClick={() => void copiarCodigo()}
           className="zc-pg-botao zc-pg-borda h-7 border px-2 text-[0.72rem]"
         >
@@ -150,6 +171,8 @@ function Publico({ slug }: { slug: string }) {
           Remixar
         </button>
       </header>
+
+      {denunciando && <DialogoDenuncia slug={slug} aoFechar={() => setDenunciando(false)} />}
 
       {erro && (
         <p role="alert" className="zc-pg-erro zc-pg-borda shrink-0 border-b px-3 py-1.5 text-[0.72rem]">

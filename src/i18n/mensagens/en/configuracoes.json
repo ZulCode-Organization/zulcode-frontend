@@ -22,7 +22,7 @@
     "titulo": "App language",
     "descricao": "Changes the text across all of ZulCode.",
     "beta": "BETA",
-    "avisoBeta": "This language is still in testing: some parts are still in Portuguese.",
+    "avisoBeta": "English is still in testing: some parts are still in Portuguese.",
     "erro": "Couldn't change the language right now. Try again."
   },
   "estudo": {

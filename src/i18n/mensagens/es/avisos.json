@@ -1,0 +1,73 @@
+{
+  "canais": {
+    "lembretes": "Recordatorios de estudio",
+    "novidades": "Novedades y avisos"
+  },
+  "acoes": {
+    "estudar": "Estudiar ahora",
+    "depois": "Más tarde"
+  },
+  "rotuloDia": "día de racha",
+  "rotuloDias": "días de racha",
+  "lembrete": {
+    "1": {
+      "titulo": "Tu llama de {diasTexto} te está esperando 🔥",
+      "texto": "Una lección rapidita y sigue encendida."
+    },
+    "2": {
+      "titulo": "¿Vamos a estudiar, {nome}?",
+      "texto": "Zul separó una lección para mantener tu racha de {diasTexto}."
+    },
+    "3": {
+      "titulo": "¡Hora del código!",
+      "texto": "5 minutitos hoy y la racha de {diasTexto} sigue firme."
+    },
+    "4": {
+      "titulo": "Zul está vigilando tu racha 👀",
+      "texto": "Tu racha está en {diasTexto}. No dejes que el fuego se apague hoy."
+    }
+  },
+  "comecar": {
+    "1": {
+      "titulo": "¿Empezamos una racha?",
+      "texto": "Una lección hoy y la llama se enciende. ¡Zul te está esperando!"
+    },
+    "2": {
+      "titulo": "¡Hora de aprender, {nome}!",
+      "texto": "Hay una lección nueva esperándote en ZulCode."
+    },
+    "3": {
+      "titulo": "¿Qué tal 5 minutos de código?",
+      "texto": "Pasos pequeños, todos los días. ¡Empieza ahora!"
+    }
+  },
+  "risco": {
+    "1": {
+      "titulo": "¡Tu racha se va a apagar! 🔥",
+      "texto": "Faltan 2 horas para perder tu racha de {diasTexto}. Una lección la salva."
+    },
+    "2": {
+      "titulo": "Último aviso de Zul",
+      "texto": "Tu racha de {diasTexto} termina a medianoche. ¡Corre!"
+    },
+    "3": {
+      "titulo": "¡Todavía hay tiempo, {nome}!",
+      "texto": "Una lección rápida mantiene encendida tu llama de {diasTexto}."
+    }
+  },
+  "unidade": {
+    "um": "día",
+    "varios": "días"
+  },
+  "pedido": {
+    "titulo": "No dejes que la llama se apague",
+    "texto": "Activa las notificaciones y Zul te recuerda cuando sea hora de estudiar, avisa cuando alguien te supere en la liga y te cuenta las novedades.",
+    "ativar": "Activar notificaciones",
+    "ativando": "Activando…",
+    "agoraNao": "Ahora no",
+    "bloqueadasTitulo": "Las notificaciones están bloqueadas",
+    "bloqueadasTexto": "Para recibir los recordatorios de Zul, permite las notificaciones de ZulCode en los ajustes del dispositivo.",
+    "abrirAjustes": "Abrir ajustes",
+    "falha": "No se pudieron activar ahora. Intenta de nuevo desde Configuración."
+  }
+}

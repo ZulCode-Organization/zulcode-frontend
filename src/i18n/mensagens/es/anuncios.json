@@ -1,0 +1,14 @@
+{
+  "pena": {
+    "botao": "Ver un anuncio y ganar 1 pluma",
+    "titulo": "Ver un anuncio",
+    "descricao": "Mira un anuncio corto y gana 1 pluma.",
+    "gratis": "Gratis",
+    "carregando": "Cargando anuncio…",
+    "ganhou": "¡Ganaste 1 pluma!",
+    "cancelado": "El anuncio se cerró antes del final, así que no llegó la pluma.",
+    "limite": "Ya ganaste todas las plumas de anuncios de hoy.",
+    "cheio": "Tus plumas ya están llenas.",
+    "falha": "No se pudo cargar un anuncio ahora. Intenta de nuevo en un rato."
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "entrar": {
+    "titulo": "ZulCode",
+    "texto": "Toca para entrar"
+  },
+  "rotulos": {
+    "um": "día seguido",
+    "varios": "días seguidos",
+    "estudeHoje": "estudia hoy",
+    "comeceHoje": "empieza hoy"
+  },
+  "unidade": {
+    "um": "día",
+    "varios": "días"
+  },
+  "semana": {
+    "iniciais": "D L M X J V S"
+  },
+  "meta": {
+    "titulo": "Meta de hoy",
+    "feita": "¡Meta cumplida!",
+    "minutos": "{feito} de {meta} min"
+  },
+  "zul": {
+    "entrar": "¡Hola! Entra en tu cuenta para que pueda acompañarte.",
+    "feito": {
+      "1": "¡Muy bien! Tu llama de {diasTexto} está asegurada hoy.",
+      "2": "¡Racha salvada! Hasta mañana, {nome}.",
+      "3": "¡Por hoy ya está! Mañana mantenemos el fuego encendido.",
+      "4": "Ya son {diasTexto} de racha. ¡Qué secuencia, {nome}!",
+      "5": "Lección hecha. Ahora solo disfruta el resto del día.",
+      "6": "Tu cerebro lo agradece. ¡La llama también!",
+      "7": "Un día más en tu cuenta: {diasTexto} de racha.",
+      "8": "¡Estás volando, {nome}! Mañana hay más."
+    },
+    "risco": {
+      "1": "Tu llama de {diasTexto} te está esperando. ¿Vamos?",
+      "2": "Una lección rapidita y la racha de {diasTexto} sigue firme.",
+      "3": "¡{nome}, te separé una lección para hoy!",
+      "4": "Cinco minutitos y la llama sigue encendida.",
+      "5": "¿Programamos un poco? La racha de {diasTexto} te lo agradece.",
+      "6": "Estoy aquí estudiando. ¿Vienes conmigo, {nome}?",
+      "7": "¡No dejes escapar {diasTexto} de racha!",
+      "8": "Una lección ahora y el resto del día queda libre."
+    },
+    "noite": {
+      "1": "¡Corre! Tu racha de {diasTexto} se apaga a medianoche.",
+      "2": "¡Todavía hay tiempo de salvar la llama de {diasTexto}!",
+      "3": "Última llamada, {nome}: una lección salva el día.",
+      "4": "La llama está flaquita... ¿me ayudas a salvarla?",
+      "5": "¡Solo una lección antes de dormir, vamos!",
+      "6": "¡Se acerca la medianoche y tu racha de {diasTexto} está en riesgo!"
+    },
+    "comecar": {
+      "1": "¿Qué tal empezar una racha hoy?",
+      "2": "¡Una lección hoy y la llama se enciende!",
+      "3": "¿Listo para aprender algo nuevo, {nome}?",
+      "4": "Todo programador empezó con una línea. ¿Vamos?",
+      "5": "Hoy es un gran día para el primer día de racha.",
+      "6": "Te separé una lección cortita para empezar.",
+      "7": "¡Enciende esta llama conmigo, {nome}!"
+    }
+  }
+}

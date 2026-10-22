@@ -2,6 +2,7 @@
 
 import { CSSProperties, ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useSincronizarIdioma } from "@/i18n/use-idioma";
+import { IDIOMAS, type Idioma } from "@/i18n/idiomas";
 import { useSincronizarAvisos } from "@/hooks/use-avisos";
 import { useSincronizarWidget } from "@/hooks/use-widget";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
@@ -119,7 +120,7 @@ interface PerfilState {
    *  ele não pode voltar ao trocar de tela, que remonta o aviso do zero. */
   esconderAvisoDaOfensiva: () => void;
   /** Salva dados do perfil em PUT /user e atualiza a tela e o cache. */
-  salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null; idioma?: "pt" | "en"; metaDiaria?: number }) => Promise<ResultadoSalvar>;
+  salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null; idioma?: Idioma; metaDiaria?: number }) => Promise<ResultadoSalvar>;
 }
 
 /** A API do Nest devolve o motivo em `message`, às vezes como lista (quando
@@ -217,7 +218,7 @@ function usePerfilData(): PerfilState {
           isVerified: usuario.isVerified ?? false,
           themeColor: usuario.themeColor,
           themeMode: usuario.themeMode,
-          idioma: usuario.idioma === "pt" || usuario.idioma === "en" ? usuario.idioma : null,
+          idioma: IDIOMAS.includes(usuario.idioma as Idioma) ? (usuario.idioma as Idioma) : null,
           metaDiaria: typeof usuario.dailyGoalMinutes === "number" ? usuario.dailyGoalMinutes : 10,
           iniciais: gerarIniciais(usuario.name),
           xp: usuario.xp,
@@ -291,7 +292,7 @@ function usePerfilData(): PerfilState {
   }, []);
 
   const salvarDados = useCallback(
-    async (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null; idioma?: "pt" | "en"; metaDiaria?: number }): Promise<ResultadoSalvar> => {
+    async (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null; idioma?: Idioma; metaDiaria?: number }): Promise<ResultadoSalvar> => {
       const token = getToken();
       if (!token) return { ok: false, mensagem: "Sua sessão expirou. Entre de novo." };
 

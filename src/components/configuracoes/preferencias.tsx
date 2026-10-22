@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { usePerfil } from "@/hooks/use-perfil";
 import { useMontado } from "@/hooks/use-montado";
 import { mudarPreferencia, usePreferencias } from "@/lib/preferencias";
-import { IDIOMAS, NOME_DO_IDIOMA, type Idioma } from "@/i18n/idiomas";
+import { IDIOMAS, IDIOMA_PADRAO, LANG_DO_HTML, NOME_DO_IDIOMA, type Idioma } from "@/i18n/idiomas";
 import { Grupo, Linha, LinhaDeEscolha, LinhaInterruptor, Opcao } from "./linhas";
 import { TelaDeConfig } from "./tela";
 
@@ -89,14 +89,14 @@ export function PreferenciasContent() {
           <div role="radiogroup" aria-label={t("idioma.titulo")} className="grid grid-cols-2 gap-2">
             {IDIOMAS.map((idioma) => (
               <Opcao key={idioma} ativa={idiomaEscolhido === idioma} desabilitada={trocandoIdioma} aoEscolher={() => void escolherIdioma(idioma)}>
-                <span lang={idioma === "en" ? "en" : "pt-BR"} className="flex items-center gap-1.5 text-[0.9rem] font-black">
+                <span lang={LANG_DO_HTML[idioma]} className="flex items-center gap-1.5 text-[0.9rem] font-black">
                   {NOME_DO_IDIOMA[idioma]}
-                  {idioma === "en" && <span className="rounded-md bg-amber-400/20 px-1.5 py-0.5 text-[0.6rem] font-black tracking-wide text-amber-700 dark:text-amber-300">{t("idioma.beta")}</span>}
+                  {idioma !== IDIOMA_PADRAO && <span className="rounded-md bg-amber-400/20 px-1.5 py-0.5 text-[0.6rem] font-black tracking-wide text-amber-700 dark:text-amber-300">{t("idioma.beta")}</span>}
                 </span>
               </Opcao>
             ))}
           </div>
-          {idiomaEscolhido === "en" && <p className="mt-2.5 text-[0.75rem] leading-snug text-muted-foreground">{t("idioma.avisoBeta")}</p>}
+          {idiomaEscolhido !== IDIOMA_PADRAO && <p className="mt-2.5 text-[0.75rem] leading-snug text-muted-foreground">{t("idioma.avisoBeta")}</p>}
         </LinhaDeEscolha>
       </Grupo>
 

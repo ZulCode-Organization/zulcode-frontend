@@ -137,7 +137,10 @@ function MoldeAtividade({ progresso, seguidas, vidas, vidasIlimitadas, onSair, c
       <BarraDaAula progresso={progresso} seguidas={seguidas} vidas={vidas} vidasIlimitadas={vidasIlimitadas} onSair={onSair} />
 
       <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 pb-[env(safe-area-inset-bottom)] lg:px-8">
-        <div className="flex flex-1 flex-col">
+        {/* min-w-0: sem ele, uma linha de código comprida alargava a coluna
+            além da tela no celular (texto e botão cortados à direita) em vez
+            de rolar dentro do bloco de código. */}
+        <div className="flex min-w-0 flex-1 flex-col">
           <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center py-4">{children}</div>
           {rodape}
         </div>

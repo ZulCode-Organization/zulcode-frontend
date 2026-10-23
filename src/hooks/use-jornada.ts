@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { UnidadeTrilha } from "@/lib/types/trilha";
 import { useTrilha } from "./use-trilha";
-import { useCursos } from "./use-cursos";
+import { recarregarCursos, useCursos } from "./use-cursos";
 
 export type { CursoDaJornada } from "./use-cursos";
 
@@ -20,17 +20,23 @@ export type { CursoDaJornada } from "./use-cursos";
  * em cima recarrega a trilha aqui sozinho.
  */
 export function useJornada() {
-  const { cursos, cursoAtual, loading: carregandoCurso, selecionarCurso } = useCursos();
+  const { cursos, cursoAtual, loading: carregandoCurso, erro: erroDoCurso, selecionarCurso } = useCursos();
   const trilhaReal = useTrilha(cursoAtual ?? "", !!cursoAtual);
 
   const marcarConcluidaLocal = useCallback((_licaoId: string) => undefined, []);
+  // Sem nada para mostrar e a busca falhou: a tela diz isso (e tenta de novo
+  // sozinha) em vez de parecer um curso vazio.
+  const semCurso = !cursoAtual && erroDoCurso;
+  const erro = semCurso || (trilhaReal.error && trilhaReal.unidades.length === 0);
 
   return {
     unidades: trilhaReal.unidades as UnidadeTrilha[],
     // Só bloqueia a tela inteira no primeiro carregamento — depois de
     // cacheado (useTrilha), essa página nunca mais fica presa esperando
     // rede de novo.
-    loading: carregandoCurso || !cursoAtual || trilhaReal.loading,
+    loading: !erro && (carregandoCurso || !cursoAtual || trilhaReal.loading),
+    erro,
+    tentarDeNovo: semCurso ? recarregarCursos : trilhaReal.retry,
     marcarConcluidaLocal,
     cursoAtual: cursoAtual ?? "",
     cursos,

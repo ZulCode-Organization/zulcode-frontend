@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Code2 } from "lucide-react";
+import { Code2, WifiOff } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { useJornada } from "@/hooks/use-jornada";
 import { useGestoLateral } from "@/hooks/use-gesto-lateral";
@@ -28,9 +28,28 @@ function TrilhaEsqueleto() {
   );
 }
 
+/** A busca falhou (normalmente o servidor reiniciando depois de um deploy).
+ * O useTrilha já tenta de novo sozinho; o botão só adianta isso. */
+function TrilhaSemConexao({ tentarDeNovo }: { tentarDeNovo: () => void }) {
+  return (
+    <div className="mt-7 rounded-3xl border border-dashed bg-card p-8 text-center">
+      <WifiOff className="mx-auto size-7 text-muted-foreground" />
+      <h2 className="mt-3 text-xl font-black">Não deu para carregar sua jornada</h2>
+      <p className="mt-2 text-sm text-muted-foreground">Estamos tentando de novo sozinhos. Se demorar, confira sua internet.</p>
+      <button
+        type="button"
+        onClick={tentarDeNovo}
+        className="mt-5 rounded-2xl bg-primary px-5 py-3 text-sm font-black uppercase tracking-wide text-primary-foreground transition-[filter] hover:brightness-110"
+      >
+        Tentar de novo
+      </button>
+    </div>
+  );
+}
+
 export default function HomePage() {
   useRequireAuth();
-  const { unidades, loading } = useJornada();
+  const { unidades, loading, erro, tentarDeNovo } = useJornada();
   const router = useRouter();
   const ehMobile = useEhMobile();
 
@@ -86,7 +105,7 @@ export default function HomePage() {
             cabeçalho da Jornada ficaria preso aqui dentro e a barra de status
             passaria a pintar por cima dele — o cabeçalho aparecia cortado. */}
         <div style={deslocamento === 0 ? undefined : { transform: `translateX(${deslocamento}px)` }}>
-          {loading ? <TrilhaEsqueleto /> : <LessonTrail unidades={unidades} />}
+          {erro ? <TrilhaSemConexao tentarDeNovo={tentarDeNovo} /> : loading ? <TrilhaEsqueleto /> : <LessonTrail unidades={unidades} />}
         </div>
       </div>
     </AppShell>

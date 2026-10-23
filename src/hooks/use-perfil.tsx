@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { CSSProperties, ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useSincronizarIdioma } from "@/i18n/use-idioma";
 import { useSincronizarAvisos } from "@/hooks/use-avisos";
 import { useSincronizarWidget } from "@/hooks/use-widget";
@@ -272,6 +272,31 @@ function usePerfilData(): PerfilState {
     if (cacheValidoPara(getToken())) return;
     load();
   }, [load]);
+
+  // Falhou (o servidor reiniciando depois de um deploy, por exemplo): tenta de
+  // novo em 2s, 4s, 8s… até 30s, e na hora quando o app volta para a frente.
+  // Antes a barra ficava em "…" até a pessoa sair da conta e entrar de novo.
+  const tentativas = useRef(0);
+  useEffect(() => {
+    if (!error) {
+      if (!loading) tentativas.current = 0;
+      return;
+    }
+    const espera = Math.min(30_000, 2_000 * 2 ** tentativas.current);
+    tentativas.current += 1;
+    const tentar = () => load();
+    const timer = window.setTimeout(tentar, espera);
+    const aoVoltar = () => {
+      if (document.visibilityState === "visible") tentar();
+    };
+    document.addEventListener("visibilitychange", aoVoltar);
+    window.addEventListener("online", tentar);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", aoVoltar);
+      window.removeEventListener("online", tentar);
+    };
+  }, [error, loading, load]);
 
   // Metas e loja podem conceder moedas sem recarregar a página. O evento é
   // usado por esses fluxos para manter topbar/sidebar sincronizadas na hora.

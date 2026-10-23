@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { EstadoLicao, UnidadeTrilha } from "@/lib/types/trilha";
 import type { TipoDeAula } from "@/data/atividades";
@@ -142,8 +142,37 @@ export function useTrilha(languageSlug: string, enabled: boolean = true) {
         trilhaCache = { token, languageSlug, unidades };
         setState({ loading: false, error: false, unidades });
       })
-      .catch(() => setState({ loading: false, error: true, unidades: [] }));
+      // Falhar não é "trilha vazia": a tela mostrava "este curso ainda está
+      // sendo preparado" e ficava presa assim depois de cada deploy, até sair
+      // da conta. O que já estava na tela continua; o efeito abaixo tenta de novo.
+      .catch(() => setState((atual) => ({ ...atual, loading: false, error: true })));
   }, [languageSlug, enabled]);
+
+  // Nova tentativa sozinha em 2s, 4s, 8s… até 30s, e na hora quando o app volta
+  // para a frente ou a internet volta. O servidor reiniciando depois de um
+  // deploy leva alguns segundos para responder.
+  const tentativas = useRef(0);
+  useEffect(() => {
+    if (!state.error) {
+      // Durante a nova tentativa o erro some por um instante; só zera a
+      // contagem quando a busca deu certo de verdade.
+      if (!state.loading) tentativas.current = 0;
+      return;
+    }
+    const espera = Math.min(30_000, 2_000 * 2 ** tentativas.current);
+    tentativas.current += 1;
+    const timer = window.setTimeout(load, espera);
+    const aoVoltar = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    document.addEventListener("visibilitychange", aoVoltar);
+    window.addEventListener("online", load);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", aoVoltar);
+      window.removeEventListener("online", load);
+    };
+  }, [state.error, state.loading, load]);
 
   useEffect(() => {
     // Ao voltar para a Jornada o hook é montado de novo. Nesse caso o estado

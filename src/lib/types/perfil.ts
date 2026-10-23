@@ -39,6 +39,10 @@ export interface PerfilUsuario {
   /** Eu sigo essa conta? So vem no perfil de outra pessoa, e e a base contra a
    * qual o contador se corrige enquanto o botao e clicado. */
   euSigo?: boolean;
+  /** Só no perfil de outra pessoa: os cursos dela, com o XP de cada um. */
+  cursosPublicos?: { id: string; name: string; xp: number }[];
+  /** Só no perfil de outra pessoa: quem eu sigo e também a segue. */
+  emComum?: { total: number; primeiros: { id: string; name: string; avatarId?: string | null; bannerColor?: string | null }[] };
   /** Quando a conta foi criada (createdAt da API), pro "por aqui desde". */
   membroDesde?: string | null;
   streakAtual: number;

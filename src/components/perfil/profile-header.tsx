@@ -53,17 +53,58 @@ function ContadoresSociais({ perfil, seguirId }: { perfil: PerfilUsuario; seguir
   const correcao = agora === base ? 0 : agora ? 1 : -1;
   const seguidores = Math.max(0, (perfil.seguidores ?? 0) + correcao);
   const seguindo = perfil.seguindo ?? 0;
+  const dono = seguirId ?? perfil.id;
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-black">
-      <span className="text-foreground">
+      {/* Os números abrem a lista completa ("Amigos de X"), cada um na sua aba. */}
+      <Link href={`/perfil/${dono}/amigos`} className="text-foreground hover:underline">
         {seguindo.toLocaleString("pt-BR")} <span className="text-muted-foreground">seguindo</span>
-      </span>
-      <span className="text-foreground">
+      </Link>
+      <Link href={`/perfil/${dono}/amigos?aba=seguidores`} className="text-foreground hover:underline">
         {seguidores.toLocaleString("pt-BR")}{" "}
         <span className="text-muted-foreground">{seguidores === 1 ? "seguidor" : "seguidores"}</span>
-      </span>
-      {seguirId && <BotaoSeguir id={seguirId} className="px-3 py-2 text-[0.68rem]" />}
+      </Link>
+    </div>
+  );
+}
+
+/** "Adriel, Seni M e mais 2 seguem": os nomes de quem eu sigo e também segue a pessoa. */
+function textoDoEmComum(nomes: string[], total: number) {
+  const verbo = total === 1 ? "segue" : "seguem";
+  if (total > nomes.length) return `${nomes.join(", ")} e mais ${total - nomes.length} ${verbo}`;
+  if (nomes.length === 1) return `${nomes[0]} ${verbo}`;
+  return `${nomes.slice(0, -1).join(", ")} e ${nomes[nomes.length - 1]} ${verbo}`;
+}
+
+/**
+ * No perfil de outra pessoa, como no Duolingo: os avatares empilhados de quem
+ * eu sigo e também a segue (levando à lista completa) e o botão grande de
+ * seguir logo abaixo.
+ */
+function SeguirComEmComum({ perfil, seguirId }: { perfil: PerfilUsuario; seguirId: string }) {
+  const emComum = perfil.emComum;
+  return (
+    <div className="mt-4 flex flex-col gap-3">
+      {emComum && emComum.total > 0 && (
+        <Link href={`/perfil/${seguirId}/em-comum`} className="flex min-w-0 items-center gap-2.5">
+          <span className="flex shrink-0">
+            {emComum.primeiros.map((pessoa, i) => (
+              <span
+                key={pessoa.id}
+                className={cn("flex size-8 items-center justify-center overflow-hidden rounded-full border-2 border-background text-sm", i > 0 && "-ml-2.5")}
+                style={{ background: pessoa.bannerColor ?? "#1892ff", zIndex: 3 - i }}
+              >
+                <AvatarIcon id={pessoa.avatarId ?? "orbit"} />
+              </span>
+            ))}
+          </span>
+          <span className="min-w-0 truncate text-sm font-black text-foreground">
+            {textoDoEmComum(emComum.primeiros.map((p) => p.name), emComum.total)}
+          </span>
+        </Link>
+      )}
+      <BotaoSeguir id={seguirId} larguraCheia className="py-3.5 text-[0.85rem]" />
     </div>
   );
 }
@@ -137,7 +178,11 @@ const BANNER_RICHARD = "linear-gradient(135deg, #111827, #1e3a8a 52%, #38bdf8)";
 
 export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: ProfileHeaderProps) {
   const { salvarDados, cursosEmAndamento, cursosConcluidos } = usePerfil();
-  const cursos = [...cursosEmAndamento, ...cursosConcluidos];
+  // No perfil de outra pessoa os cursos são os dela, que vêm junto do perfil
+  // público. Antes apareciam os de quem visitava.
+  const cursos = editavel
+    ? [...cursosEmAndamento, ...cursosConcluidos].map((curso) => ({ id: curso.id, nome: curso.nome, dica: `${curso.nome} · ${curso.percentual}%` }))
+    : (perfil.cursosPublicos ?? []).map((curso) => ({ id: curso.id, nome: curso.name, dica: `${curso.name} · ${curso.xp.toLocaleString("pt-BR")} XP` }));
 
   // A capa e o ícone vêm direto do perfil: escolher os dois é papel do
   // EditorAvatar, e quando ele salva o perfil recarrega e chega aqui atualizado.
@@ -246,18 +291,23 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
                 listava embaixo saiu, então entram aqui os dois grupos — em
                 andamento e concluídos — pra nenhum sumir da tela. */}
             {cursos.length > 0 && (
-              <div className="flex items-center gap-2">
+              <Link
+                href={`/perfil/${seguirId ?? perfil.id}/cursos`}
+                aria-label="Ver os cursos e o XP de cada um"
+                className="flex items-center gap-2 rounded-lg transition-opacity hover:opacity-80"
+              >
                 {cursos.slice(0, 5).map((curso) => (
-                  <span key={curso.id} title={`${curso.nome} · ${curso.percentual}%`} className="inline-flex">
+                  <span key={curso.id} title={curso.dica} className="inline-flex">
                     <LadrilhoCurso curso={{ id: curso.id, name: curso.nome, icon: "" }} px={30} largura={42} />
                   </span>
                 ))}
                 {cursos.length > 5 && (
                   <span className="text-xs font-black text-muted-foreground">+{cursos.length - 5}</span>
                 )}
-              </div>
+              </Link>
             )}
           </div>
+          {seguirId && <SeguirComEmComum perfil={perfil} seguirId={seguirId} />}
         </div>
       </div>
 

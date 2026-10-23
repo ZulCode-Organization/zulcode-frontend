@@ -46,3 +46,5 @@ export const deixarDeSeguir = (id: string) => pedir<EstadoSeguir>(`/follows/${id
 export const idsQueSigo = () => pedir<{ seguindo: string[] }>("/follows/me");
 export const listarSeguindo = (id: string) => pedir<PessoaSocial[]>(`/follows/${id}/seguindo`);
 export const listarSeguidores = (id: string) => pedir<PessoaSocial[]>(`/follows/${id}/seguidores`);
+/** Quem eu sigo e também segue essa pessoa. */
+export const listarEmComum = (id: string) => pedir<PessoaSocial[]>(`/follows/${id}/em-comum`);

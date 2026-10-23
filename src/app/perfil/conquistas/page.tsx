@@ -30,7 +30,7 @@ function TodasAsConquistas() {
         <span className="text-sm font-black text-muted-foreground">{lista.length}</span>
       </div>
       {lista.length ? (
-        <ListaDeConquistas conquistas={lista} />
+        <ListaDeConquistas conquistas={lista} nome={perfil.nome} />
       ) : (
         <p className="rounded-2xl border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
           Conclua missões especiais para desbloquear suas primeiras conquistas.

@@ -17,6 +17,8 @@ export const TEXTO_DA_ACAO: Record<string, string> = {
   excluir_conta: "Excluiu a conta",
   tirar_projeto_do_ar: "Tirou do ar o projeto",
   descartar_denuncia: "Descartou a denúncia do projeto",
+  resolver_denuncia_de_usuario: "Resolveu a denúncia contra",
+  descartar_denuncia_de_usuario: "Descartou a denúncia contra",
   publicar_aula: "Publicou a aula",
   duplicar_aula: "Duplicou a aula",
   criar_aula: "Criou a aula",

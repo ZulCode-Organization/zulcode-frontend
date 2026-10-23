@@ -47,7 +47,7 @@ function PerfilContent({ editando, setEditando }: { editando: boolean; setEditan
       <StatsGrid perfil={perfil} />
       <OfensivaComAmigos />
       <MedalhasDoPerfil medalhas={perfil.medalhas} />
-      <AchievementsSection conquistas={perfil.conquistas} />
+      <AchievementsSection conquistas={perfil.conquistas} nome={perfil.nome} />
       <SugestoesAmigos />
     </div>
   );

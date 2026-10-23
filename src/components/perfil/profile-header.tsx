@@ -13,7 +13,7 @@ import { AvatarIcon } from "@/components/shared/avatar-icon";
 import { usePerfil } from "@/hooks/use-perfil";
 import { LadrilhoCurso } from "@/components/app-shell/topbar-cursos";
 import { BotaoSeguir } from "./botao-seguir";
-import { AcoesDeAmigos } from "./acoes-de-amigos";
+import { AcoesDeAmigos, QrDoPerfil } from "./acoes-de-amigos";
 import { useSeguir } from "@/hooks/use-seguir";
 
 interface ProfileHeaderProps {
@@ -104,7 +104,11 @@ function SeguirComEmComum({ perfil, seguirId }: { perfil: PerfilUsuario; seguirI
           </span>
         </Link>
       )}
-      <BotaoSeguir id={seguirId} larguraCheia className="py-3.5 text-[0.85rem]" />
+      {/* Seguir e o QR do perfil lado a lado, como no Duolingo. */}
+      <div className="flex gap-3">
+        <BotaoSeguir id={seguirId} larguraCheia className="h-12 flex-1 py-0 text-[0.85rem]" />
+        <QrDoPerfil perfil={perfil} />
+      </div>
     </div>
   );
 }

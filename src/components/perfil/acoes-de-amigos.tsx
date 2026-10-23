@@ -78,9 +78,7 @@ export function AcoesDeAmigos({ perfil }: { perfil: PerfilUsuario }) {
         <UserPlus className="size-5" strokeWidth={2.8} />
         Adicionar amigos
       </button>
-      <button type="button" onClick={() => setModal("qr")} aria-label="Mostrar o QR code do perfil" className={cn(BOTAO_RELEVO, "w-14 text-primary")}>
-        <QrCode className="size-6" strokeWidth={2.4} />
-      </button>
+      <BotaoQr onClick={() => setModal("qr")} rotulo="Mostrar o QR code do perfil" />
 
       {modal === "adicionar" && (
         <Modal titulo="Encontre os seus amigos" onFechar={fechar}>
@@ -100,6 +98,31 @@ export function AcoesDeAmigos({ perfil }: { perfil: PerfilUsuario }) {
       )}
       {modal === "qr" && <CartaoQr perfil={perfil} endereco={endereco} onFechar={fechar} />}
     </div>
+  );
+}
+
+function BotaoQr({ onClick, rotulo, className }: { onClick: () => void; rotulo: string; className?: string }) {
+  return (
+    <button type="button" onClick={onClick} aria-label={rotulo} className={cn(BOTAO_RELEVO, "w-14 shrink-0 text-primary", className)}>
+      <QrCode className="size-6" strokeWidth={2.4} />
+    </button>
+  );
+}
+
+/**
+ * O QR do perfil de outra pessoa, ao lado do "Seguindo": abre o mesmo cartão
+ * do meu perfil, com o link dela, para mostrar a alguém ou compartilhar.
+ */
+export function QrDoPerfil({ perfil, className }: { perfil: PerfilUsuario; className?: string }) {
+  const [aberto, setAberto] = useState(false);
+  const fechar = useCallback(() => setAberto(false), []);
+  const endereco = typeof window === "undefined" ? "" : `${window.location.origin}/perfil/${perfil.id}`;
+  const primeiroNome = perfil.nome.trim().split(/\s+/)[0];
+  return (
+    <>
+      <BotaoQr onClick={() => setAberto(true)} rotulo={`Mostrar o QR code do perfil de ${primeiroNome}`} className={className} />
+      {aberto && <CartaoQr perfil={perfil} endereco={endereco} onFechar={fechar} texto={`Siga ${primeiroNome} no ZulCode!`} />}
+    </>
   );
 }
 
@@ -254,7 +277,18 @@ const OPCOES: { id: OpcaoDeCompartilhar; rotulo: string; fundo: string; icone: R
  * uma animação suave (o fundo escurece, o cartão cresce, a folha de
  * compartilhar sobe) e sai do mesmo jeito.
  */
-function CartaoQr({ perfil, endereco, onFechar }: { perfil: PerfilUsuario; endereco: string; onFechar: () => void }) {
+function CartaoQr({
+  perfil,
+  endereco,
+  onFechar,
+  texto = "Me siga no ZulCode!",
+}: {
+  perfil: PerfilUsuario;
+  endereco: string;
+  onFechar: () => void;
+  /** O texto que vai junto do link ao compartilhar. */
+  texto?: string;
+}) {
   const [qr, setQr] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const fundoRef = useRef<HTMLDivElement>(null);
@@ -262,7 +296,6 @@ function CartaoQr({ perfil, endereco, onFechar }: { perfil: PerfilUsuario; ender
   const folhaRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
   const saindo = useRef(false);
-  const texto = "Me siga no ZulCode!";
 
   useEffect(() => {
     let vivo = true;
@@ -388,7 +421,7 @@ function CartaoQr({ perfil, endereco, onFechar }: { perfil: PerfilUsuario; ender
               <p className="mt-1.5 text-[1.3rem] font-black tracking-tight text-[#1892ff]">ZulCode</p>
             </div>
             <div className="grid size-[92px] shrink-0 place-items-center">
-              {qr ? <img src={qr} alt="QR code do seu perfil" className="size-full" /> : <span className="size-full animate-pulse rounded-lg bg-[#e5e7eb]" />}
+              {qr ? <img src={qr} alt={`QR code do perfil de ${perfil.nome}`} className="size-full" /> : <span className="size-full animate-pulse rounded-lg bg-[#e5e7eb]" />}
             </div>
           </div>
         </div>

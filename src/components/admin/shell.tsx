@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } fro
 import { ArrowLeft, ChevronsLeft, ChevronsRight, Keyboard, Search } from "lucide-react";
 import { PerfilProvider, usePerfil } from "@/hooks/use-perfil";
 import { cn } from "@/lib/utils";
+import { TransicaoDoConteudo } from "@/components/shared/transicao-de-tela";
 import { Avisos } from "./avisos";
 import { Paleta } from "./paleta";
 import { Dialogo, Perguntas } from "./dialogo";
@@ -216,7 +217,7 @@ function Casca({ children }: { children: ReactNode }) {
             })}
           </div>
         </div>
-        <main className="min-h-0 flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]"><TransicaoDoConteudo>{children}</TransicaoDoConteudo></main>
       </div>
 
       <Paleta aberta={paleta} aoFechar={() => setPaleta(false)} ehAdmin={ehAdmin} />

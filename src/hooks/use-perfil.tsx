@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useSincronizarIdioma } from "@/i18n/use-idioma";
 import { useSincronizarAvisos } from "@/hooks/use-avisos";
 import { useSincronizarWidget } from "@/hooks/use-widget";
@@ -30,19 +30,6 @@ function numeroOuNulo(...valores: unknown[]): number | null {
 
 function authHeaders(token: string) {
   return { Authorization: `Bearer ${token}` };
-}
-
-type Palette = Record<string, string>;
-
-const DEFAULT_PALETTES: { light: Palette; dark: Palette } = {
-  light: { "--background": "#f5f8fc", "--foreground": "#0f1115", "--card": "#ffffff", "--card-foreground": "#0f1115", "--popover": "#ffffff", "--popover-foreground": "#0f1115", "--primary": "#1892ff", "--primary-foreground": "#ffffff", "--secondary": "#eaf0f9", "--secondary-foreground": "#151a20", "--muted": "#eaf0f9", "--muted-foreground": "#62707f", "--accent": "#e3f0ff", "--accent-foreground": "#0a63b8", "--border": "#e1e8f0", "--input": "#e1e8f0", "--ring": "#1892ff", "--sidebar": "#ffffff", "--sidebar-foreground": "#0f1115", "--sidebar-primary": "#1892ff", "--sidebar-primary-foreground": "#ffffff", "--sidebar-accent": "#eaf0f9", "--sidebar-accent-foreground": "#151a20" },
-  dark: { "--background": "#0f1115", "--foreground": "#f3f6fa", "--card": "#151a20", "--card-foreground": "#f3f6fa", "--popover": "#151a20", "--popover-foreground": "#f3f6fa", "--primary": "#1892ff", "--primary-foreground": "#ffffff", "--secondary": "#1b212a", "--secondary-foreground": "#f3f6fa", "--muted": "#1b212a", "--muted-foreground": "#8b96a5", "--accent": "#1b2a3d", "--accent-foreground": "#6db8ff", "--border": "#232a33", "--input": "#1b212a", "--ring": "#1892ff", "--sidebar": "#151a20", "--sidebar-foreground": "#f3f6fa", "--sidebar-primary": "#1892ff", "--sidebar-primary-foreground": "#ffffff", "--sidebar-accent": "#1b212a", "--sidebar-accent-foreground": "#f3f6fa" },
-};
-
-/** Estilo isolado para ver o perfil público no claro ou escuro do dono (as paletas de cor saíram do app). */
-export function getProfileThemeStyle(themeMode?: "light" | "dark" | null): CSSProperties {
-  const mode = themeMode === "dark" ? "dark" : "light";
-  return { ...DEFAULT_PALETTES[mode], colorScheme: mode } as CSSProperties;
 }
 
 interface LicaoTrack {

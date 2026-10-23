@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { PerfilProvider } from "@/hooks/use-perfil";
+import { TransicaoDoConteudo } from "@/components/shared/transicao-de-tela";
 import { AppSidebar } from "./app-sidebar";
 import { AppBottomNav } from "./app-bottom-nav";
 import { AvisoFimDoTeste } from "@/components/pro/aviso-fim-do-teste";
@@ -77,7 +78,10 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
             )}>
               <div className={cn("mx-auto", contentClassName, fixedContent && "h-full min-h-0")}>
                 {/* Sem internet, a tela de aviso entra no lugar do conteúdo e a navegação continua em volta. */}
-                <ConteudoComConexao funcionaOffline={fixedContent}>{children}</ConteudoComConexao>
+                <ConteudoComConexao funcionaOffline={fixedContent}>
+                  {/* Só o miolo desliza na troca de tela; barras e lateral ficam paradas. */}
+                  <TransicaoDoConteudo className={cn(fixedContent && "h-full min-h-0")}>{children}</TransicaoDoConteudo>
+                </ConteudoComConexao>
               </div>
             </main>
 

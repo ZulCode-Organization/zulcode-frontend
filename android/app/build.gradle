@@ -17,8 +17,8 @@ android {
         applicationId "com.zul.code"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.0"
+        versionCode 3
+        versionName "2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // O id do app no AdMob. Sem ele o SDK de anúncios fecha o app ao abrir;
         // até o ZulCode ter o dele, vale o de teste do Google. O de verdade vem

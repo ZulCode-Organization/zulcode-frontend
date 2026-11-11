@@ -106,6 +106,76 @@ export function AdminTema() {
           </div>
         </>
       )}
+      <TemasEmUso />
     </Pagina>
+  );
+}
+
+type TemaEmUso = { cor: string; nome: string; pessoas: number };
+
+/**
+ * Os temas que as pessoas estão usando agora, com um "Tirar de todos" em
+ * cada. Quem estava com o tema volta ao padrão do ZulCode; quem comprou o
+ * tema na loja continua dono e pode usar de novo. Durante um evento isto não
+ * é preciso: o tema do evento já passa por cima de qualquer um.
+ */
+export function TemasEmUso() {
+  const { dados, erro, recarregar } = useDados<TemaEmUso[]>("/admin/temas-em-uso");
+  const [armado, setArmado] = useState<string | null>(null);
+  const [tirando, setTirando] = useState<string | null>(null);
+  const [aviso, setAviso] = useState("");
+
+  const tirar = async (tema: TemaEmUso) => {
+    setTirando(tema.cor);
+    setAviso("");
+    try {
+      const r = await pedir<{ pessoas: number }>("/admin/temas-em-uso/tirar", { method: "POST", json: { cor: tema.cor } });
+      setAviso(`${tema.nome} tirado de ${r.pessoas} ${r.pessoas === 1 ? "pessoa" : "pessoas"}.`);
+      recarregar();
+    } catch (e) {
+      setAviso(e instanceof Error ? e.message : "Não foi possível tirar o tema.");
+    } finally {
+      setTirando(null);
+      setArmado(null);
+    }
+  };
+
+  return (
+    <Cartao
+      className="mt-6"
+      titulo="Temas que as pessoas estão usando"
+      descricao="Tirar um tema faz todo mundo que está com ele voltar ao tema padrão. Quem comprou na loja continua dono e pode usar de novo."
+    >
+      {erro && !dados ? (
+        <Erro tentarDeNovo={recarregar}>{erro}</Erro>
+      ) : !dados ? (
+        <Esqueleto linhas={3} />
+      ) : !dados.length ? (
+        <p className="text-sm text-muted-foreground">Ninguém está usando um tema diferente do padrão.</p>
+      ) : (
+        <div className="divide-y">
+          {dados.map((tema) => (
+            <div key={tema.cor} className="flex items-center gap-3 py-2.5">
+              <span className="size-7 shrink-0 rounded-lg border" style={{ background: tema.cor }} aria-hidden />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-black">{tema.nome}</p>
+                <p className="text-xs text-muted-foreground">{tema.pessoas} {tema.pessoas === 1 ? "pessoa usando" : "pessoas usando"}</p>
+              </div>
+              {armado === tema.cor ? (
+                <>
+                  <Botao variante="fantasma" tamanho="sm" onClick={() => setArmado(null)}>Cancelar</Botao>
+                  <Botao variante="perigo" tamanho="sm" carregando={tirando === tema.cor} onClick={() => void tirar(tema)}>
+                    Tirar de {tema.pessoas}
+                  </Botao>
+                </>
+              ) : (
+                <Botao variante="secundario" tamanho="sm" disabled={tirando !== null} onClick={() => setArmado(tema.cor)}>Tirar de todos</Botao>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {aviso && <p className="mt-3 text-sm font-bold">{aviso}</p>}
+    </Cartao>
   );
 }

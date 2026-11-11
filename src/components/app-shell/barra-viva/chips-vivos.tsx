@@ -17,7 +17,7 @@ import { MARCOS_DA_SEQUENCIA } from "@/lib/sequencia";
 import { Odometro } from "./odometro";
 import { BarraRecarga } from "./barra-recarga";
 import { Dica, DicaOfensiva, DicaPenas, DicaRupees, useDica } from "./dica";
-import { COR_DA_PENA, COR_DO_RUPEE, ChamaNeon, ComEnfeite, ENFEITES_DA_BARRA, PenaDaBarra, corDaChama, useTemaDaBarra } from "./tema";
+import { COR_DA_PENA, COR_DO_RUPEE, ChamaNeon, ComEnfeite, PenaDaBarra, corDaChama, useEnfeitesDaBarra, useTemaDaBarra } from "./tema";
 
 /** Quanto tempo segurar para fixar o painel. Curto o bastante para ser
  *  descoberto sem querer, longo o bastante para nunca disparar num clique. */
@@ -262,6 +262,7 @@ export function ChipRupees({
   const zerado = moedas === 0;
   const ganhou = mudanca !== null && mudanca.para > mudanca.de;
   const tema = useTemaDaBarra();
+  const enfeites = useEnfeitesDaBarra(tema);
 
   // 2, 3 e 10.
   useEffect(() => {
@@ -301,7 +302,7 @@ export function ChipRupees({
       iconeRef={icone}
       numeroRef={numero}
       icone={(
-        <ComEnfeite enfeite={ENFEITES_DA_BARRA[tema].rupee}>
+        <ComEnfeite enfeite={enfeites.rupee}>
           <Rupee className="size-5.5 lg:size-6" quantidade={moedas} />
         </ComEnfeite>
       )}
@@ -340,6 +341,7 @@ export function ChipPenas({
   const restantes = vidas ?? maximo;
   const vazia = !pro && vidas === 0;
   const tema = useTemaDaBarra();
+  const enfeites = useEnfeitesDaBarra(tema);
 
   // 4, 5 e a pena que volta.
   useEffect(() => {
@@ -376,7 +378,7 @@ export function ChipPenas({
       icone={pro
         ? <SeloPro className="h-5.5 rounded-[3px] lg:h-6" />
         : (
-          <ComEnfeite enfeite={vazia ? null : ENFEITES_DA_BARRA[tema].pena}>
+          <ComEnfeite enfeite={vazia ? null : enfeites.pena}>
             <PenaDaBarra tema={tema} vazia={vazia} className="size-5.5 lg:size-6" />
           </ComEnfeite>
         )}

@@ -11,7 +11,7 @@ const ICONE_DO_TIPO: Record<TipoDeAula, typeof CodeXml> = {
 import { cn } from "@/lib/utils";
 import { LicaoTrilha } from "@/lib/types/trilha";
 import { LessonPopup } from "./lesson-popup";
-import { ENFEITES_DA_BARRA, useTemaDaBarra } from "@/components/app-shell/barra-viva/tema";
+import { useEnfeitesDaBarra, useTemaDaBarra } from "@/components/app-shell/barra-viva/tema";
 import { Enfeite } from "@/components/shared/enfeite";
 
 interface LessonNodeProps {
@@ -35,7 +35,8 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
   const botaoRef = useRef<HTMLButtonElement>(null);
   // Num evento, as aulas feitas ganham o enfeite dele no canto de baixo.
   const tema = useTemaDaBarra();
-  const enfeite = estado === "concluida" ? ENFEITES_DA_BARRA[tema].aula : null;
+  const enfeiteDaAula = useEnfeitesDaBarra(tema).aula;
+  const enfeite = estado === "concluida" ? enfeiteDaAula : null;
   // Num evento com cor de aula feita (globals.css), a aula feita usa ela; sem, a primária.
   const feita = estado === "concluida" && !chefe;
 

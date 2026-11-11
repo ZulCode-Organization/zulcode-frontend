@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useSyncExternalStore, type ReactNode } from "react";
+import { useTheme } from "next-themes";
 import { API_BASE_URL } from "@/lib/api-config";
 import { aplicarIconeDoApp } from "@/lib/icone-do-app";
 import { cn } from "@/lib/utils";
@@ -80,7 +81,7 @@ export function useTemaDaBarra(): TemaDaBarra {
 /** A cor do número da chama em cada evento. Fora de evento, a cor conta os dias. */
 const COR_DA_CHAMA_NO_EVENTO: Record<Exclude<TemaDaBarra, "normal">, string> = {
   halloween: "text-green-500",
-  natal: "text-rose-500",
+  natal: "text-rose-500 dark:text-sky-300",
   carnaval: "text-pink-500",
   pascoa: "text-amber-500",
   programador: "text-green-600 dark:text-green-400",
@@ -93,7 +94,7 @@ export function corDaChama(dias: number | null | undefined, tema: TemaDaBarra) {
 export const COR_DO_RUPEE: Record<TemaDaBarra, string> = {
   normal: "text-emerald-500",
   halloween: "text-orange-500",
-  natal: "text-emerald-600 dark:text-emerald-400",
+  natal: "text-emerald-600 dark:text-rose-500",
   carnaval: "text-yellow-500",
   pascoa: "text-emerald-500",
   programador: "text-cyan-600 dark:text-cyan-400",
@@ -102,24 +103,36 @@ export const COR_DO_RUPEE: Record<TemaDaBarra, string> = {
 export const COR_DA_PENA: Record<TemaDaBarra, string> = {
   normal: "text-violet-500",
   halloween: "text-violet-500",
-  natal: "text-red-600 dark:text-red-500",
+  natal: "text-red-600 dark:text-slate-100",
   carnaval: "text-emerald-500",
   pascoa: "text-violet-500 dark:text-violet-400",
   programador: "text-lime-600 dark:text-lime-400",
 };
 
+/** O app está no modo escuro? Antes de montar, vale o claro. */
+function useEscuro() {
+  return useTheme().resolvedTheme === "dark";
+}
+
 // ---------------------------------------------------------------------------
 // A chama neon
 // ---------------------------------------------------------------------------
 
+type ChamaDoTema = { faixa?: FaixaDaChama["id"]; tom?: string };
+
 /** Em cada evento, a arte da chama de que se parte e o filtro que a leva à cor do evento. */
-const CHAMA_DO_TEMA: Record<TemaDaBarra, { faixa?: FaixaDaChama["id"]; tom?: string }> = {
+const CHAMA_DO_TEMA: Record<TemaDaBarra, ChamaDoTema> = {
   normal: {},
   halloween: { tom: "hue-rotate(95deg) saturate(1.3)" },
   natal: { faixa: "violeta", tom: "hue-rotate(110deg) saturate(1.8) brightness(.95)" },
   carnaval: { faixa: "agua", tom: "hue-rotate(175deg) saturate(2) brightness(.95)" },
   pascoa: { faixa: "agua", tom: "hue-rotate(215deg) saturate(1.3) brightness(1.1)" },
   programador: { faixa: "agua", tom: "hue-rotate(-50deg) saturate(1.4)" },
+};
+
+/** Temas cujo modo escuro tem outra chama. O Natal escuro é a "noite de neve": chama de gelo. */
+const CHAMA_NO_ESCURO: Partial<Record<TemaDaBarra, ChamaDoTema>> = {
+  natal: { faixa: "agua", tom: "hue-rotate(15deg) saturate(.8) brightness(1.15)" },
 };
 
 /** A chama da barra: a mesma do resto do app, na cor do evento quando há um. */
@@ -133,7 +146,8 @@ export function ChamaNeon({
   tema: TemaDaBarra;
   className?: string;
 }) {
-  const { faixa, tom } = CHAMA_DO_TEMA[tema];
+  const escuro = useEscuro();
+  const { faixa, tom } = (escuro && CHAMA_NO_ESCURO[tema]) || CHAMA_DO_TEMA[tema];
   return <ChamaDupla {...resto} faixaFixa={faixa} tom={tom} />;
 }
 
@@ -154,7 +168,7 @@ const LADO_DE_BAIXO = "M3 45C8 30.5 24 18 37 11L56 1V56H-6Z";
 export const COR_DA_PENA_NO_TEMA = {
   normal: "text-violet-500",
   halloween: "text-violet-600 dark:text-violet-400",
-  natal: "text-red-600 dark:text-red-500",
+  natal: "text-red-600 dark:text-slate-100",
   carnaval: "text-emerald-500",
   pascoa: "text-violet-500 dark:text-violet-400",
   programador: "text-lime-600 dark:text-lime-400",
@@ -197,8 +211,10 @@ export function PenaDaBarra({ tema, vazia = false, className }: { tema: TemaDaBa
 // Enfeites dos eventos
 // ---------------------------------------------------------------------------
 
+type EnfeitesDoTema = { rupee: NomeDoEnfeite | null; pena: NomeDoEnfeite | null; aula: NomeDoEnfeite | null };
+
 /** O enfeite do rupee, o da pena e o das aulas feitas na trilha, em cada evento. */
-export const ENFEITES_DA_BARRA: Record<TemaDaBarra, { rupee: NomeDoEnfeite | null; pena: NomeDoEnfeite | null; aula: NomeDoEnfeite | null }> = {
+export const ENFEITES_DA_BARRA: Record<TemaDaBarra, EnfeitesDoTema> = {
   normal: { rupee: null, pena: null, aula: null },
   halloween: { rupee: "abobora", pena: "morcego", aula: "abobora" },
   natal: { rupee: "bengala", pena: "presente", aula: "bengala" },
@@ -206,6 +222,17 @@ export const ENFEITES_DA_BARRA: Record<TemaDaBarra, { rupee: NomeDoEnfeite | nul
   pascoa: { rupee: "ovo", pena: "coelho", aula: "ovo" },
   programador: { rupee: "chaves", pena: "terminal", aula: "terminal" },
 };
+
+/** Temas cujo modo escuro tem outros enfeites. O Natal escuro é a "noite de neve". */
+const ENFEITES_NO_ESCURO: Partial<Record<TemaDaBarra, EnfeitesDoTema>> = {
+  natal: { rupee: "presente", pena: "floco", aula: "floco" },
+};
+
+/** Os enfeites do tema no modo em que o app está. */
+export function useEnfeitesDaBarra(tema: TemaDaBarra): EnfeitesDoTema {
+  const escuro = useEscuro();
+  return (escuro && ENFEITES_NO_ESCURO[tema]) || ENFEITES_DA_BARRA[tema];
+}
 
 /** Põe um enfeite no canto de baixo do ícone, meio para fora, e abre espaço para ele antes do número. */
 export function ComEnfeite({ enfeite, children }: { enfeite: NomeDoEnfeite | null; children: ReactNode }) {

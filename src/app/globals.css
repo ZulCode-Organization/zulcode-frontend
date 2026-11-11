@@ -205,34 +205,36 @@
   --aula-feita: #25a87c;
   --aula-feita-texto: #ffffff;
 }
+/* No escuro o Natal vira "noite de neve": azul-noite, vermelho nos botões e as
+   aulas feitas em branco-gelo (a chama e os enfeites mudam em tema.tsx). */
 :root.dark[data-evento="natal"] {
-  --background: #1a0e10 !important;
-  --foreground: #fbecee !important;
-  --card: #261518 !important;
-  --card-foreground: #fbecee !important;
-  --popover: #261518 !important;
-  --popover-foreground: #fbecee !important;
-  --primary: #ef4a5a !important;
+  --background: #0a1326 !important;
+  --foreground: #e8f0fb !important;
+  --card: #111e38 !important;
+  --card-foreground: #e8f0fb !important;
+  --popover: #111e38 !important;
+  --popover-foreground: #e8f0fb !important;
+  --primary: #e23b52 !important;
   --primary-foreground: #ffffff !important;
-  --secondary: #2f1c20 !important;
-  --secondary-foreground: #fbecee !important;
-  --muted: #2f1c20 !important;
-  --muted-foreground: #b48f95 !important;
-  --accent: #123a2d !important;
-  --accent-foreground: #8ff0c9 !important;
-  --border: #3d2328 !important;
-  --input: #3d2328 !important;
-  --ring: #ef4a5a !important;
-  --sidebar: #200f12 !important;
-  --sidebar-foreground: #fbecee !important;
-  --sidebar-primary: #ef4a5a !important;
+  --secondary: #182848 !important;
+  --secondary-foreground: #e8f0fb !important;
+  --muted: #182848 !important;
+  --muted-foreground: #8ea2c4 !important;
+  --accent: #1a2c52 !important;
+  --accent-foreground: #cfe3ff !important;
+  --border: #1f3157 !important;
+  --input: #1f3157 !important;
+  --ring: #e23b52 !important;
+  --sidebar: #0d1830 !important;
+  --sidebar-foreground: #e8f0fb !important;
+  --sidebar-primary: #e23b52 !important;
   --sidebar-primary-foreground: #ffffff !important;
-  --sidebar-accent: #2f1c20 !important;
-  --sidebar-accent-foreground: #fbecee !important;
-  --sidebar-border: #3d2328 !important;
-  --sidebar-ring: #ef4a5a !important;
-  --aula-feita: #33c290;
-  --aula-feita-texto: #06221a;
+  --sidebar-accent: #182848 !important;
+  --sidebar-accent-foreground: #e8f0fb !important;
+  --sidebar-border: #1f3157 !important;
+  --sidebar-ring: #e23b52 !important;
+  --aula-feita: #cfe3ff;
+  --aula-feita-texto: #0a1326;
 }
 /* Carnaval: roxo forte com amarelo nas aulas feitas. */
 :root[data-evento="carnaval"] {

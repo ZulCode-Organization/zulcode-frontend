@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { pedir, useDados } from "@/lib/admin/api";
 import { Rupee } from "@/components/shared/rupee";
 import {
-  COR_DA_PENA, COR_DO_RUPEE, ChamaNeon, ComEnfeite, ENFEITES_DA_BARRA, PenaDaBarra, corDaChama, definirTemaDaBarra,
+  COR_DA_PENA, COR_DO_RUPEE, ChamaNeon, ComEnfeite, PenaDaBarra, corDaChama, definirTemaDaBarra, useEnfeitesDaBarra,
   type TemaDaBarra,
 } from "@/components/app-shell/barra-viva/tema";
 import { Pagina } from "./shell";
@@ -15,7 +15,7 @@ import { Botao, Cabecalho, Cartao, Erro, Esqueleto } from "./ui";
 const OPCOES: { tema: TemaDaBarra; nome: string; descricao: string }[] = [
   { tema: "normal", nome: "Normal", descricao: "Chama neon pela sequência, rupee verde e pena violeta." },
   { tema: "halloween", nome: "Halloween", descricao: "O app em laranja e roxo, abóbora nas aulas feitas; na barra, chama verde de bruxa, rupee com abóbora e pena com morcego." },
-  { tema: "natal", nome: "Natal", descricao: "Bengala doce: o app em vermelho e branco, aulas feitas em verde-menta com bengala; na barra, chama vermelha, rupee com bengala e pena com presente." },
+  { tema: "natal", nome: "Natal", descricao: "No claro, bengala doce: vermelho e branco, aulas feitas em verde-menta com bengala, chama vermelha. No escuro, noite de neve: azul-noite, aulas feitas em branco-gelo com floco, chama de gelo, rupee com presente e pena com floco." },
   { tema: "carnaval", nome: "Carnaval", descricao: "O app em roxo, aulas feitas em amarelo com máscara; na barra, chama rosa, rupee com confete e pena com máscara." },
   { tema: "pascoa", nome: "Páscoa", descricao: "O app em lilás, aulas feitas em verde-menta com ovo; na barra, chama amarela, rupee com ovo e pena com coelho." },
   { tema: "programador", nome: "Dia do Programador", descricao: "O app em verde de terminal, aulas feitas como uma tela de terminal; na barra, chama verde, rupee com chaves e pena com terminal." },
@@ -23,19 +23,20 @@ const OPCOES: { tema: TemaDaBarra; nome: string; descricao: string }[] = [
 
 /** A barra como a pessoa vai ver, com números de exemplo. */
 function Previa({ tema }: { tema: TemaDaBarra }) {
+  const enfeites = useEnfeitesDaBarra(tema);
   return (
     <div className="flex items-center justify-around gap-2 rounded-xl border bg-background px-3 py-3 text-[0.95rem] font-extrabold">
       <span className={cn("inline-flex items-center gap-1.5", corDaChama(12, tema))}>
         <ChamaNeon className="size-7" dias={12} tema={tema} />12
       </span>
       <span className={cn("inline-flex items-center gap-1.5", COR_DO_RUPEE[tema])}>
-        <ComEnfeite enfeite={ENFEITES_DA_BARRA[tema].rupee}>
+        <ComEnfeite enfeite={enfeites.rupee}>
           <Rupee className="size-6" />
         </ComEnfeite>
         250
       </span>
       <span className={cn("inline-flex items-center gap-1.5", COR_DA_PENA[tema])}>
-        <ComEnfeite enfeite={ENFEITES_DA_BARRA[tema].pena}>
+        <ComEnfeite enfeite={enfeites.pena}>
           <PenaDaBarra className="size-6" tema={tema} />
         </ComEnfeite>
         5

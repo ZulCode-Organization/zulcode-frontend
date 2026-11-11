@@ -15,7 +15,10 @@ import { Botao, Cabecalho, Cartao, Erro, Esqueleto } from "./ui";
 const OPCOES: { tema: TemaDaBarra; nome: string; descricao: string }[] = [
   { tema: "normal", nome: "Normal", descricao: "Chama neon pela sequência, rupee verde e pena violeta." },
   { tema: "halloween", nome: "Halloween", descricao: "O app em laranja e roxo, abóbora nas aulas feitas; na barra, chama verde de bruxa, rupee com abóbora e pena com morcego." },
-  { tema: "natal", nome: "Natal", descricao: "O app em vermelho e verde, presente nas aulas feitas; na barra, chama de gelo, rupee com presente e pena com árvore." },
+  { tema: "natal", nome: "Natal", descricao: "Bengala doce: o app em vermelho e branco, aulas feitas em verde-menta com bengala; na barra, chama vermelha, rupee com bengala e pena com presente." },
+  { tema: "carnaval", nome: "Carnaval", descricao: "O app em roxo, aulas feitas em amarelo com máscara; na barra, chama rosa, rupee com confete e pena com máscara." },
+  { tema: "pascoa", nome: "Páscoa", descricao: "O app em lilás, aulas feitas em verde-menta com ovo; na barra, chama amarela, rupee com ovo e pena com coelho." },
+  { tema: "programador", nome: "Dia do Programador", descricao: "O app em verde de terminal, aulas feitas como uma tela de terminal; na barra, chama verde, rupee com chaves e pena com terminal." },
 ];
 
 /** A barra como a pessoa vai ver, com números de exemplo. */

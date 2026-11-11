@@ -11,7 +11,7 @@ const ICONE_DO_TIPO: Record<TipoDeAula, typeof CodeXml> = {
 import { cn } from "@/lib/utils";
 import { LicaoTrilha } from "@/lib/types/trilha";
 import { LessonPopup } from "./lesson-popup";
-import { useTemaDaBarra } from "@/components/app-shell/barra-viva/tema";
+import { ENFEITES_DA_BARRA, useTemaDaBarra } from "@/components/app-shell/barra-viva/tema";
 import { Enfeite } from "@/components/shared/enfeite";
 
 interface LessonNodeProps {
@@ -35,7 +35,9 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
   const botaoRef = useRef<HTMLButtonElement>(null);
   // Num evento, as aulas feitas ganham o enfeite dele no canto de baixo.
   const tema = useTemaDaBarra();
-  const enfeite = estado === "concluida" && tema !== "normal" ? (tema === "halloween" ? "abobora" : "presente") : null;
+  const enfeite = estado === "concluida" ? ENFEITES_DA_BARRA[tema].aula : null;
+  // Num evento com cor de aula feita (globals.css), a aula feita usa ela; sem, a primária.
+  const feita = estado === "concluida" && !chefe;
 
   const handleClick = () => {
     if (bloqueada) {
@@ -87,7 +89,7 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
         )}
 
         <span
-          className={cn("absolute left-[5px] top-[13px] size-[62px] rounded-[22px] sm:left-[6px] sm:top-[15px] sm:size-[72px] sm:rounded-[26px]", preenchido ? (chefe ? "bg-[#d4a300]" : "bg-primary brightness-75") : "bg-border")}
+          className={cn("absolute left-[5px] top-[13px] size-[62px] rounded-[22px] sm:left-[6px] sm:top-[15px] sm:size-[72px] sm:rounded-[26px]", preenchido ? (chefe ? "bg-[#d4a300]" : feita ? "bg-[var(--aula-feita,var(--primary))] brightness-75" : "bg-primary brightness-75") : "bg-border")}
           aria-hidden
         />
 
@@ -99,7 +101,11 @@ export function LessonNode({ licao, shaking, highlighted, onLockedTap }: LessonN
           onClick={handleClick}
           className={cn(
             "absolute left-[5px] top-[5px] flex size-[62px] items-center justify-center rounded-[22px] transition-[top] duration-100 active:top-[11px] sm:left-[6px] sm:top-[6px] sm:size-[72px] sm:rounded-[26px] sm:active:top-[13px]",
-            preenchido && (chefe ? "bg-[#ffc800] text-amber-950" : "bg-primary text-primary-foreground"),
+            preenchido && (chefe
+              ? "bg-[#ffc800] text-amber-950"
+              : feita
+                ? "bg-[var(--aula-feita,var(--primary))] text-[var(--aula-feita-texto,var(--primary-foreground))]"
+                : "bg-primary text-primary-foreground"),
             estado === "disponivel" && "border-2 border-primary bg-card text-primary",
             bloqueada && "cursor-not-allowed border-2 border-border bg-muted text-muted-foreground/60",
             shaking && "animate-shake"

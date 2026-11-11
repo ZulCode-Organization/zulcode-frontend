@@ -41,8 +41,8 @@ export function faixaDaChama(dias: number | null | undefined): FaixaDaChama {
  * partir de 100. É um troféu que a pessoa carrega sem precisar abrir nada.
  *
  * Apagada, fica cinza. `protegido` (gás guardado) põe um halo verde em volta, e
- * vale acima da ofensiva perfeita, que põe um halo dourado. `bruxa` é a chama
- * verde do tema de Halloween.
+ * vale acima da ofensiva perfeita, que põe um halo dourado. Num evento,
+ * `faixaFixa` e `tom` trocam a arte e a cor pela do evento.
  *
  * Não há animação aqui, de propósito. Quem anima os momentos (subir, vacilar,
  * nascer na comemoração) é quem usa, uma vez, quando o momento acontece.
@@ -52,8 +52,8 @@ export function ChamaDupla({
   aceso = true,
   protegido = false,
   perfeita = false,
-  bruxa = false,
-  gelo = false,
+  faixaFixa,
+  tom,
   dias,
 }: {
   className?: string;
@@ -64,15 +64,14 @@ export function ChamaDupla({
   dias?: number | null;
   /** Ofensiva perfeita: a meta diária cumprida 7 dias seguidos ou mais. */
   perfeita?: boolean;
-  /** A chama verde de bruxa, do tema de Halloween. */
-  bruxa?: boolean;
-  /** A chama de gelo, do tema de Natal: a arte verde-água puxada para o azul-gelo. */
-  gelo?: boolean;
+  /** A arte usada no evento, seja qual for a sequência. */
+  faixaFixa?: FaixaDaChama["id"];
+  /** O filtro CSS que leva a arte à cor do evento. */
+  tom?: string;
 }) {
-  const faixa = gelo ? FAIXAS_DA_CHAMA[2] : faixaDaChama(dias);
+  const faixa = (faixaFixa && FAIXAS_DA_CHAMA.find((f) => f.id === faixaFixa)) || faixaDaChama(dias);
   const filtros = [
-    bruxa && "hue-rotate(95deg) saturate(1.3)",
-    gelo && "hue-rotate(15deg) saturate(.8) brightness(1.15)",
+    tom,
     !aceso && "grayscale(1) opacity(.45)",
     aceso && protegido && "drop-shadow(0 0 4px rgba(52,211,153,.85))",
     aceso && !protegido && perfeita && "drop-shadow(0 0 4px rgba(251,191,36,.85))",

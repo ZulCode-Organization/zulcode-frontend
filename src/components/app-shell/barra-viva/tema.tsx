@@ -4,15 +4,15 @@ import { useEffect, useId, useSyncExternalStore, type ReactNode } from "react";
 import { API_BASE_URL } from "@/lib/api-config";
 import { aplicarIconeDoApp } from "@/lib/icone-do-app";
 import { cn } from "@/lib/utils";
-import { ChamaDupla, faixaDaChama } from "@/components/shared/chama-dupla";
+import { ChamaDupla, faixaDaChama, type FaixaDaChama } from "@/components/shared/chama-dupla";
 import { Enfeite, type NomeDoEnfeite } from "@/components/shared/enfeite";
 
 // ---------------------------------------------------------------------------
 // O tema
 // ---------------------------------------------------------------------------
 
-export type TemaDaBarra = "normal" | "halloween" | "natal";
-const TEMAS: TemaDaBarra[] = ["normal", "halloween", "natal"];
+export type TemaDaBarra = "normal" | "halloween" | "natal" | "carnaval" | "pascoa" | "programador";
+const TEMAS: TemaDaBarra[] = ["normal", "halloween", "natal", "carnaval", "pascoa", "programador"];
 const GUARDADO = "zc-tema-da-barra";
 
 /**
@@ -77,29 +77,52 @@ export function useTemaDaBarra(): TemaDaBarra {
 // As cores dos números
 // ---------------------------------------------------------------------------
 
+/** A cor do número da chama em cada evento. Fora de evento, a cor conta os dias. */
+const COR_DA_CHAMA_NO_EVENTO: Record<Exclude<TemaDaBarra, "normal">, string> = {
+  halloween: "text-green-500",
+  natal: "text-rose-500",
+  carnaval: "text-pink-500",
+  pascoa: "text-amber-500",
+  programador: "text-green-600 dark:text-green-400",
+};
+
 export function corDaChama(dias: number | null | undefined, tema: TemaDaBarra) {
-  if (tema === "halloween") return "text-green-500";
-  if (tema === "natal") return "text-sky-400";
-  return faixaDaChama(dias).texto;
+  return tema === "normal" ? faixaDaChama(dias).texto : COR_DA_CHAMA_NO_EVENTO[tema];
 }
 
 export const COR_DO_RUPEE: Record<TemaDaBarra, string> = {
   normal: "text-emerald-500",
   halloween: "text-orange-500",
-  natal: "text-red-500",
+  natal: "text-emerald-600 dark:text-emerald-400",
+  carnaval: "text-yellow-500",
+  pascoa: "text-emerald-500",
+  programador: "text-cyan-600 dark:text-cyan-400",
 };
 
 export const COR_DA_PENA: Record<TemaDaBarra, string> = {
   normal: "text-violet-500",
   halloween: "text-violet-500",
-  natal: "text-green-600 dark:text-green-500",
+  natal: "text-red-600 dark:text-red-500",
+  carnaval: "text-emerald-500",
+  pascoa: "text-violet-500 dark:text-violet-400",
+  programador: "text-lime-600 dark:text-lime-400",
 };
 
 // ---------------------------------------------------------------------------
 // A chama neon
 // ---------------------------------------------------------------------------
 
-/** A chama da barra: a mesma do resto do app, verde de bruxa no Halloween e de gelo no Natal. */
+/** Em cada evento, a arte da chama de que se parte e o filtro que a leva à cor do evento. */
+const CHAMA_DO_TEMA: Record<TemaDaBarra, { faixa?: FaixaDaChama["id"]; tom?: string }> = {
+  normal: {},
+  halloween: { tom: "hue-rotate(95deg) saturate(1.3)" },
+  natal: { faixa: "violeta", tom: "hue-rotate(110deg) saturate(1.8) brightness(.95)" },
+  carnaval: { faixa: "agua", tom: "hue-rotate(175deg) saturate(2) brightness(.95)" },
+  pascoa: { faixa: "agua", tom: "hue-rotate(215deg) saturate(1.3) brightness(1.1)" },
+  programador: { faixa: "agua", tom: "hue-rotate(-50deg) saturate(1.4)" },
+};
+
+/** A chama da barra: a mesma do resto do app, na cor do evento quando há um. */
 export function ChamaNeon({
   tema, ...resto
 }: {
@@ -110,7 +133,8 @@ export function ChamaNeon({
   tema: TemaDaBarra;
   className?: string;
 }) {
-  return <ChamaDupla {...resto} bruxa={tema === "halloween"} gelo={tema === "natal"} />;
+  const { faixa, tom } = CHAMA_DO_TEMA[tema];
+  return <ChamaDupla {...resto} faixaFixa={faixa} tom={tom} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -130,7 +154,10 @@ const LADO_DE_BAIXO = "M3 45C8 30.5 24 18 37 11L56 1V56H-6Z";
 export const COR_DA_PENA_NO_TEMA = {
   normal: "text-violet-500",
   halloween: "text-violet-600 dark:text-violet-400",
-  natal: "text-green-600 dark:text-green-500",
+  natal: "text-red-600 dark:text-red-500",
+  carnaval: "text-emerald-500",
+  pascoa: "text-violet-500 dark:text-violet-400",
+  programador: "text-lime-600 dark:text-lime-400",
   vazia: "text-muted-foreground/60",
 };
 
@@ -170,11 +197,14 @@ export function PenaDaBarra({ tema, vazia = false, className }: { tema: TemaDaBa
 // Enfeites dos eventos
 // ---------------------------------------------------------------------------
 
-/** O enfeite do rupee e o da pena em cada evento. */
-export const ENFEITES_DA_BARRA: Record<TemaDaBarra, { rupee: NomeDoEnfeite | null; pena: NomeDoEnfeite | null }> = {
-  normal: { rupee: null, pena: null },
-  halloween: { rupee: "abobora", pena: "morcego" },
-  natal: { rupee: "presente", pena: "arvore" },
+/** O enfeite do rupee, o da pena e o das aulas feitas na trilha, em cada evento. */
+export const ENFEITES_DA_BARRA: Record<TemaDaBarra, { rupee: NomeDoEnfeite | null; pena: NomeDoEnfeite | null; aula: NomeDoEnfeite | null }> = {
+  normal: { rupee: null, pena: null, aula: null },
+  halloween: { rupee: "abobora", pena: "morcego", aula: "abobora" },
+  natal: { rupee: "bengala", pena: "presente", aula: "bengala" },
+  carnaval: { rupee: "confete", pena: "mascara", aula: "mascara" },
+  pascoa: { rupee: "ovo", pena: "coelho", aula: "ovo" },
+  programador: { rupee: "chaves", pena: "terminal", aula: "terminal" },
 };
 
 /** Põe um enfeite no canto de baixo do ícone, meio para fora, e abre espaço para ele antes do número. */

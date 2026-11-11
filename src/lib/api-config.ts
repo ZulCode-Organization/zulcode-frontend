@@ -3,9 +3,20 @@ import { accountKey, cacheApiResponse, getCachedApiResponse, getQueuedMutations,
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
 export const REQUEST_TIMEOUT_MS = 15000;
 
+function tokenEnviado(init: RequestInit) {
+  return new Headers(init.headers).get("Authorization")?.replace(/^Bearer\s+/i, "") ?? null;
+}
+
 function tokenFrom(init: RequestInit) {
-  const headers = new Headers(init.headers);
-  return headers.get("Authorization")?.replace(/^Bearer\\s+/i, "") ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : null);
+  return tokenEnviado(init) ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : null);
+}
+
+// Token vencido (dura 7 dias) ou conta apagada/banida: sem isto as telas
+// tentavam de novo para sempre com o mesmo token, até a pessoa sair e entrar.
+function avisarSeSessaoExpirou(response: Response, init: RequestInit) {
+  if (response.status !== 401 || typeof window === "undefined") return;
+  const enviado = tokenEnviado(init);
+  if (enviado && enviado === localStorage.getItem("accessToken")) window.dispatchEvent(new Event("zulcode:sessao-expirada"));
 }
 
 function cacheKey(input: string, init: RequestInit) { return `${accountKey(tokenFrom(init))}:${input}`; }
@@ -32,6 +43,7 @@ export async function fetchComTimeout(input: string, init: RequestInit = {}, tim
   const key = cacheKey(input, init);
   try {
     const response = await fetchWithTimeout(input, init, timeoutMs);
+    avisarSeSessaoExpirou(response, init);
     if (method === "GET" && response.ok && typeof window !== "undefined" && !/\/leaderboard(?:[/?]|$)/.test(input)) {
       const body = await response.clone().text();
       await cacheApiResponse(key, body, response.headers.get("content-type") ?? "application/json");

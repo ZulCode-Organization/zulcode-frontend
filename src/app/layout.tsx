@@ -11,6 +11,7 @@ import { BarrasDoSistema } from "@/components/abertura/barras-do-sistema";
 import { AbrirPeloAviso } from "@/components/avisos/abrir-pelo-aviso";
 import { ManterNotificacoes } from "@/components/avisos/manter-notificacoes";
 import { VoltarDoLogin } from "@/components/auth/voltar-do-login";
+import { SessaoExpirada } from "@/components/auth/sessao-expirada";
 import { LANG_DO_HTML } from "@/i18n/idiomas";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
@@ -75,6 +76,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <AbrirPeloAviso />
             <ManterNotificacoes />
             <VoltarDoLogin />
+            <SessaoExpirada />
             <OfflineSyncProvider>{children}</OfflineSyncProvider>
             <Abertura />
           </NextIntlClientProvider>

@@ -16,7 +16,9 @@ export default function SignupPage() {
         <AuthShowcase />
       </div>
 
-      <div className="flex flex-1 flex-col items-center justify-center px-6 py-24">
+      {/* Cabe numa tela só, sem rolagem: o espaço em volta encolhe em telas
+          baixas, e no celular o topo deixa lugar só para o logo. */}
+      <div className="flex flex-1 flex-col items-center justify-center px-6 pb-4 pt-16 lg:py-8">
         <SignupForm />
       </div>
     </div>

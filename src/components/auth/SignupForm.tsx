@@ -18,14 +18,14 @@ export function SignupForm() {
   return (
     <div className="w-full max-w-sm animate-fade-in-up">
       <h2 className="text-2xl font-bold text-foreground">Criar sua conta</h2>
-      <p className="mb-7 mt-1.5 text-sm text-muted-foreground">É grátis e leva menos de um minuto.</p>
+      <p className="mb-5 mt-1 text-sm text-muted-foreground [@media(max-height:700px)]:mb-3">É grátis e leva menos de um minuto.</p>
 
       <form
         onSubmit={(evento) => {
           evento.preventDefault();
           void handleSubmit();
         }}
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-3.5 [@media(max-height:700px)]:gap-2.5"
       >
         <Input
           label="Como quer ser chamado?"
@@ -78,11 +78,11 @@ export function SignupForm() {
         </BotaoRelevo>
       </form>
 
-      <div className="mt-7">
+      <div className="mt-5 [@media(max-height:700px)]:mt-3">
         <BotoesSociais />
       </div>
 
-      <p className="mt-8 text-center text-sm text-muted-foreground">
+      <p className="mt-5 text-center text-sm text-muted-foreground [@media(max-height:700px)]:mt-3">
         Já tem conta?{" "}
         <Link href="/login" className="font-semibold text-primary hover:underline">
           Entrar

@@ -34,13 +34,13 @@ export async function reduzirImagem(arquivo: File, lado = 256): Promise<string> 
   }
 }
 
-/** "JavaScript Avançado" → "javascript-avancado". */
-export function slugDe(texto: string) {
+/** "JavaScript Avançado" → "javascript-avancado". Com aparar = false, mantém o hífen do fim, para não atrapalhar quem está digitando. */
+export function slugDe(texto: string, aparar = true) {
   return texto
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    .replace(aparar ? /^-+|-+$/g : /^-+/g, "")
     .slice(0, 40);
 }

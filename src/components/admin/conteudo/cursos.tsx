@@ -105,7 +105,7 @@ function NovoCurso({ aoFechar }: { aoFechar: () => void }) {
               setEnviando(true);
               setErro("");
               try {
-                const c = await pedir<{ id: string }>("/admin/conteudo/cursos", { method: "POST", json: { nome, slug: slugFinal, descricao, logoUrl: logo } });
+                const c = await pedir<{ id: string }>("/admin/conteudo/cursos", { method: "POST", json: { nome, slug: slugDe(slugFinal), descricao, logoUrl: logo } });
                 invalidar("/admin/conteudo/cursos");
                 avisar("Curso criado.");
                 router.push(`/admin/conteudo/${c.id}`);
@@ -127,7 +127,7 @@ function NovoCurso({ aoFechar }: { aoFechar: () => void }) {
         </div>
         <Rotulo texto="Nome"><Entrada value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex.: Python" autoFocus maxLength={80} /></Rotulo>
         <Rotulo texto="Identificador" dica="Aparece no endereço do curso. Só letras minúsculas, números e hífens.">
-          <Entrada value={slugFinal} onChange={(e) => { setSlugMexido(true); setSlug(slugDe(e.target.value)); }} className="font-mono" />
+          <Entrada value={slugFinal} onChange={(e) => { setSlugMexido(true); setSlug(slugDe(e.target.value, false)); }} className="font-mono" />
         </Rotulo>
         <Rotulo texto="Descrição"><Entrada value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="O que a pessoa vai aprender" maxLength={500} /></Rotulo>
         {erro && <p role="alert" className="text-sm font-bold text-rose-600 dark:text-rose-400">{erro}</p>}

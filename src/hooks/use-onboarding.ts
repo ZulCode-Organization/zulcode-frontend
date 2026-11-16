@@ -10,6 +10,12 @@ import {
 } from "@/lib/onboarding/types";
 import { getAvailableLanguages, getOnboardingQuestions, submitOnboarding } from "@/lib/onboarding/service";
 
+/** As perguntas feitas depois da escolha da linguagem, nesta ordem. */
+const ORDEM_DAS_PERGUNTAS = ["language_level", "language_reason", "commitment", "how_heard"];
+
+/** Perguntas que a pessoa pode pular. */
+export const PERGUNTAS_OPCIONAIS = ["how_heard"];
+
 type Step =
   | { kind: "question"; question: OnboardingQuestion }
   | { kind: "language-select" };
@@ -52,16 +58,21 @@ export function useOnboarding() {
     loadData();
   }, [loadData]);
 
+  // A ordem do fluxo: primeiro a linguagem, depois o que muda a trilha, e por
+  // último a pesquisa de "como conheceu", que dá para pular. Perguntas que a
+  // API devolva fora desta lista não entram; "interest" é feita dentro do passo
+  // da linguagem, no "Não sei qual escolher".
   const steps: Step[] = useMemo(() => {
-    const result: Step[] = [];
-    questions.forEach((q) => {
-      result.push({ kind: "question", question: q });
-      if (q.id === "learn_goal") {
-        result.push({ kind: "language-select" });
-      }
-    });
+    const porSlug = new Map(questions.map((q) => [q.id, q]));
+    const result: Step[] = [{ kind: "language-select" }];
+    for (const slug of ORDEM_DAS_PERGUNTAS) {
+      const pergunta = porSlug.get(slug);
+      if (pergunta) result.push({ kind: "question", question: pergunta });
+    }
     return result;
   }, [questions]);
+
+  const interesse = useMemo(() => questions.find((q) => q.id === "interest"), [questions]);
 
   const totalSteps = steps.length;
   const currentStep = steps[stepIndex] ?? null;
@@ -91,6 +102,11 @@ export function useOnboarding() {
     },
     [goNext]
   );
+
+  /** O gosto do "Não sei qual escolher": vai junto com as respostas, sem mudar de passo. */
+  const guardarInteresse = useCallback((optionId: string) => {
+    setAnswers((prev) => ({ ...prev, interest: optionId }));
+  }, []);
 
   const selectLanguage = useCallback(
     (id: string) => {
@@ -133,6 +149,7 @@ export function useOnboarding() {
     loadError,
     retry: loadData,
     languages,
+    interesse,
     steps,
     stepIndex,
     totalSteps,
@@ -149,6 +166,7 @@ export function useOnboarding() {
     goBack,
     answerQuestion,
     selectLanguage,
+    guardarInteresse,
     finish,
   };
 }

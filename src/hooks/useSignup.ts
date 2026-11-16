@@ -8,15 +8,14 @@ export function useSignup() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [confirmarSenha, setConfirmarSenha] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     setError("");
 
-    if (senha !== confirmarSenha) {
-      setError("As senhas não coincidem");
+    if (senha.length < 6) {
+      setError("A senha precisa ter pelo menos 6 caracteres.");
       return;
     }
 
@@ -81,8 +80,6 @@ export function useSignup() {
     setEmail,
     senha,
     setSenha,
-    confirmarSenha,
-    setConfirmarSenha,
     error,
     loading,
     handleSubmit,

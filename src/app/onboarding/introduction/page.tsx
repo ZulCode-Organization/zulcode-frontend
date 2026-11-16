@@ -2,17 +2,36 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useOnboarding } from "@/hooks/use-onboarding";
+import { useOnboarding, PERGUNTAS_OPCIONAIS } from "@/hooks/use-onboarding";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { Button } from "@/components/ui/button";
+import type { PoseDoZul } from "@/components/atividade/zul-da-aula";
 import { OnboardingProgress } from "@/components/onboarding/onboarding-progress";
 import { OnboardingShowcase } from "@/components/onboarding/onboarding-showcase";
 import { QuestionStep } from "@/components/onboarding/question-step";
-import { LanguageStep } from "@/components/onboarding/language-step";
-import { OnboardingSummary } from "@/components/onboarding/onboarding-summary";
+import { LanguageStep, type Fase } from "@/components/onboarding/language-step";
+import { OnboardingSummary, type InicioDaTrilha } from "@/components/onboarding/onboarding-summary";
 import { NivelamentoQuiz } from "@/components/onboarding/nivelamento-quiz";
 import { ResultadoNivelamento } from "@/lib/nivelamento-local";
 import { submitPlacement } from "@/lib/onboarding/service";
+
+/** O que o Zul diz ao lado de cada passo, no computador. Reage à resposta anterior. */
+function falaDoZul(passo: string, fase: Fase, respostas: Record<string, string>, linguagem: string): { pose: PoseDoZul; fala: string } {
+  if (passo === "language-select") {
+    if (fase.tipo === "gosto") return { pose: "equilibrio", fala: "Me conta do que você gosta que eu te ajudo a escolher." };
+    if (fase.tipo === "sugestao") return { pose: "oculos", fala: "Acho que essa combina com você!" };
+    return { pose: "lupa", fala: "Oi, eu sou o Zul! Vamos escolher por onde começar?" };
+  }
+  if (passo === "language_level") return { pose: "lendo", fala: `Boa escolha! Vou montar sua trilha de ${linguagem}.` };
+  if (passo === "language_reason") {
+    return respostas.language_level === "beginner"
+      ? { pose: "escrevendo", fala: "Começar do zero é o melhor jeito. Eu vou junto." }
+      : { pose: "escrevendo", fala: "Legal! Daqui a pouco a gente vê onde você começa." };
+  }
+  if (passo === "commitment") return { pose: "forte", fala: "Pouco por dia já faz diferença. A ofensiva conta cada dia." };
+  if (passo === "how_heard") return { pose: "coco", fala: "Última pergunta! Essa você pode pular." };
+  return { pose: "lupa", fala: "Vamos lá!" };
+}
 
 export default function IntroducaoPage() {
   useRequireAuth();
@@ -22,9 +41,9 @@ export default function IntroducaoPage() {
     loadError,
     retry,
     languages,
+    interesse,
+    selectedLanguage,
     currentStep,
-    stepIndex,
-    totalSteps,
     interpolatedTitle,
     progress,
     canGoBack,
@@ -35,16 +54,15 @@ export default function IntroducaoPage() {
     goBack,
     answerQuestion,
     selectLanguage,
+    guardarInteresse,
     finish,
   } = useOnboarding();
 
-  // Depois que o questionário geral termina (result preenchido), entra o
-  // teste de nivelamento — 5 perguntas técnicas sobre a linguagem escolhida.
-  // Só então mostra o resumo final. Fora do useOnboarding de propósito: não
-  // existe endpoint no backend pra essas respostas ainda (ver
-  // lib/nivelamento-local.ts), então isso não deve se misturar com o envio
-  // de verdade que já aconteceu em `finish()`.
+  const [faseLinguagem, setFaseLinguagem] = useState<Fase>({ tipo: "lista" });
+  // O nivelamento vem depois do envio das respostas (que já marca a pessoa como
+  // nivelada). Ele só adianta unidades; se falhar, a pessoa começa do início.
   const [nivelamentoConcluido, setNivelamentoConcluido] = useState(false);
+  const [inicio, setInicio] = useState<InicioDaTrilha>(null);
 
   if (loadError) {
     return (
@@ -66,25 +84,20 @@ export default function IntroducaoPage() {
     );
   }
 
-  const nivelSelecionado = answers.language_level;
-  if (result && nivelSelecionado !== "beginner" && !nivelamentoConcluido) {
-    const linguagemEscolhida = languages.find((l) => l.id === result.payload.languageId);
+  const nivel = answers.language_level;
+  const linguagem = result ? languages.find((l) => l.id === result.payload.languageId) : undefined;
 
+  if (result && nivel && nivel !== "beginner" && !nivelamentoConcluido) {
     return (
       <NivelamentoQuiz
         languageSlug={result.payload.languageId}
-        languageName={linguagemEscolhida?.name ?? "programação"}
-        onFinish={async (resultadoNivelamento: ResultadoNivelamento) => {
-          // O nivelamento é bônus: ele adianta lições e devolve XP retroativo,
-          // mas não é o que libera o app — quem marca a pessoa como nivelada é
-          // o POST /onboarding/submit, que já rodou no `finish()`. Se o envio
-          // do resultado falhar, ela entra começando do início, e não fica
-          // presa na tela de pontuação sem nada acontecer ao clicar em
-          // "Continuar", que era o que estava travando.
+        languageName={linguagem?.name ?? "programação"}
+        onFinish={async (resultado: ResultadoNivelamento) => {
           try {
-            await submitPlacement(resultadoNivelamento.languageSlug, nivelSelecionado!, resultadoNivelamento.acertos, resultadoNivelamento.total);
+            const resposta = await submitPlacement(resultado.languageSlug, nivel, resultado.acertos, Math.max(resultado.total, 1));
+            setInicio({ unidade: resposta.startUnitNumber ?? 1, titulo: resposta.startUnitTitle ?? null, xp: resposta.xpEarned ?? 0 });
           } catch {
-            /* segue pro resumo mesmo assim */
+            /* segue para o resumo começando do início */
           }
           setNivelamentoConcluido(true);
         }}
@@ -92,70 +105,71 @@ export default function IntroducaoPage() {
     );
   }
 
-  if (result && (nivelSelecionado === "beginner" || nivelamentoConcluido)) {
+  if (result) {
+    const meta = Number.parseInt(answers.commitment ?? "", 10);
     return (
-      <div className="flex min-h-dvh flex-col bg-background lg:flex-row">
-        <div className="hidden items-center justify-center bg-secondary/40 px-16 lg:flex lg:w-2/5">
-          <OnboardingShowcase progress={100} stepIndex={totalSteps} totalSteps={totalSteps} />
+      <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-2 py-10">
+        <div className="w-full max-w-md">
+          <OnboardingSummary
+            languageSlug={result.payload.languageId}
+            languageName={linguagem?.name ?? result.payload.languageId}
+            metaMinutos={Number.isFinite(meta) ? meta : null}
+            inicio={inicio}
+            onContinue={() => router.push("/home")}
+          />
         </div>
-        <main className="flex flex-1 flex-col items-center justify-center px-6 py-12">
-          <div className="w-full max-w-md">
-            <OnboardingSummary payload={result.payload} onContinue={() => router.push("/home")} />
-          </div>
-        </main>
       </div>
     );
   }
 
+  const passo = currentStep.kind === "question" ? currentStep.question.id : "language-select";
+  const opcional = currentStep.kind === "question" && PERGUNTAS_OPCIONAIS.includes(currentStep.question.id);
+  const zul = falaDoZul(passo, faseLinguagem, answers, selectedLanguage?.name ?? "programação");
+
   const handleAnswer = async (optionId: string) => {
     if (currentStep.kind !== "question") return;
     const questionId = currentStep.question.id;
-
     if (isLastStep) {
       await finish({ questionId, optionId });
       return;
     }
-
     answerQuestion(questionId, optionId);
   };
-
-  const stepKey = currentStep.kind === "question" ? currentStep.question.id : "language-select";
 
   return (
     <div className="flex min-h-dvh flex-col bg-background lg:flex-row">
       <div className="hidden items-center justify-center border-r border-border/60 bg-secondary/40 px-16 lg:flex lg:w-2/5">
-        <OnboardingShowcase progress={progress} stepIndex={stepIndex} totalSteps={totalSteps} />
+        <OnboardingShowcase pose={zul.pose} fala={zul.fala} progress={progress} />
       </div>
 
       <div className="flex flex-1 flex-col">
-        <OnboardingProgress
-          progress={progress}
-          canGoBack={canGoBack}
-          onBack={goBack}
-          stepIndex={stepIndex}
-          totalSteps={totalSteps}
-        />
+        <OnboardingProgress progress={progress} canGoBack={canGoBack} onBack={goBack} />
 
         <main className="flex flex-1 flex-col items-center overflow-y-auto px-0 py-4 lg:justify-center lg:px-12">
-          <div key={stepKey} className="w-full max-w-md lg:max-w-lg">
+          <div key={passo} className="w-full max-w-md lg:max-w-lg">
             {currentStep.kind === "question" && (
               <QuestionStep
                 question={currentStep.question}
                 title={interpolatedTitle}
                 selectedOptionId={answers[currentStep.question.id]}
                 onAnswer={handleAnswer}
+                onSkip={opcional ? () => void finish() : undefined}
               />
             )}
 
             {currentStep.kind === "language-select" && (
-              <LanguageStep languages={languages} onSelect={selectLanguage} />
+              <LanguageStep
+                languages={languages}
+                interesse={interesse}
+                onSelect={selectLanguage}
+                onInteresse={guardarInteresse}
+                onFase={setFaseLinguagem}
+              />
             )}
           </div>
         </main>
 
-        {submitting && (
-          <div className="px-4 pb-4 text-center text-sm text-muted-foreground">Enviando respostas...</div>
-        )}
+        {submitting && <div className="px-4 pb-4 text-center text-sm text-muted-foreground">Salvando suas respostas...</div>}
       </div>
     </div>
   );

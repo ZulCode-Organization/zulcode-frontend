@@ -36,5 +36,13 @@ export async function submitPlacement(languageId: string, level: string, score: 
     body: JSON.stringify({ languageId, level, score, total }),
   });
   if (!res.ok) throw new Error("Não foi possível salvar seu nivelamento");
-  return res.json() as Promise<{ success: boolean; startLessonOrder: number; xpEarned: number; coinsEarned: number }>;
+  return res.json() as Promise<{
+    success: boolean;
+    startLessonOrder: number;
+    /** A unidade onde a pessoa começa (1 = do começo). Ausente num backend antigo. */
+    startUnitNumber?: number;
+    startUnitTitle?: string | null;
+    xpEarned: number;
+    coinsEarned: number;
+  }>;
 }

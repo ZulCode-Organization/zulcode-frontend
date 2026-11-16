@@ -1,6 +1,13 @@
 import {
   BookOpen,
   Brain,
+  Building2,
+  Cloud,
+  Database,
+  Gamepad2,
+  Globe,
+  Puzzle,
+  School,
   Briefcase,
   Compass,
   Crown,
@@ -22,7 +29,7 @@ import {
 } from "lucide-react";
 import type { IconType } from "react-icons";
 import { FaLinkedin } from "react-icons/fa";
-import { SiFacebook, SiInstagram, SiTiktok, SiYoutube } from "react-icons/si";
+import { SiFacebook, SiGoogle, SiGoogleplay, SiInstagram, SiTiktok, SiYoutube } from "react-icons/si";
 
 type IconEntry = { Icon: LucideIcon | IconType; color: string };
 
@@ -40,6 +47,18 @@ const ICONS: Record<string, IconEntry> = {
   linkedin: { Icon: FaLinkedin, color: "#0A66C2" },
   friends_family: { Icon: Users, color: "#F59E0B" },
   podcast: { Icon: Mic2, color: "#8B5CF6" },
+  google: { Icon: SiGoogle, color: "#4285F4" },
+  play_store: { Icon: SiGoogleplay, color: "#01875F" },
+  school: { Icon: School, color: "#4F46E5" },
+
+  // interest — do que a pessoa gosta (o "Não sei qual escolher")
+  design: { Icon: Palette, color: "#EC4899" },
+  logic: { Icon: Puzzle, color: "#7C3AED" },
+  web: { Icon: Globe, color: "#2563EB" },
+  data: { Icon: Database, color: "#0EA5E9" },
+  games: { Icon: Gamepad2, color: "#22C55E" },
+  systems: { Icon: Building2, color: "#F59E0B" },
+  cloud: { Icon: Cloud, color: "#06B6D4" },
 
   // language_reason — por que está aprendendo
   explore: { Icon: Compass, color: "#14B8A6" },
@@ -58,6 +77,7 @@ const ICONS: Record<string, IconEntry> = {
 
   // commitment — tempo por dia (cor mais intensa = mais tempo)
   "5min": { Icon: Timer, color: "#93C5FD" },
+  "10min": { Icon: Timer, color: "#7AB8FB" },
   "15min": { Icon: Timer, color: "#60A5FA" },
   "30min": { Icon: Timer, color: "#3B82F6" },
   "60min": { Icon: Flame, color: "#DC2626" },

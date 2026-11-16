@@ -1,5 +1,6 @@
 "use client";
 
+import { AnuncioWeb } from "@/components/anuncios/anuncio-web";
 import { useState } from "react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { usePerfil } from "@/hooks/use-perfil";
@@ -65,6 +66,7 @@ export default function PerfilPage() {
           <>
             <AbasSeguidores />
             <AdicionarAmigos />
+            <AnuncioWeb lugar="perfil" />
             <SideFooter />
           </>
         )

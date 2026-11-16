@@ -6,6 +6,7 @@ import { Check, X } from "lucide-react";
 import { Atividade, Pergunta, TipoDeAula } from "@/data/atividades";
 import { LicaoTrilha } from "@/lib/types/trilha";
 import { ResultadoExecucao } from "@/hooks/use-executar-js";
+import { LINGUAGENS_DE_PAGINA, PreviaHtml } from "./previa-html";
 import { prepararPython, rodaNoAparelho } from "@/hooks/use-executar-codigo";
 import { CodeBlock } from "./code-block";
 import { SeloPerguntaBadge } from "./selo-pergunta";
@@ -336,6 +337,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
         onContinuar={() => (comemoracoes.length ? setFase("comemorando") : void sairDaLicaoConcluida())}
         salvando={salvandoXp}
         erroSalvar={erroSalvarXp}
+        comAnuncio={comAnuncios}
       />
     );
   }
@@ -404,7 +406,10 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
           <h1 className="text-2xl font-black leading-tight text-foreground">{slide.titulo}</h1>
           <p className="text-[1.02rem] font-medium leading-relaxed text-foreground/80">{slide.texto}</p>
           {/* Exemplo vivo: na aula nova de JavaScript dá para mudar e rodar. */}
-          {slide.codigo && tipoDeAula && podeRodar ? (
+          {slide.codigo && LINGUAGENS_DE_PAGINA.includes(atividade.linguagem ?? "") ? (
+            // HTML e CSS: o exemplo é uma página, então aparece montada ao lado do código.
+            <PreviaHtml key={`exemplo-${indiceIntro}`} valorInicial={slide.codigo} />
+          ) : slide.codigo && tipoDeAula && podeRodar ? (
             <CodeBlock key={`exemplo-${indiceIntro}`} valorInicial={slide.codigo} titulo="Mude e rode" linguagem={atividade.linguagem} />
           ) : (
             slide.codigo && (

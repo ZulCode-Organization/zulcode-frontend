@@ -1,5 +1,6 @@
 "use client";
 
+import { AnuncioWeb } from "@/components/anuncios/anuncio-web";
 import { useEffect, useState, type ReactNode } from "react";
 import { Check, History, LockKeyhole } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
@@ -453,6 +454,7 @@ export default function LojaPage() {
   return (
     <AppShell contentClassName="max-w-none">
       <Store />
+      <AnuncioWeb lugar="loja" className="mx-auto mt-10 max-w-3xl px-4 pb-10" />
     </AppShell>
   );
 }

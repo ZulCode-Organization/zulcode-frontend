@@ -1,5 +1,6 @@
 "use client";
 
+import { AnuncioWeb } from "@/components/anuncios/anuncio-web";
 import { useEffect, useState } from "react";
 import { Sparkles, Target, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,8 @@ interface TelaConclusaoProps {
   total: number;
   onRevisar: () => void;
   onContinuar: () => void;
+  /** Quem não é PRO vê um anúncio do site (só no computador) no fim da lição. */
+  comAnuncio?: boolean;
   /** true enquanto o XP de verdade ainda está sendo confirmado no backend
    * (POST /lessons/:id/complete) — só existe pra lição conectada de
    * verdade; nas outras, xp já chega pronto e isso nunca é true. */
@@ -62,7 +65,7 @@ function useContador(alvo: number, inicio: number, duracao: number, comecar: boo
   return semMovimento ? alvo : valor;
 }
 
-export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salvando, erroSalvar, xpBase, resumo }: TelaConclusaoProps) {
+export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salvando, erroSalvar, xpBase, resumo, comAnuncio = false }: TelaConclusaoProps) {
   const percentual = Math.round((acertos / total) * 100);
 
   // A vinheta de fim de lição toca uma vez, quando a tela aparece.
@@ -174,6 +177,7 @@ export function TelaConclusao({ xp, acertos, total, onRevisar, onContinuar, salv
             Não deu pra confirmar seu XP agora. Verifica sua conexão e tenta de novo mais tarde.
           </p>
         )}
+        {comAnuncio && <AnuncioWeb lugar="licao" className="w-full max-w-md text-left" />}
       </div>
 
       <div className="mx-auto flex w-full max-w-md gap-3 px-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">

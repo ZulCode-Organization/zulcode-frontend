@@ -1,5 +1,6 @@
 "use client";
 
+import { AnuncioWeb } from "@/components/anuncios/anuncio-web";
 import { useRouter } from "next/navigation";
 import { Code2, WifiOff } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
@@ -70,6 +71,7 @@ export default function HomePage() {
           <ProCard />
           <LeaderboardWidget />
           <DailyGoalsWidget />
+          <AnuncioWeb lugar="home" />
           <SideFooter />
         </>
       }

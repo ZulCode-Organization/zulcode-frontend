@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { API_BASE_URL } from "@/lib/api-config";
 import { Check, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CursoDaJornada } from "@/hooks/use-cursos";
@@ -72,19 +73,31 @@ const FUNDO_ESPECIAL: Record<string, string> = {
 };
 
 /**
- * Cursos anunciados que ainda não existem no catálogo da API. Aparecem só na
- * tela de todos os cursos, apagados e sem clique — é vitrine, não curso: nada
- * aqui é enviado ao backend nem pode ser selecionado.
+ * Cursos anunciados que ainda não existem no catálogo. A lista vem do backend
+ * (o admin liga e desliga cada um em "Em breve") e aparece só na tela de todos
+ * os cursos, apagada e sem clique: é vitrine, nada aqui pode ser selecionado.
+ * Se a rede falhar, a vitrine simplesmente não aparece.
  */
-export const CURSOS_EM_BREVE = [
-  { id: "arduino", name: "Arduino" },
-  { id: "sql", name: "SQL" },
-  { id: "cplusplus", name: "C++" },
-  { id: "c", name: "C" },
-  { id: "php", name: "PHP" },
-  { id: "git", name: "Git" },
-  { id: "shell", name: "Shell" },
-];
+function useCursosEmBreve(cursos: CursoDaJornada[]) {
+  const [lista, setLista] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    let vivo = true;
+    fetch(`${API_BASE_URL}/em-breve`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((corpo: { id: string; nome: string }[]) => {
+        if (vivo && Array.isArray(corpo)) setLista(corpo.map((l) => ({ id: l.id, name: l.nome })));
+      })
+      .catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, []);
+  // Um curso que já existe nunca aparece como "em breve", mesmo antes de o backend saber.
+  return useMemo(() => {
+    const existentes = new Set(cursos.map((c) => normalizar(c.id)));
+    return lista.filter((l) => !existentes.has(normalizar(l.id)));
+  }, [lista, cursos]);
+}
 
 /** Proporção do desenho dentro do ladrilho. */
 const OCUPACAO_ICONE = 0.64;
@@ -413,6 +426,7 @@ export function TelaTodosCursos({ cursos, cursoAtual, meusCursos, onSelecionar }
   const feitos = useMemo(() => new Set(meusCursos), [meusCursos]);
   const emAndamento = cursos.filter((curso) => feitos.has(curso.id));
   const disponiveis = cursos.filter((curso) => !feitos.has(curso.id));
+  const emBreve = useCursosEmBreve(cursos);
 
   const grade = (lista: CursoDaJornada[]) => (
     <div className="grid grid-cols-3 justify-items-center gap-4 sm:grid-cols-4">
@@ -464,10 +478,11 @@ export function TelaTodosCursos({ cursos, cursoAtual, meusCursos, onSelecionar }
 
       {/* Vitrine do que ainda vai existir: apagada e sem clique, pra ninguém
           tentar entrar num curso que o backend não tem. */}
-      <section className="mt-7">
+      {emBreve.length > 0 && (
+        <section className="mt-7">
         <p className={cn(TITULO, "pb-3")}>Em breve</p>
         <div className="grid grid-cols-3 justify-items-center gap-4 sm:grid-cols-4">
-          {CURSOS_EM_BREVE.map((curso) => (
+          {emBreve.map((curso) => (
             <div
               key={curso.id}
               className="flex flex-col items-center gap-2 opacity-45"
@@ -486,7 +501,8 @@ export function TelaTodosCursos({ cursos, cursoAtual, meusCursos, onSelecionar }
             </div>
           ))}
         </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

@@ -9,6 +9,10 @@ export const ICONES_DO_APP = [
   { id: "biscoito", nome: "Biscoito de gengibre" },
   { id: "derretido", nome: "Derretido" },
   { id: "frankenstein", nome: "Frankenstein" },
+  { id: "miami", nome: "Miami" },
+  { id: "natal", nome: "Natal" },
+  { id: "armadura", nome: "Armadura" },
+  { id: "deserto", nome: "Deserto" },
 ] as const;
 export type IconeDoApp = (typeof ICONES_DO_APP)[number]["id"];
 

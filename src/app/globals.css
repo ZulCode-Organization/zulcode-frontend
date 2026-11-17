@@ -413,6 +413,126 @@
   --aula-feita: #12301d;
   --aula-feita-texto: #39ff88;
 }
+/* Miami: pôr do sol rosa e laranja; no escuro, a noite azul-marinho com neon rosa. */
+:root[data-evento="miami"] {
+  --background: #fff5f3 !important;
+  --foreground: #2a1530 !important;
+  --card: #ffffff !important;
+  --card-foreground: #2a1530 !important;
+  --popover: #ffffff !important;
+  --popover-foreground: #2a1530 !important;
+  --primary: #e8457f !important;
+  --primary-foreground: #ffffff !important;
+  --secondary: #fde6ee !important;
+  --secondary-foreground: #2a1530 !important;
+  --muted: #fde6ee !important;
+  --muted-foreground: #8a5a72 !important;
+  --accent: #ffe9dc !important;
+  --accent-foreground: #c2410c !important;
+  --border: #f8d3e0 !important;
+  --input: #f8d3e0 !important;
+  --ring: #e8457f !important;
+  --sidebar: #fffafa !important;
+  --sidebar-foreground: #2a1530 !important;
+  --sidebar-primary: #e8457f !important;
+  --sidebar-primary-foreground: #ffffff !important;
+  --sidebar-accent: #fde6ee !important;
+  --sidebar-accent-foreground: #2a1530 !important;
+  --sidebar-border: #f8d3e0 !important;
+  --sidebar-ring: #e8457f !important;
+  --aula-feita: #fb8c4a;
+  --aula-feita-texto: #2a1222;
+}
+:root.dark[data-evento="miami"] {
+  --background: #14122a !important;
+  --foreground: #ffe4ec !important;
+  --card: #1e1a3a !important;
+  --card-foreground: #ffe4ec !important;
+  --popover: #1e1a3a !important;
+  --popover-foreground: #ffe4ec !important;
+  --primary: #ff6b9a !important;
+  --primary-foreground: #1a0d1f !important;
+  --secondary: #272247 !important;
+  --secondary-foreground: #ffe4ec !important;
+  --muted: #272247 !important;
+  --muted-foreground: #b39ac4 !important;
+  --accent: #3a1f3f !important;
+  --accent-foreground: #ffb38a !important;
+  --border: #2f2952 !important;
+  --input: #2f2952 !important;
+  --ring: #ff6b9a !important;
+  --sidebar: #181530 !important;
+  --sidebar-foreground: #ffe4ec !important;
+  --sidebar-primary: #ff6b9a !important;
+  --sidebar-primary-foreground: #1a0d1f !important;
+  --sidebar-accent: #272247 !important;
+  --sidebar-accent-foreground: #ffe4ec !important;
+  --sidebar-border: #2f2952 !important;
+  --sidebar-ring: #ff6b9a !important;
+  --aula-feita: #ffa76e;
+  --aula-feita-texto: #2a0f1c;
+}
+/* Doomsday: no claro é Duna (areia, especiaria e o azul dos olhos); no escuro é
+   Doom (verde-escuro e metal). */
+:root[data-evento="doomsday"] {
+  --background: #f8f0e1 !important;
+  --foreground: #3a2a14 !important;
+  --card: #fffaf1 !important;
+  --card-foreground: #3a2a14 !important;
+  --popover: #fffaf1 !important;
+  --popover-foreground: #3a2a14 !important;
+  --primary: #c26a1f !important;
+  --primary-foreground: #ffffff !important;
+  --secondary: #f0e2c8 !important;
+  --secondary-foreground: #3a2a14 !important;
+  --muted: #f0e2c8 !important;
+  --muted-foreground: #8a7150 !important;
+  --accent: #e3ecff !important;
+  --accent-foreground: #1d4ed8 !important;
+  --border: #e8d6b4 !important;
+  --input: #e8d6b4 !important;
+  --ring: #c26a1f !important;
+  --sidebar: #fdf7ec !important;
+  --sidebar-foreground: #3a2a14 !important;
+  --sidebar-primary: #c26a1f !important;
+  --sidebar-primary-foreground: #ffffff !important;
+  --sidebar-accent: #f0e2c8 !important;
+  --sidebar-accent-foreground: #3a2a14 !important;
+  --sidebar-border: #e8d6b4 !important;
+  --sidebar-ring: #c26a1f !important;
+  --aula-feita: #2563eb;
+  --aula-feita-texto: #ffffff;
+}
+:root.dark[data-evento="doomsday"] {
+  --background: #0b120d !important;
+  --foreground: #e3ebe5 !important;
+  --card: #131d16 !important;
+  --card-foreground: #e3ebe5 !important;
+  --popover: #131d16 !important;
+  --popover-foreground: #e3ebe5 !important;
+  --primary: #3f9b4f !important;
+  --primary-foreground: #ffffff !important;
+  --secondary: #1b2820 !important;
+  --secondary-foreground: #e3ebe5 !important;
+  --muted: #1b2820 !important;
+  --muted-foreground: #8fa396 !important;
+  --accent: #1f2b24 !important;
+  --accent-foreground: #b8c4bd !important;
+  --border: #24352a !important;
+  --input: #24352a !important;
+  --ring: #3f9b4f !important;
+  --sidebar: #0f1811 !important;
+  --sidebar-foreground: #e3ebe5 !important;
+  --sidebar-primary: #3f9b4f !important;
+  --sidebar-primary-foreground: #ffffff !important;
+  --sidebar-accent: #1b2820 !important;
+  --sidebar-accent-foreground: #e3ebe5 !important;
+  --sidebar-border: #24352a !important;
+  --sidebar-ring: #3f9b4f !important;
+  --aula-feita: #9aa7a0;
+  --aula-feita-texto: #0b120d;
+}
+
 
 @layer base {
   * {

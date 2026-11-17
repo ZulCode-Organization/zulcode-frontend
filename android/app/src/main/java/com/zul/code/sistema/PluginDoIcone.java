@@ -30,7 +30,7 @@ import java.util.List;
 public class PluginDoIcone extends Plugin {
 
     /** Os ícones que existem no APK. Precisa bater com os aliases do manifesto. */
-    public static final List<String> ICONES = Arrays.asList("padrao", "vampiro", "biscoito", "derretido", "frankenstein");
+    public static final List<String> ICONES = Arrays.asList("padrao", "vampiro", "biscoito", "derretido", "frankenstein", "miami", "natal", "armadura", "deserto");
     private static final String PREFERENCIAS = "icone_do_app";
     private static final String DESEJADO = "desejado";
 

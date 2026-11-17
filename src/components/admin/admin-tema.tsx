@@ -18,6 +18,8 @@ const OPCOES: { tema: TemaDaBarra; nome: string; descricao: string }[] = [
   { tema: "natal", nome: "Natal", descricao: "No claro, bengala doce: vermelho e branco, aulas feitas em verde-menta com bengala, chama vermelha. No escuro, noite de neve: azul-noite, aulas feitas em branco-gelo com floco, chama de gelo, rupee com presente e pena com floco." },
   { tema: "carnaval", nome: "Carnaval", descricao: "O app em roxo, aulas feitas em amarelo com máscara; na barra, chama rosa, rupee com confete e pena com máscara." },
   { tema: "pascoa", nome: "Páscoa", descricao: "O app em lilás, aulas feitas em verde-menta com ovo; na barra, chama amarela, rupee com ovo e pena com coelho." },
+  { tema: "miami", nome: "Miami", descricao: "Pôr do sol de Miami: o app em rosa e laranja; no escuro, noite azul-marinho com neon rosa. Aulas feitas em laranja com palmeira, chama rosa, rupee com palmeira e pena com óculos escuros." },
+  { tema: "doomsday", nome: "Doomsday", descricao: "No claro, Duna: areia, especiaria e aulas feitas no azul dos olhos, rupee com duna e pena com olho. No escuro, Doom: verde-escuro e metal, chama verde e a máscara de ferro no rupee, na pena e nas aulas." },
   { tema: "programador", nome: "Dia do Programador", descricao: "O app em verde de terminal, aulas feitas como uma tela de terminal; na barra, chama verde, rupee com chaves e pena com terminal." },
 ];
 

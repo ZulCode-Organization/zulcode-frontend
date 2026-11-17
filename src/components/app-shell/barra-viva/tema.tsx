@@ -12,8 +12,8 @@ import { Enfeite, type NomeDoEnfeite } from "@/components/shared/enfeite";
 // O tema
 // ---------------------------------------------------------------------------
 
-export type TemaDaBarra = "normal" | "halloween" | "natal" | "carnaval" | "pascoa" | "programador";
-const TEMAS: TemaDaBarra[] = ["normal", "halloween", "natal", "carnaval", "pascoa", "programador"];
+export type TemaDaBarra = "normal" | "halloween" | "natal" | "carnaval" | "pascoa" | "programador" | "miami" | "doomsday";
+const TEMAS: TemaDaBarra[] = ["normal", "halloween", "natal", "carnaval", "pascoa", "programador", "miami", "doomsday"];
 const GUARDADO = "zc-tema-da-barra";
 
 /**
@@ -85,6 +85,8 @@ const COR_DA_CHAMA_NO_EVENTO: Record<Exclude<TemaDaBarra, "normal">, string> = {
   carnaval: "text-pink-500",
   pascoa: "text-amber-500",
   programador: "text-green-600 dark:text-green-400",
+  miami: "text-pink-500 dark:text-pink-400",
+  doomsday: "text-orange-600 dark:text-green-500",
 };
 
 export function corDaChama(dias: number | null | undefined, tema: TemaDaBarra) {
@@ -98,6 +100,8 @@ export const COR_DO_RUPEE: Record<TemaDaBarra, string> = {
   carnaval: "text-yellow-500",
   pascoa: "text-emerald-500",
   programador: "text-cyan-600 dark:text-cyan-400",
+  miami: "text-orange-500 dark:text-orange-300",
+  doomsday: "text-amber-600 dark:text-slate-300",
 };
 
 export const COR_DA_PENA: Record<TemaDaBarra, string> = {
@@ -107,6 +111,8 @@ export const COR_DA_PENA: Record<TemaDaBarra, string> = {
   carnaval: "text-emerald-500",
   pascoa: "text-violet-500 dark:text-violet-400",
   programador: "text-lime-600 dark:text-lime-400",
+  miami: "text-fuchsia-500 dark:text-fuchsia-400",
+  doomsday: "text-blue-600 dark:text-green-500",
 };
 
 /** O app está no modo escuro? Antes de montar, vale o claro. */
@@ -128,11 +134,15 @@ const CHAMA_DO_TEMA: Record<TemaDaBarra, ChamaDoTema> = {
   carnaval: { faixa: "agua", tom: "hue-rotate(175deg) saturate(2) brightness(.95)" },
   pascoa: { faixa: "agua", tom: "hue-rotate(215deg) saturate(1.3) brightness(1.1)" },
   programador: { faixa: "agua", tom: "hue-rotate(-50deg) saturate(1.4)" },
+  miami: { faixa: "violeta", tom: "hue-rotate(40deg) saturate(1.4)" },
+  doomsday: { faixa: "quente", tom: "saturate(.9) brightness(1.05)" },
 };
 
 /** Temas cujo modo escuro tem outra chama. O Natal escuro é a "noite de neve": chama de gelo. */
 const CHAMA_NO_ESCURO: Partial<Record<TemaDaBarra, ChamaDoTema>> = {
   natal: { faixa: "agua", tom: "hue-rotate(15deg) saturate(.8) brightness(1.15)" },
+  // Doomsday: no claro é Duna (chama de especiaria); no escuro é Doom, chama verde.
+  doomsday: { faixa: "quente", tom: "hue-rotate(95deg) saturate(1.1) brightness(.9)" },
 };
 
 /** A chama da barra: a mesma do resto do app, na cor do evento quando há um. */
@@ -172,6 +182,8 @@ export const COR_DA_PENA_NO_TEMA = {
   carnaval: "text-emerald-500",
   pascoa: "text-violet-500 dark:text-violet-400",
   programador: "text-lime-600 dark:text-lime-400",
+  miami: "text-fuchsia-500 dark:text-fuchsia-400",
+  doomsday: "text-blue-600 dark:text-green-500",
   vazia: "text-muted-foreground/60",
 };
 
@@ -221,11 +233,14 @@ export const ENFEITES_DA_BARRA: Record<TemaDaBarra, EnfeitesDoTema> = {
   carnaval: { rupee: "confete", pena: "mascara", aula: "mascara" },
   pascoa: { rupee: "ovo", pena: "coelho", aula: "ovo" },
   programador: { rupee: "chaves", pena: "terminal", aula: "terminal" },
+  miami: { rupee: "palmeira", pena: "oculos", aula: "palmeira" },
+  doomsday: { rupee: "duna", pena: "olho", aula: "olho" },
 };
 
 /** Temas cujo modo escuro tem outros enfeites. O Natal escuro é a "noite de neve". */
 const ENFEITES_NO_ESCURO: Partial<Record<TemaDaBarra, EnfeitesDoTema>> = {
   natal: { rupee: "presente", pena: "floco", aula: "floco" },
+  doomsday: { rupee: "armadura", pena: "armadura", aula: "armadura" },
 };
 
 /** Os enfeites do tema no modo em que o app está. */

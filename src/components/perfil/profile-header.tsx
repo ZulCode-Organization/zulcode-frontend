@@ -256,13 +256,6 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
               <Pencil className="size-7 text-white" />
             </span>
           )}
-          {/* No toque não existe "passar por cima": no celular o lápis fica
-              sempre no canto da capa, avisando que ela abre a edição. */}
-          {editavel && (
-            <span className="pointer-events-none absolute bottom-2.5 right-2.5 hidden size-9 place-items-center rounded-full bg-black/45 text-white shadow-md backdrop-blur-sm pointer-coarse:grid">
-              <Pencil className="size-4" />
-            </span>
-          )}
 
         </div>
 

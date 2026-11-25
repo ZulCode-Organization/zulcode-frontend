@@ -1,5 +1,6 @@
 "use client";
 
+import { limparDadosGuardados } from "@/lib/dados-guardados";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { limparPerfilCache } from "@/hooks/use-perfil";
@@ -19,6 +20,7 @@ export function SessaoExpirada() {
       if (!localStorage.getItem("accessToken")) return;
       // Sem esquecerEsteAparelho(): ele precisa justamente do token que venceu.
       localStorage.removeItem("accessToken");
+      limparDadosGuardados();
       limparPerfilCache();
       limparTrilhaCache();
       limparSeguidos();

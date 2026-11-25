@@ -12,6 +12,7 @@ import { LessonTrail } from "@/components/home/lesson-trail";
 import { ProCard } from "@/components/home/pro-card";
 import { LeaderboardWidget } from "@/components/home/leaderboard-widget";
 import { DailyGoalsWidget } from "@/components/home/daily-goals-widget";
+import { EventoCard } from "@/components/home/evento-card";
 import { SideFooter } from "@/components/shared/side-footer";
 
 /** Esqueleto só no primeiro carregamento, enquanto confirma o estado da
@@ -68,6 +69,7 @@ export default function HomePage() {
       rightPanelVariant="sticky-bottom"
       rightPanel={
         <>
+          <EventoCard />
           <ProCard />
           <LeaderboardWidget />
           <DailyGoalsWidget />
@@ -83,6 +85,8 @@ export default function HomePage() {
           semeada no backend, ou do progresso local nas outras — nunca
           hardcoded, então a 2ª lição só libera depois que a 1ª é concluída.
           A troca de curso agora fica na barra de status, no topo do app. */}
+      {/* No celular não há painel direito: o evento da vez vem antes da trilha. */}
+      <EventoCard className="mt-4 lg:hidden" />
       <div className="relative" {...(ehMobile ? manipuladores : {})}>
         {/* A dica aparece só enquanto o dedo está arrastando, do lado pra onde
             ele foi. Um atalho invisível ninguém descobre; um aviso fixo na

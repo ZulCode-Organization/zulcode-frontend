@@ -6,11 +6,12 @@ import { Dialogo, ConfirmarDigitando } from "../dialogo";
 import { AreaDeTexto, Botao, Entrada, Escolha, Interruptor, Rotulo, Segmentado } from "../ui";
 import { avisar } from "../avisos";
 import { EscolhaDeDias } from "./calendario";
+import { PresentesDaPessoa } from "./presentes";
 import { invalidar, pedir, salvarArquivo, useDados } from "@/lib/admin/api";
 import { data, numero } from "@/lib/admin/formato";
 import type { Calendario, FichaDaPessoa, Papel } from "@/lib/admin/tipos";
 
-export type AcaoDaFicha = "saldo" | "selos" | "papel" | "bloquear" | "ofensiva" | "notificar" | "cortesia" | "tirarPro" | "dados" | "excluir";
+export type AcaoDaFicha = "saldo" | "selos" | "papel" | "bloquear" | "ofensiva" | "notificar" | "cortesia" | "tirarPro" | "dados" | "excluir" | "presentes";
 
 const LIMITE = { rupees: 1000, xp: 5000 };
 
@@ -37,6 +38,7 @@ export function AcoesDaFicha({ pessoa, acao, aoFechar }: { pessoa: FichaDaPessoa
   if (acao === "cortesia") return <Cortesia {...props} />;
   if (acao === "tirarPro") return <TirarPro {...props} />;
   if (acao === "excluir") return <Excluir {...props} />;
+  if (acao === "presentes") return <PresentesDaPessoa pessoa={pessoa} aoFechar={aoFechar} />;
   return null;
 }
 

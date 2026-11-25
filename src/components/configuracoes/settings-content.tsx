@@ -1,5 +1,6 @@
 "use client";
 
+import { limparDadosGuardados } from "@/lib/dados-guardados";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSyncExternalStore } from "react";
@@ -38,6 +39,7 @@ export function SettingsContent() {
     // Antes de apagar o token: o servidor precisa dele para esquecer o aparelho.
     void esquecerEsteAparelho();
     localStorage.removeItem("accessToken");
+    limparDadosGuardados();
     void limparWidgetDaOfensiva();
     void limparAvisos();
     limparPerfilCache();

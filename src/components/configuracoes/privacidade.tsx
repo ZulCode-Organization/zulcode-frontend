@@ -1,5 +1,6 @@
 "use client";
 
+import { limparDadosGuardados } from "@/lib/dados-guardados";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -69,6 +70,7 @@ export function PrivacidadeContent() {
       }
       // A conta não existe mais: limpa tudo deste aparelho e volta para o começo.
       localStorage.removeItem("accessToken");
+      limparDadosGuardados();
       void limparWidgetDaOfensiva();
       void limparAvisos();
       limparPerfilCache();

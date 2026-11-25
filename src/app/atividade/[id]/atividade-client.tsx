@@ -1,5 +1,6 @@
 "use client";
 
+import { envelhecerMetas } from "@/hooks/use-metas-diarias";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Hammer, X } from "lucide-react";
@@ -8,6 +9,7 @@ import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { limparPerfilCache } from "@/hooks/use-perfil";
 import { limparTrilhaCache } from "@/hooks/use-trilha";
 import { ActivityPlayer } from "@/components/atividade/activity-player";
+import type { MotivoDoErro, ResultadoDoRelato } from "@/components/atividade/reportar-erro";
 import { PenaPorAnuncio } from "@/components/anuncios/pena-por-anuncio";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import type { ResultadoDaLicao } from "@/lib/types/comemoracao";
@@ -64,6 +66,8 @@ async function completarLicaoReal(id: string, score: number): Promise<ResultadoD
     const dados: ResultadoDaLicao = await res.json();
     limparPerfilCache();
     limparTrilhaCache();
+    // As metas mudaram com a aula: a próxima tela mostra as de antes e busca as novas.
+    envelhecerMetas();
     return dados;
   } catch {
     return null;
@@ -131,7 +135,7 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
   // Formato novo: uma aula só, sem etapas — terminar é concluir a lição.
   if (aulaDoFormatoNovo(lesson)) {
     const licaoNova: LicaoTrilha = { id: lesson.id, titulo: lesson.title, subtitulo: "", xp: lesson.xpReward, estado: "atual" };
-    return <ActivityPlayer atividade={atividadeDaApi(lesson, "")} licao={licaoNova} aoConcluir={(acertos, total) => completarLicaoReal(id, Math.round((acertos / total) * 100))} aoErrar={() => consumirPena(livesState, id)} aoResponder={(perguntaId, correto) => registrarResposta(id, perguntaId, correto)} vidas={livesState.lives} vidasIlimitadas={livesState.isUnlimited} comAnuncios={!livesState.isUnlimited} />;
+    return <ActivityPlayer atividade={atividadeDaApi(lesson, "")} licao={licaoNova} aoConcluir={(acertos, total) => completarLicaoReal(id, Math.round((acertos / total) * 100))} aoErrar={() => consumirPena(livesState, id)} aoResponder={(perguntaId, correto) => registrarResposta(id, perguntaId, correto)} aoReportar={(relato) => reportarErro(id, relato)} vidas={livesState.lives} vidasIlimitadas={livesState.isUnlimited} comAnuncios={!livesState.isUnlimited} />;
   }
 
   const totalEtapas = Math.max(1, lesson.stageCount ?? 2);
@@ -144,7 +148,35 @@ export function AtividadeClient({ id }: AtividadeClientProps) {
 
   return <ActivityPlayer atividade={atividade} licao={licao} aoConcluir={(acertos, total) => etapaAtual < totalEtapas
     ? (totalEtapas === 2 ? completarEtapaTeorica(id) : completarEtapa(id, etapaAtual))
-    : completarLicaoReal(id, Math.round((acertos / total) * 100))} aoErrar={() => consumirPena(livesState, id)} aoResponder={(perguntaId, correto) => registrarResposta(id, perguntaId, correto)} vidas={livesState.lives} vidasIlimitadas={livesState.isUnlimited} comAnuncios={!livesState.isUnlimited} />;
+    : completarLicaoReal(id, Math.round((acertos / total) * 100))} aoErrar={() => consumirPena(livesState, id)} aoResponder={(perguntaId, correto) => registrarResposta(id, perguntaId, correto)} aoReportar={(relato) => reportarErro(id, relato)} vidas={livesState.lives} vidasIlimitadas={livesState.isUnlimited} comAnuncios={!livesState.isUnlimited} />;
+}
+
+/** Manda o erro apontado numa questão para a fila do administrativo. */
+async function reportarErro(
+  licaoId: string,
+  relato: { perguntaId: string; motivo: MotivoDoErro; comentario: string; resposta: string | null },
+): Promise<ResultadoDoRelato> {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return { ok: false, mensagem: "Entre na sua conta para reportar." };
+  try {
+    const res = await fetchComTimeout(`${API_BASE_URL}/lessons/${licaoId}/erros`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        exerciseId: relato.perguntaId,
+        motivo: relato.motivo,
+        ...(relato.comentario ? { comentario: relato.comentario.slice(0, 1000) } : {}),
+        ...(relato.resposta ? { resposta: relato.resposta.slice(0, 500) } : {}),
+      }),
+    });
+    if (res.ok) return { ok: true };
+    // O servidor explica o porquê (ex.: o limite do dia); sem explicação, um texto genérico.
+    const corpo: { message?: string | string[] } = await res.json().catch(() => ({}));
+    const mensagem = Array.isArray(corpo.message) ? corpo.message[0] : corpo.message;
+    return { ok: false, mensagem: res.status < 500 && mensagem ? mensagem : "Não foi possível enviar agora. Tente de novo em instantes." };
+  } catch {
+    return { ok: false, mensagem: "Sem conexão. Tente de novo quando a internet voltar." };
+  }
 }
 
 function SemPenas({ aoGanharPena }: { aoGanharPena: () => void }) {

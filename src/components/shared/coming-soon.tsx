@@ -1,5 +1,6 @@
 "use client";
 
+import { limparDadosGuardados } from "@/lib/dados-guardados";
 import { useRouter } from "next/navigation";
 import { Hammer } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export function ComingSoon({
   const handleLogout = () => {
     void esquecerEsteAparelho();
     localStorage.removeItem("accessToken");
+    limparDadosGuardados();
     router.replace("/welcome");
   };
 

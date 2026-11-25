@@ -11,7 +11,8 @@ import { Avisos } from "./avisos";
 import { Paleta } from "./paleta";
 import { Dialogo, Perguntas } from "./dialogo";
 import { Atalho } from "./ui";
-import { SECOES } from "./secoes";
+import { GRUPOS, SECOES } from "./secoes";
+import { useDados } from "@/lib/admin/api";
 
 
 
@@ -42,6 +43,10 @@ function Casca({ children }: { children: ReactNode }) {
   const recolhido = useMenuRecolhido();
   const [paleta, setPaleta] = useState(false);
   const [ajuda, setAjuda] = useState(false);
+
+  // O número ao lado de uma seção: as questões com erro relatado e ainda abertas.
+  const { dados: errosAbertos } = useDados<{ questoes: number }>(ehAdmin ? "/admin/erros-nas-questoes/abertos" : null, { velhoDepoisDe: 60_000 });
+  const contador: Partial<Record<string, number>> = { "/admin/erros": errosAbertos?.questoes };
 
   useEffect(() => {
     if (!loading && !podeEntrar) router.replace("/home");
@@ -110,6 +115,7 @@ function Casca({ children }: { children: ReactNode }) {
   }
 
   const secoes = SECOES.filter((s) => ehAdmin || !s.soAdmin);
+  const grupos = GRUPOS.map((grupo) => ({ grupo, itens: secoes.filter((s) => s.grupo === grupo) })).filter((g) => g.itens.length);
 
   return (
     <div className="flex h-dvh overflow-hidden bg-background text-foreground">
@@ -146,26 +152,46 @@ function Casca({ children }: { children: ReactNode }) {
           )}
         </button>
 
-        <nav aria-label="Seções do administrativo" className="mt-3 flex-1 space-y-0.5 overflow-y-auto px-2">
-          {secoes.map(({ href, rotulo, Icone }) => {
-            const ativa = caminho === href || caminho.startsWith(`${href}/`);
-            return (
-              <Link
-                key={href}
-                href={href}
-                title={recolhido ? rotulo : undefined}
-                aria-current={ativa ? "page" : undefined}
-                className={cn(
-                  "flex h-9 items-center gap-2.5 rounded-lg text-sm font-bold transition-colors",
-                  recolhido ? "justify-center" : "px-2.5",
-                  ativa ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <Icone className="size-[18px] shrink-0" />
-                {!recolhido && <span className="truncate">{rotulo}</span>}
-              </Link>
-            );
-          })}
+        <nav aria-label="Seções do administrativo" className="mt-1 flex-1 overflow-y-auto px-2 pb-2">
+          {grupos.map(({ grupo, itens }, i) => (
+            <div key={grupo}>
+              {/* Com um grupo só (o professor), o título não diz nada. */}
+              {grupos.length > 1 &&
+                (recolhido ? (
+                  i > 0 && <div className="mx-2 my-2 h-px bg-border" />
+                ) : (
+                  <p className="px-2.5 pb-1 pt-3 text-[0.65rem] font-black uppercase tracking-wider text-muted-foreground/70">{grupo}</p>
+                ))}
+              <div className="space-y-0.5">
+                {itens.map(({ href, rotulo, Icone }) => {
+                  const ativa = caminho === href || caminho.startsWith(`${href}/`);
+                  const n = contador[href];
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      title={recolhido ? (n ? `${rotulo} (${n})` : rotulo) : undefined}
+                      aria-current={ativa ? "page" : undefined}
+                      className={cn(
+                        "relative flex h-9 items-center gap-2.5 rounded-lg text-sm font-bold transition-colors",
+                        recolhido ? "justify-center" : "px-2.5",
+                        ativa ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      )}
+                    >
+                      <Icone className="size-[18px] shrink-0" />
+                      {!recolhido && <span className="flex-1 truncate">{rotulo}</span>}
+                      {!!n &&
+                        (recolhido ? (
+                          <span className="absolute right-2 top-1.5 size-2 rounded-full bg-rose-500" />
+                        ) : (
+                          <span className="rounded-full bg-rose-500 px-1.5 text-[0.65rem] font-black leading-4 text-white">{n}</span>
+                        ))}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         <div className="space-y-0.5 border-t p-2">
@@ -209,9 +235,11 @@ function Casca({ children }: { children: ReactNode }) {
             <button type="button" onClick={() => setPaleta(true)} aria-label="Buscar" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground"><Search className="size-4" /></button>
             {secoes.map(({ href, rotulo, Icone }) => {
               const ativa = caminho === href || caminho.startsWith(`${href}/`);
+              const n = contador[href];
               return (
                 <Link key={href} href={href} data-ativa={ativa || undefined} className={cn("flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold", ativa ? "bg-primary/10 text-primary" : "text-muted-foreground")}>
                   <Icone className="size-4" /> {rotulo}
+                  {!!n && <span className="rounded-full bg-rose-500 px-1.5 text-[0.6rem] font-black leading-4 text-white">{n}</span>}
                 </Link>
               );
             })}

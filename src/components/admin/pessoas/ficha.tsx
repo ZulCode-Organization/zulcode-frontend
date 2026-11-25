@@ -61,6 +61,7 @@ export function FichaDaPessoa({ id }: { id: string }) {
         <div className="flex flex-wrap gap-2">
           <Botao icone={<Wallet className="size-4" />} onClick={() => setAcao("saldo")}>Ajustar saldo</Botao>
           <Botao icone={<Bell className="size-4" />} onClick={() => setAcao("notificar")}>Notificar</Botao>
+          <Botao icone={<Gift className="size-4" />} onClick={() => setAcao("presentes")}>Presentes</Botao>
           <MenuDeAcoes pessoa={p} aoEscolher={setAcao} />
         </div>
       </header>

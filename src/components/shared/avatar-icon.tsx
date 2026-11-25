@@ -4,9 +4,13 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { Atom, BadgeCheck, Bot, Code2, Crown, Ghost, Rocket, ShieldCheck, Sparkles, Orbit, Terminal, FlaskConical, Cat, Cpu, Gem, Flame, Gamepad2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Rupee } from "@/components/shared/rupee";
 
 /** O único avatar que não é ícone de traço: é o logo da marca, em imagem. */
 export const AVATAR_MARCA = "zulcode";
+
+/** O avatar desenhado com o rupee da moeda do app (o Icon da lista não é usado). */
+const AVATAR_RUPEE = "crystal";
 
 /** Conta oficial, a única que pode escolher o logo como avatar. */
 const EMAIL_DA_MARCA = "contato.zulcode@gmail.com";
@@ -71,6 +75,9 @@ export function AvatarIcon({ id, className }: { id?: string | null; className?: 
       />
     );
   }
+
+  // O Cristal é o rupee do ZulCode, o mesmo da barra de cima, e não uma pedra genérica.
+  if (avatar.id === AVATAR_RUPEE) return <Rupee rotulo={avatar.label} className={cn("size-[0.95em]", className)} />;
 
   const Icon = avatar.Icon;
   return <Icon aria-label={avatar.label} className={cn("size-[0.9em] stroke-[2.4]", className)} />;

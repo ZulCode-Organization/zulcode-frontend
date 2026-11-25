@@ -26,6 +26,7 @@ import { ExercicioBug } from "./exercicio-bug";
 import { ExercicioDigitar, respostaDigitadaConfere } from "./exercicio-digitar";
 import { AberturaDaAula } from "./abertura-da-aula";
 import { GabaritoDaProva, RespostaDaProva } from "./gabarito-da-prova";
+import { BotaoReportarErro, type MotivoDoErro, type ResultadoDoRelato } from "./reportar-erro";
 import "./aula.css";
 
 /** O Zul de cada tipo de pergunta e o que ele diz quando a pergunta não traz fala própria. */
@@ -111,6 +112,9 @@ interface ActivityPlayerProps {
   aoResponder?: (perguntaId: string, correto: boolean) => void;
   /** O que "Sair" faz. Sem ele, volta para a trilha; a prévia do editor fecha. */
   aoSair?: () => void;
+  /** Com ele, a faixa da resposta ganha o "Reportar" (um erro na questão). A
+   * prévia do editor não passa: lá quem vê o erro já pode corrigir. */
+  aoReportar?: (relato: { perguntaId: string; motivo: MotivoDoErro; comentario: string; resposta: string | null }) => Promise<ResultadoDoRelato>;
 }
 
 type Fase = "abertura" | "introducao" | "quiz" | "gabarito" | "concluida" | "comemorando" | "sem-penas";
@@ -162,6 +166,48 @@ function MoldeAtividade({ progresso, seguidas, vidas, vidasIlimitadas, onSair, c
 }
 
 /**
+ * A faixa da resposta, presa ao pé da tela e na largura toda. Antes ela vinha
+ * no fim da página: numa questão comprida ficava em parte fora da tela (no
+ * computador) e o "Continuar" sumia lá embaixo, pedindo rolagem. No lugar
+ * dela fica um espaço da mesma altura, para o fim da questão ainda poder
+ * subir até aparecer acima da faixa.
+ */
+function FaixaDaResposta({ correto, children }: { correto: boolean; children: ReactNode }) {
+  const faixaRef = useRef<HTMLDivElement>(null);
+  const [altura, setAltura] = useState(0);
+
+  useEffect(() => {
+    const faixa = faixaRef.current;
+    if (!faixa || typeof ResizeObserver === "undefined") return;
+    // O observador avisa logo ao começar, já com a altura inicial.
+    const observador = new ResizeObserver(() => setAltura(faixa.offsetHeight));
+    observador.observe(faixa);
+    return () => observador.disconnect();
+  }, []);
+
+  return (
+    <>
+      <div aria-hidden style={{ height: altura }} />
+      <div
+        ref={faixaRef}
+        className="zc-aula-faixa fixed inset-x-0 bottom-0 z-40 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5"
+        data-certo={correto}
+        role="status"
+      >
+        {/* A mesma grade da aula (a questão e, no computador, o vão do
+            Playground ao lado): o texto fica alinhado com a questão. */}
+        <div className="mx-auto flex w-full max-w-6xl gap-8 px-4 lg:px-8">
+          <div className="min-w-0 flex-1">
+            <div className="mx-auto w-full max-w-xl">{children}</div>
+          </div>
+          <div className="hidden w-[380px] shrink-0 lg:block" />
+        </div>
+      </div>
+    </>
+  );
+}
+
+/**
  * Tela de fazer a lição: primeiro ensina o conteúdo (telas de introdução),
  * só depois pergunta — cada pergunta dá pra responder com o que apareceu na
  * introdução, então vira aprendizado de verdade em vez de chute. Quatro
@@ -172,7 +218,7 @@ function MoldeAtividade({ progresso, seguidas, vidas, vidasIlimitadas, onSair, c
  * /lessons/:id/complete — nas outras, continua sendo só uma celebração
  * visual com o xp mockado da lição.
  */
-export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, aoErrar, vidas: vidasIniciais, vidasIlimitadas = false, comAnuncios = false, aoResponder, aoSair }: ActivityPlayerProps) {
+export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, aoErrar, vidas: vidasIniciais, vidasIlimitadas = false, comAnuncios = false, aoResponder, aoSair, aoReportar }: ActivityPlayerProps) {
   const router = useRouter();
   const { introducao, perguntas, tipoDeAula } = atividade;
   const totalPassos = introducao.length + perguntas.length;
@@ -515,6 +561,12 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   const zul = ZUL_DA_PERGUNTA[pergunta.tipo];
   const porque = verificado ? porqueDaResposta(pergunta, resposta, correto) : null;
 
+  /** O relato leva a resposta dada em texto (ou o código, no projeto), para a equipe ver o que a pessoa marcou. */
+  const reportar = (motivo: MotivoDoErro, comentario: string) => {
+    const dada = descreverResposta(pergunta, resposta).dada || (pergunta.tipo === "testes" ? codigoEscritoRef.current ?? "" : "");
+    return aoReportar!({ perguntaId: pergunta.id, motivo, comentario, resposta: dada ? dada.slice(0, 500) : null });
+  };
+
   return (
     <MoldeAtividade
       progresso={progresso}
@@ -525,31 +577,30 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
       rodape={
         verificado ? (
           // A faixa sobe de baixo com o resultado e o porquê da resposta.
-          <div
-            className="zc-aula-faixa -mx-4 px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5 lg:-mx-8 lg:px-8"
-            data-certo={correto}
-            role="status"
-          >
-            <div className="mx-auto w-full max-w-xl">
+          <FaixaDaResposta correto={correto}>
+            <div className="flex items-center justify-between gap-3">
               <p className="zc-aula-faixa-titulo flex items-center gap-2.5 text-xl font-black">
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--faixa-cor)] text-white">
                   {correto ? <Check className="size-5" strokeWidth={3.5} /> : <X className="size-5" strokeWidth={3.5} />}
                 </span>
                 {correto ? "Mandou bem!" : "Quase!"}
               </p>
-              {porque && (
-                <p className="zc-aula-faixa-porque mt-2 text-[0.95rem] font-bold leading-relaxed">{porque}</p>
-              )}
-              <button
-                type="button"
-                onClick={continuar}
-                data-cor={correto ? "verde" : "vermelho"}
-                className="zc-aula-botao mt-4"
-              >
-                Continuar
-              </button>
+              {aoReportar && <BotaoReportarErro aoReportar={reportar} />}
             </div>
-          </div>
+            {porque && (
+              // Um porquê comprido rola dentro dele mesmo: o título e o
+              // "Continuar" ficam sempre à vista, em qualquer tela.
+              <p className="zc-aula-faixa-porque mt-2 max-h-[32dvh] overflow-y-auto overscroll-contain text-[0.95rem] font-bold leading-relaxed">{porque}</p>
+            )}
+            <button
+              type="button"
+              onClick={continuar}
+              data-cor={correto ? "verde" : "vermelho"}
+              className="zc-aula-botao mt-4"
+            >
+              Continuar
+            </button>
+          </FaixaDaResposta>
         ) : seConfereRodando ? null : (
           <div className="py-5">
             <button type="button" disabled={!podeVerificar} onClick={verificarSelecao} className="zc-aula-botao">

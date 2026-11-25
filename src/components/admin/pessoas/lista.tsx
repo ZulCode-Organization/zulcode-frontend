@@ -22,6 +22,16 @@ const CAMPOS = ["busca", "status", "papel", "plano", "curso", "faixa", "semEstud
 type Campo = (typeof CAMPOS)[number];
 type Filtros = Partial<Record<Campo, string>>;
 
+/** O "Ordenar por" que fica sempre à vista (no celular, as colunas da tabela ficam escondidas na rolagem). */
+const ORDENS: { valor: string; texto: string }[] = [
+  { valor: "cadastro", texto: "Cadastro" },
+  { valor: "ofensiva", texto: "Ofensiva (sequência)" },
+  { valor: "rupees", texto: "Rupees" },
+  { valor: "xp", texto: "XP" },
+  { valor: "atividade", texto: "Último estudo" },
+  { valor: "nome", texto: "Nome" },
+];
+
 const ROTULOS: Partial<Record<Campo, Record<string, string>>> = {
   status: { ativos: "Ativas", bloqueados: "Bloqueadas", suspensos: "Suspensas" },
   papel: { USER: "Aluno", PROFESSOR: "Professor", ADMIN: "Administrador" },
@@ -76,6 +86,20 @@ export function ListaDePessoas() {
   const ordem = filtros.ordem ?? "cadastro";
   const direcao = filtros.direcao ?? "desc";
   const ordenar = (campo: string) => mudar({ ordem: campo, direcao: ordem === campo && direcao === "desc" ? "asc" : "desc" });
+
+  // Tirar um alerta (ou todos) depois de olhar: some por 24 horas.
+  const [tirando, setTirando] = useState<string | null>(null);
+  const tirarAlerta = async (corpo: { tipo?: string; pessoaId?: string; todos?: boolean }, chave: string) => {
+    setTirando(chave);
+    try {
+      await pedir("/admin/pessoas/alertas/dispensar", { method: "POST", json: corpo });
+      invalidar("/admin/pessoas/alertas");
+    } catch (e) {
+      avisar(e instanceof Error ? e.message : "Não foi possível tirar o alerta.", { tom: "erro" });
+    } finally {
+      setTirando(null);
+    }
+  };
 
   const ativos = Object.entries(filtros).filter(([c]) => !["busca", "ordem", "direcao", "pagina"].includes(c));
   const pagina = dados?.pagina ?? 1;
@@ -134,18 +158,44 @@ export function ListaDePessoas() {
       {/* ── Alertas ── */}
       {alertas.dados && alertas.dados.length > 0 && (
         <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
-          <p className="mb-2 flex items-center gap-1.5 text-xs font-black text-amber-700 dark:text-amber-300">
-            <AlertTriangle className="size-4" /> {alertas.dados.length} {alertas.dados.length === 1 ? "conta pede" : "contas pedem"} uma olhada
-          </p>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="flex items-center gap-1.5 text-xs font-black text-amber-700 dark:text-amber-300">
+              <AlertTriangle className="size-4" /> {alertas.dados.length} {alertas.dados.length === 1 ? "conta pede" : "contas pedem"} uma olhada
+            </p>
+            <Botao
+              tamanho="sm"
+              variante="fantasma"
+              carregando={tirando === "todos"}
+              onClick={async () => {
+                if (!(await perguntar({ titulo: "Tirar todos os alertas?", texto: "Eles somem por 24 horas. Se o comportamento continuar depois disso, voltam a aparecer.", sim: "Tirar todos" }))) return;
+                await tirarAlerta({ todos: true }, "todos");
+              }}
+            >
+              Tirar todos
+            </Botao>
+          </div>
           <ul className="flex flex-wrap gap-2">
-            {alertas.dados.slice(0, 8).map((a) => (
-              <li key={`${a.tipo}-${a.pessoa.id}`}>
-                <Link href={`/admin/pessoas/${a.pessoa.id}`} className="flex items-center gap-2 rounded-lg border bg-card px-2.5 py-1.5 text-xs hover:border-amber-500/50">
-                  <AvatarPequeno id={a.pessoa.avatarId} className="size-6 rounded-md text-[0.7rem]" />
-                  <span><b>{a.pessoa.name}</b> <span className="text-muted-foreground">· {a.texto}</span></span>
-                </Link>
-              </li>
-            ))}
+            {alertas.dados.slice(0, 8).map((a) => {
+              const chave = `${a.tipo}-${a.pessoa.id}`;
+              return (
+                <li key={chave} className="flex items-center rounded-lg border bg-card text-xs hover:border-amber-500/50">
+                  <Link href={`/admin/pessoas/${a.pessoa.id}`} className="flex items-center gap-2 py-1.5 pl-2.5 pr-1.5">
+                    <AvatarPequeno id={a.pessoa.avatarId} className="size-6 rounded-md text-[0.7rem]" />
+                    <span><b>{a.pessoa.name}</b> <span className="text-muted-foreground">· {a.texto}</span></span>
+                  </Link>
+                  <button
+                    type="button"
+                    aria-label={`Tirar o alerta de ${a.pessoa.name}`}
+                    title="Já olhei: tirar o alerta"
+                    disabled={tirando === chave}
+                    onClick={() => tirarAlerta({ tipo: a.tipo, pessoaId: a.pessoa.id }, chave)}
+                    className="border-l px-2 py-1.5 text-muted-foreground hover:text-foreground disabled:opacity-50"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
@@ -167,6 +217,19 @@ export function ListaDePessoas() {
           Filtros{ativos.length ? ` (${ativos.length})` : ""}
         </Botao>
         {ativos.length > 0 && <Botao variante="fantasma" icone={<Bookmark className="size-4" />} onClick={() => setNomeDoSegmento("")}>Salvar como segmento</Botao>}
+        <div className="flex items-center gap-1.5">
+          <Escolha aria-label="Ordenar por" value={ordem} onChange={(e) => mudar({ ordem: e.target.value, direcao: "desc" })} className="h-9 w-auto">
+            {ORDENS.map((o) => <option key={o.valor} value={o.valor}>Ordenar: {o.texto}</option>)}
+          </Escolha>
+          <Botao
+            aria-label={direcao === "desc" ? "Do maior para o menor; inverter" : "Do menor para o maior; inverter"}
+            title="Inverter a ordem"
+            icone={direcao === "desc" ? <ArrowDown className="size-4" /> : <ArrowUp className="size-4" />}
+            onClick={() => mudar({ ordem, direcao: direcao === "desc" ? "asc" : "desc" })}
+          >
+            {direcao === "desc" ? "Maior primeiro" : "Menor primeiro"}
+          </Botao>
+        </div>
       </div>
 
       {segmentos.dados && segmentos.dados.length > 0 && (

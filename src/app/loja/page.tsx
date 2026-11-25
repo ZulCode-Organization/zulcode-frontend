@@ -7,6 +7,7 @@ import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { usePerfil } from "@/hooks/use-perfil";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
+import { useDadosGuardados } from "@/lib/dados-guardados";
 import { reagir } from "@/lib/reacoes";
 import { Rupee } from "@/components/shared/rupee";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
@@ -15,6 +16,7 @@ import { COR_DO_ITEM, IconeDoItem, type EfeitoDoItem } from "@/components/shared
 import { GasOfensiva } from "@/components/shared/gas-ofensiva";
 import { DuoEscudo, DuoFimDeSemana, DuoXp } from "@/components/shared/icone-duo";
 import { cn } from "@/lib/utils";
+import { CampoDeCodigo, textoDoCodigo, type CodigoResgatado } from "@/components/loja/campo-de-codigo";
 
 type Item = {
   id: string;
@@ -32,6 +34,8 @@ type Cosmetic = {
   price: number;
   owned: boolean;
   equipped?: boolean;
+  /** Fora da loja: só aparece para quem ganhou da equipe (eventos, prêmios). */
+  exclusive?: boolean;
   value: {
     primary?: string;
     accent?: string;
@@ -182,6 +186,9 @@ function CartaoDeCosmetico({ item, saldo, ocupado, aoAgir }: { item: Cosmetic; s
         </span>
       )}
       <span className="line-clamp-1 w-full text-[0.82rem] font-black">{item.name.replace(/^(Tema|Avatar|Banner)\s+/, "")}</span>
+      {item.exclusive && (
+        <span className="-mt-1 rounded-full bg-violet-500/15 px-2 py-0.5 text-[0.6rem] font-black uppercase tracking-[0.06em] text-violet-500">Exclusivo</span>
+      )}
       <AcaoDoCosmetico item={item} saldo={saldo} ocupado={ocupado} aoAgir={aoAgir} />
     </div>
   );
@@ -264,15 +271,17 @@ function Historico({ transacoes }: { transacoes: Transaction[] }) {
 
 type Catalogo = { items: Item[]; cosmetics: Cosmetic[]; transactions: Transaction[] };
 
-async function buscarCatalogo(): Promise<Catalogo | null> {
-  const token = localStorage.getItem("accessToken");
-  if (!token) return null;
+const SEM_CATALOGO: Catalogo = { items: [], cosmetics: [], transactions: [] };
+
+/** Guardado entre visitas (useDadosGuardados): voltar à loja mostra tudo na hora e atualiza por trás. */
+async function buscarCatalogo(token: string): Promise<Catalogo> {
   const headers = { Authorization: `Bearer ${token}` };
   const [a, b, c] = await Promise.all([
     fetchComTimeout(`${API_BASE_URL}/user/zulcoins/items`, { headers }),
     fetchComTimeout(`${API_BASE_URL}/user/zulcoins/cosmetics`, { headers }),
     fetchComTimeout(`${API_BASE_URL}/user/zulcoins/history`, { headers }),
   ]);
+  if (!a.ok && !b.ok && !c.ok) throw new Error("Falha ao carregar a loja");
   const cosmetics: Cosmetic[] = b.ok ? await b.json() : [];
   return {
     items: a.ok ? await a.json() : [],
@@ -289,7 +298,7 @@ async function buscarCatalogo(): Promise<Catalogo | null> {
  */
 function Store() {
   const { perfil, retry } = usePerfil();
-  const [catalogo, setCatalogo] = useState<Catalogo>({ items: [], cosmetics: [], transactions: [] });
+  const { dados: catalogo = SEM_CATALOGO, recarregar } = useDadosGuardados("loja", buscarCatalogo, 60_000);
   const [working, setWorking] = useState<string | null>(null);
   const [notice, setNotice] = useState<Aviso | null>(null);
   // O relógio dos superpoderes: anda de segundo em segundo enquanto a loja está aberta.
@@ -299,14 +308,6 @@ function Store() {
     return () => clearInterval(id);
   }, []);
 
-  const recarregar = () => buscarCatalogo().then((novo) => novo && setCatalogo(novo)).catch(() => undefined);
-  useEffect(() => {
-    let vivo = true;
-    buscarCatalogo().then((novo) => vivo && novo && setCatalogo(novo)).catch(() => undefined);
-    return () => {
-      vivo = false;
-    };
-  }, []);
 
   const { items, cosmetics, transactions } = catalogo;
   const saldo = perfil?.moedas ?? 0;
@@ -357,6 +358,13 @@ function Store() {
       title: item.owned ? "Item em uso" : "Item comprado",
       message: item.owned ? "Sua personalização foi aplicada." : "Agora ele está disponível para usar.",
     });
+  };
+
+  /** O código já foi aceito: comemora, conta o que veio e atualiza o saldo e a vitrine. */
+  const codigoResgatado = async (r: CodigoResgatado) => {
+    reagir("compra");
+    setNotice({ title: "Código resgatado!", message: textoDoCodigo(r) });
+    await Promise.all([recarregar(), Promise.resolve(retry())]);
   };
 
   const tituloDeSecao = (texto: string) => <h2 className="text-[1.05rem] font-black">{texto}</h2>;
@@ -422,6 +430,7 @@ function Store() {
 
         <aside className="flex flex-col gap-4 xl:sticky xl:top-[calc(var(--zc-topbar-h,72px)+8px)] xl:self-start">
           <ValendoAgora agora={agora} vertical className="hidden xl:block" />
+          <CampoDeCodigo aoResgatar={codigoResgatado} />
           <Historico transacoes={transactions} />
         </aside>
       </div>

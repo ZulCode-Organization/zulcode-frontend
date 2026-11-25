@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Search, Trophy } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { usePerfil } from "@/hooks/use-perfil";
 import { AppShell } from "@/components/app-shell/app-shell";
@@ -10,6 +10,7 @@ import { SideFooter } from "@/components/shared/side-footer";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { SeloVerificado } from "@/components/shared/selo-verificado";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
+import { useDadosGuardados } from "@/lib/dados-guardados";
 import { cn } from "@/lib/utils";
 import { AvatarComStatus, EscolhaDeStatus, FolhaDeStatus, statusPorId, useStatusEscolhido } from "@/components/lideres/escolha-status";
 
@@ -51,12 +52,13 @@ function Posicao({ rank }: { rank: number }) {
   );
 }
 
+type Ranking = { entries: RankEntry[]; me: { rank: number | null } };
+
 function LideresContent() {
   const { perfil } = usePerfil();
   const xp = perfil?.xp ?? 0;
   const atual = [...DIVISOES].reverse().find((divisao) => xp >= divisao.minXp) ?? DIVISOES[0];
   const [ligaSelecionada, setLigaSelecionada] = useState(RANK_IDS[atual.id]);
-  const [ranking, setRanking] = useState<{ entries: RankEntry[]; me: { rank: number | null } } | null>(null);
   const { status: meuStatus } = useStatusEscolhido();
   const [folhaAberta, setFolhaAberta] = useState(false);
   // Qual das duas tabelas está na tela. A de sempre ordena por XP acumulado e
@@ -64,11 +66,14 @@ function LideresContent() {
   // "quem está estudando agora". São perguntas diferentes, por isso convivem.
   const [aba, setAba] = useState<"total" | "semana">("total");
 
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
-    fetchComTimeout(`${API_BASE_URL}${aba === "semana" ? "/leaderboard/weekly" : "/leaderboard"}?league=${ligaSelecionada}`, { headers: { Authorization: `Bearer ${token}` } }).then((res) => res.ok ? res.json() : null).then(setRanking).catch(() => setRanking(null));
+  // Cada tabela (liga e aba) fica guardada entre visitas: voltar ao ranking
+  // mostra a última na hora e atualiza por trás (useDadosGuardados).
+  const buscarRanking = useCallback(async (token: string): Promise<Ranking> => {
+    const res = await fetchComTimeout(`${API_BASE_URL}${aba === "semana" ? "/leaderboard/weekly" : "/leaderboard"}?league=${ligaSelecionada}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error("Falha ao carregar o ranking");
+    return res.json();
   }, [ligaSelecionada, aba]);
+  const ranking = useDadosGuardados(`ranking:${aba}:${ligaSelecionada}`, buscarRanking, 30_000).dados ?? null;
 
   const divisao = DIVISOES.find((item) => RANK_IDS[item.id] === ligaSelecionada) ?? atual;
   const alvo = DIVISOES.find((item) => item.minXp > xp) ?? null;

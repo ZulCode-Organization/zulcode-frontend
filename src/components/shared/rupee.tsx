@@ -48,12 +48,15 @@ const ESCALA_SOZINHO = 1.42;
 export function Rupee({
   className,
   quantidade,
+  rotulo,
 }: {
   className?: string;
   strokeWidth?: number;
   /** Saldo da conta. Só o valor 1 muda o desenho; o cinza do zero é cor, e
    *  quem decide a cor é quem usa o ícone. */
   quantidade?: number | null;
+  /** Quando o desenho diz algo sozinho (o avatar Cristal), o nome lido pelo leitor de tela. */
+  rotulo?: string;
 }) {
   // Dois rupees na mesma tela não podem dividir os ids: o segundo apagaria os
   // recortes do primeiro.
@@ -63,7 +66,13 @@ export function Rupee({
   const sozinho = quantidade === 1;
 
   return (
-    <svg viewBox="0 0 24 24" aria-hidden className={cn("size-5 overflow-visible", className)}>
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden={rotulo ? undefined : true}
+      role={rotulo ? "img" : undefined}
+      aria-label={rotulo}
+      className={cn("size-5 overflow-visible", className)}
+    >
       <mask id={mascaraFolga}>
         <rect width="24" height="24" fill="#fff" />
         {/* Pintado e contornado em preto: o contorno é o que engorda a

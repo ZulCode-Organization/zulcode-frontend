@@ -1,5 +1,6 @@
 "use client";
 
+import { limparDadosGuardados } from "@/lib/dados-guardados";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
@@ -59,6 +60,7 @@ export function MaisMenu({ onClose }: MaisMenuProps) {
     // Antes de apagar o token: o servidor precisa dele para esquecer o aparelho.
     void esquecerEsteAparelho();
     localStorage.removeItem("accessToken");
+    limparDadosGuardados();
     // Mesmo cuidado das Configurações: sem limpar esses caches em memória, a
     // próxima conta logada nesse navegador veria por um instante o
     // perfil/trilha da conta anterior.

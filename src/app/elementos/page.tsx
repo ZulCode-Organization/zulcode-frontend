@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { Search, X } from "lucide-react";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { AppShell } from "@/components/app-shell/app-shell";
@@ -9,6 +9,7 @@ import { ElementoDetalhe } from "@/components/elementos/elemento-detalhe";
 import { AvisoDemora, Esqueleto, EsqueletoElemento } from "@/components/shared/esqueleto";
 import { useJornada } from "@/hooks/use-jornada";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
+import { mudarGuardado, useDadosGuardados } from "@/lib/dados-guardados";
 import { corDoAssunto } from "@/lib/elementos";
 import { ElementoGlossario } from "@/lib/types/elemento";
 import { cn } from "@/lib/utils";
@@ -34,30 +35,24 @@ const useElementos = () => {
  */
 function ProvedorDeElementos({ children }: { children: ReactNode }) {
   const { cursoAtual, cursos, loading } = useJornada();
-  const [elementos, setElementos] = useState<ElementoGlossario[]>([]);
-  const [buscados, setBuscados] = useState<string | null>(null);
   const [aberto, setAberto] = useState<string | null>(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (!token || !cursoAtual) return;
-    let vivo = true;
-    fetchComTimeout(`${API_BASE_URL}/languages/${cursoAtual}/elements`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => (res.ok ? res.json() : []))
-      .then((lista: ElementoGlossario[]) => {
-        if (!vivo) return;
-        setElementos(Array.isArray(lista) ? lista : []);
-        setBuscados(cursoAtual);
-      })
-      .catch(() => vivo && setBuscados(cursoAtual));
-    return () => {
-      vivo = false;
-    };
+  // Guardados por curso entre visitas (useDadosGuardados): voltar para Elementos
+  // mostra tudo na hora e atualiza por trás.
+  const chave = cursoAtual ? `elementos:${cursoAtual}` : null;
+  const buscar = useCallback(async (token: string): Promise<ElementoGlossario[]> => {
+    const res = await fetchComTimeout(`${API_BASE_URL}/languages/${cursoAtual}/elements`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error("Falha ao carregar os elementos");
+    const lista: unknown = await res.json();
+    return Array.isArray(lista) ? (lista as ElementoGlossario[]) : [];
   }, [cursoAtual]);
+  const { dados, carregando: buscando } = useDadosGuardados(chave, buscar, 60_000);
+  const elementos = useMemo(() => dados ?? [], [dados]);
 
   const atualizar = useCallback((id: string, dominio: number, errosRecentes: number) => {
-    setElementos((lista) => lista.map((e) => (e.id === id ? { ...e, dominio, errosRecentes } : e)));
-  }, []);
+    if (!chave) return;
+    mudarGuardado<ElementoGlossario[]>(chave, (lista) => (lista ?? []).map((e) => (e.id === id ? { ...e, dominio, errosRecentes } : e)));
+  }, [chave]);
   const fechar = useCallback(() => setAberto(null), []);
 
   const elementoAberto = elementos.find((e) => e.id === aberto) ?? null;
@@ -65,7 +60,7 @@ function ProvedorDeElementos({ children }: { children: ReactNode }) {
     curso: cursoAtual,
     nomeDoCurso: cursos.find((curso) => curso.id === cursoAtual)?.name ?? cursoAtual ?? "",
     elementos,
-    carregando: loading || (!!cursoAtual && buscados !== cursoAtual),
+    carregando: loading || buscando,
     abrir: (elemento) => setAberto(elemento.id),
   };
 

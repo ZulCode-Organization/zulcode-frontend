@@ -250,10 +250,17 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
           {perfil.isPro && !mostraArtePro && (
             <SeloPro className="pointer-events-none absolute right-3 top-3 h-6 rounded-[4px] drop-shadow-md sm:right-4 sm:top-4 sm:h-7" />
           )}
-          {/* Véu com o lápis cobrindo a capa inteira no hover. */}
+          {/* Véu com o lápis cobrindo a capa inteira no hover (e enquanto o dedo aperta). */}
           {editavel && (
-            <span className="pointer-events-none absolute inset-0 grid place-items-center bg-black/25 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+            <span className="pointer-events-none absolute inset-0 grid place-items-center bg-black/25 opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-active:opacity-100">
               <Pencil className="size-7 text-white" />
+            </span>
+          )}
+          {/* No toque não existe "passar por cima": no celular o lápis fica
+              sempre no canto da capa, avisando que ela abre a edição. */}
+          {editavel && (
+            <span className="pointer-events-none absolute bottom-2.5 right-2.5 hidden size-9 place-items-center rounded-full bg-black/45 text-white shadow-md backdrop-blur-sm pointer-coarse:grid">
+              <Pencil className="size-4" />
             </span>
           )}
 

@@ -6,6 +6,7 @@ import { AppBottomNav } from "./app-bottom-nav";
 import { AvisoFimDoTeste } from "@/components/pro/aviso-fim-do-teste";
 import { AvisoDaOfensiva } from "@/components/comemoracoes/aviso-da-ofensiva";
 import { PedidoDeAvisos } from "@/components/avisos/pedido-de-avisos";
+import { AvisoDeAtualizacao } from "@/components/avisos/aviso-de-atualizacao";
 import { ConteudoComConexao } from "@/components/offline/sem-internet";
 import { AppTopBar } from "./app-topbar";
 import { StickyBottomPanel } from "./sticky-bottom-panel";
@@ -41,6 +42,8 @@ function AppShellContent({ children, rightPanel, contentClassName = "max-w-3xl",
       <AvisoDaOfensiva />
       {/* O pedido das notificações: na primeira abertura e de tempos em tempos, nunca travando o app. */}
       <PedidoDeAvisos />
+      {/* Versão nova na Play Store: uma barra desce do topo (só no app Android). */}
+      <AvisoDeAtualizacao />
 
       {/* Sem topbar no mobile: a navegação já vive inteira na barra inferior,
           então uma segunda barra fixa no topo só duplicava e sobrava. */}

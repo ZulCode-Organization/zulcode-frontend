@@ -6,6 +6,7 @@ import QRCode from "qrcode";
 import { siFacebook, siInstagram, siWhatsapp, siX } from "simple-icons";
 import { Check, Download, Link2, MoreHorizontal, QrCode, UserPlus, X } from "lucide-react";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
+import { ehAvatarRaro } from "@/lib/avatares";
 import { movimentoReduzido } from "@/lib/motion/movimento";
 import { cn } from "@/lib/utils";
 import { BuscaDeAmigos } from "./painel-social";
@@ -412,7 +413,8 @@ function CartaoQr({
             className="grid aspect-square w-full place-items-center overflow-hidden rounded-[18px] text-white"
             style={{ background: perfil.bannerColor ?? "#22c55e", fontSize: "88px" }}
           >
-            <AvatarIcon id={perfil.avatarId} className="size-[0.95em]" />
+            {/* O desenho fica no meio com folga; o raro (a arte do app) cobre o quadrado. */}
+            <AvatarIcon id={perfil.avatarId} className={ehAvatarRaro(perfil.avatarId) ? undefined : "size-[62%]"} />
           </div>
           <div className="mt-3 flex items-end justify-between gap-3 px-1 pb-0.5">
             <div className="min-w-0">

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnuncioWeb } from "@/components/anuncios/anuncio-web";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { usePerfil } from "@/hooks/use-perfil";
 import { AppShell } from "@/components/app-shell/app-shell";
@@ -12,12 +12,12 @@ import { CartaoPerfilIncompleto } from "@/components/perfil/cartao-perfil-incomp
 import { MedalhasDoPerfil } from "@/components/perfil/medalhas-perfil";
 import { AchievementsSection } from "@/components/perfil/achievements-section";
 import { SugestoesAmigos } from "@/components/perfil/sugestoes-amigos";
-import { EditorAvatar } from "@/components/perfil/editor-avatar";
 import { AbasSeguidores, AdicionarAmigos } from "@/components/perfil/painel-social";
 import { SideFooter } from "@/components/shared/side-footer";
 import { OfensivaComAmigos } from "@/components/perfil/ofensiva-com-amigos";
 
-function PerfilContent({ editando, setEditando }: { editando: boolean; setEditando: (v: boolean) => void }) {
+function PerfilContent() {
+  const router = useRouter();
   const { perfil, loading, error, retry } = usePerfil();
 
   if (loading) {
@@ -37,14 +37,13 @@ function PerfilContent({ editando, setEditando }: { editando: boolean; setEditan
     );
   }
 
-  // A edição ocupa a coluna inteira, no lugar do perfil — é uma tela, não um
-  // pop-up, e assim a sidebar do app continua visível como na referência.
-  if (editando) return <EditorAvatar perfil={perfil} onFechar={() => setEditando(false)} />;
+  // Editar o perfil é uma tela própria, cheia e sem a barra de baixo.
+  const editar = () => router.push("/perfil/editar");
 
   return (
     <div className="flex max-w-none flex-col gap-7">
-      <ProfileHeader perfil={perfil} onEditar={() => setEditando(true)} />
-      <CartaoPerfilIncompleto perfil={perfil} onContinuar={() => setEditando(true)} />
+      <ProfileHeader perfil={perfil} onEditar={editar} />
+      <CartaoPerfilIncompleto perfil={perfil} onContinuar={editar} />
       <StatsGrid perfil={perfil} />
       <OfensivaComAmigos />
       <MedalhasDoPerfil medalhas={perfil.medalhas} />
@@ -56,23 +55,20 @@ function PerfilContent({ editando, setEditando }: { editando: boolean; setEditan
 
 export default function PerfilPage() {
   useRequireAuth();
-  const [editando, setEditando] = useState(false);
 
   return (
     <AppShell
-      contentClassName={editando ? "max-w-5xl" : "max-w-3xl"}
+      contentClassName="max-w-3xl"
       rightPanel={
-        editando ? undefined : (
-          <>
-            <AbasSeguidores />
-            <AdicionarAmigos />
-            <AnuncioWeb lugar="perfil" />
-            <SideFooter />
-          </>
-        )
+        <>
+          <AbasSeguidores />
+          <AdicionarAmigos />
+          <AnuncioWeb lugar="perfil" />
+          <SideFooter />
+        </>
       }
     >
-      <PerfilContent editando={editando} setEditando={setEditando} />
+      <PerfilContent />
     </AppShell>
   );
 }

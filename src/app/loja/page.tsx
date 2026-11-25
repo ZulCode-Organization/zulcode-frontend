@@ -13,38 +13,14 @@ import { Rupee } from "@/components/shared/rupee";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
 import { Carrossel } from "@/components/shared/carrossel";
 import { COR_DO_ITEM, IconeDoItem, type EfeitoDoItem } from "@/components/shared/icone-do-item";
+import { Moldura } from "@/components/shared/moldura";
+import { corDoAvatar } from "@/lib/avatares";
+import { buscarCatalogo, CHAVE_DA_LOJA, SEM_CATALOGO, type Cosmetico, type ItemDaLoja, type Transacao } from "@/lib/loja";
 import { GasOfensiva } from "@/components/shared/gas-ofensiva";
 import { DuoEscudo, DuoFimDeSemana, DuoXp } from "@/components/shared/icone-duo";
 import { cn } from "@/lib/utils";
 import { CampoDeCodigo, textoDoCodigo, type CodigoResgatado } from "@/components/loja/campo-de-codigo";
 
-type Item = {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  effect: EfeitoDoItem;
-};
-type Kind = "THEME" | "AVATAR" | "BANNER";
-type Cosmetic = {
-  id: string;
-  name: string;
-  description: string;
-  kind: Kind;
-  price: number;
-  owned: boolean;
-  equipped?: boolean;
-  /** Fora da loja: só aparece para quem ganhou da equipe (eventos, prêmios). */
-  exclusive?: boolean;
-  value: {
-    primary?: string;
-    accent?: string;
-    gradient?: string;
-    imageUrl?: string;
-    avatarId?: string;
-  };
-};
-type Transaction = { id: string; amount: number; reason: string };
 type Aviso = { title: string; message: string; error?: boolean };
 
 /** Em qual seção cada power-up aparece: a mesma divisão do painel de rupees da barra de cima. */
@@ -57,10 +33,8 @@ const SECOES: { titulo: string; efeitos: EfeitoDoItem[] }[] = [
 /** Quanto dura um superpoder: a barrinha do "Valendo agora" mede o que falta disso. */
 const DURACAO_DO_PODER_MS = 30 * 60 * 1000;
 
-/** A cor de fundo do avatar na loja, por id. Os que não estão aqui ficam violeta. */
-const COR_DO_AVATAR: Record<string, string> = {
-  comet: "#6366f1", "neon-cat": "#ec4899", processor: "#0ea5e9", crystal: "#14b8a6", flame: "#f97316", arcade: "#8b5cf6",
-};
+/** O nome de cada vitrine de personalização. */
+const TITULO_DO_TIPO = { AVATAR: "Ícones", FRAME: "Molduras", BANNER: "Capas" } as const;
 
 const restante = (ate: string | null | undefined, agora: number) => (ate ? new Date(ate).getTime() - agora : 0);
 const relogio = (ms: number) => {
@@ -94,14 +68,14 @@ function BotaoDePreco({ preco, apagado, ocupado, onClick }: { preco: number; apa
 function LinhaDePoder({
   item, saldo, ocupado, ativoAte, semEfeito, aoComprar,
 }: {
-  item: Item;
+  item: ItemDaLoja;
   saldo: number;
   ocupado: boolean;
   /** Superpoder valendo: o botão vira o tempo que falta. */
   ativoAte: number;
   /** Comprar agora não faria nada (ex.: penas cheias). */
   semEfeito: string | null;
-  aoComprar: (item: Item) => void;
+  aoComprar: (item: ItemDaLoja) => void;
 }) {
   const cor = COR_DO_ITEM[item.effect];
   return (
@@ -147,7 +121,7 @@ function MiniaturaDoTema({ primaria, destaque }: { primaria: string; destaque: s
   );
 }
 
-function AcaoDoCosmetico({ item, saldo, ocupado, aoAgir }: { item: Cosmetic; saldo: number; ocupado: boolean; aoAgir: (item: Cosmetic) => void }) {
+function AcaoDoCosmetico({ item, saldo, ocupado, aoAgir }: { item: Cosmetico; saldo: number; ocupado: boolean; aoAgir: (item: Cosmetico) => void }) {
   if (item.equipped) {
     return (
       <span className="inline-flex h-9 items-center gap-1 rounded-xl bg-emerald-500/15 px-3 text-[0.7rem] font-black uppercase tracking-[0.04em] text-emerald-500">
@@ -165,8 +139,12 @@ function AcaoDoCosmetico({ item, saldo, ocupado, aoAgir }: { item: Cosmetic; sal
   return <BotaoDePreco preco={item.price} apagado={saldo < item.price} ocupado={ocupado} onClick={() => aoAgir(item)} />;
 }
 
-function CartaoDeCosmetico({ item, saldo, ocupado, aoAgir }: { item: Cosmetic; saldo: number; ocupado: boolean; aoAgir: (item: Cosmetic) => void }) {
+function CartaoDeCosmetico({ item, saldo, ocupado, aoAgir }: { item: Cosmetico; saldo: number; ocupado: boolean; aoAgir: (item: Cosmetico) => void }) {
+  const { perfil } = usePerfil();
   const largo = item.kind === "BANNER";
+  // A moldura aparece em volta do ícone de quem está olhando, como no perfil.
+  const avatarId = perfil?.avatarId;
+  const capa = perfil?.bannerColor ?? "#22c55e";
   return (
     <div className={cn("flex shrink-0 snap-start flex-col items-center gap-2 rounded-[18px] border border-border bg-card p-2 pb-2.5 text-center", largo ? "w-[200px]" : "w-[124px]")}>
       {item.kind === "THEME" ? (
@@ -174,10 +152,17 @@ function CartaoDeCosmetico({ item, saldo, ocupado, aoAgir }: { item: Cosmetic; s
       ) : item.kind === "AVATAR" ? (
         <span className="grid h-[118px] w-full place-items-center">
           <span
-            className="grid size-[76px] place-items-center rounded-full shadow-[inset_0_-5px_0_rgba(0,0,0,0.22)]"
-            style={{ background: COR_DO_AVATAR[item.value.avatarId ?? ""] ?? "#8b5cf6" }}
+            className="grid size-[76px] place-items-center rounded-[22px] text-white shadow-[inset_0_-5px_0_rgba(0,0,0,0.22)]"
+            style={{ background: corDoAvatar(item.value.avatarId) }}
           >
-            <AvatarIcon id={item.value.avatarId} className="size-9 text-white" />
+            <AvatarIcon id={item.value.avatarId} />
+          </span>
+        </span>
+      ) : item.kind === "FRAME" ? (
+        <span className="grid h-[118px] w-full place-items-center">
+          <span className="relative grid size-16 place-items-center rounded-[19px] text-white" style={{ background: capa }}>
+            <AvatarIcon id={avatarId} />
+            <Moldura id={item.value.molduraId} />
           </span>
         </span>
       ) : (
@@ -185,7 +170,7 @@ function CartaoDeCosmetico({ item, saldo, ocupado, aoAgir }: { item: Cosmetic; s
           <span className="absolute -bottom-2.5 left-2.5 size-7 rounded-lg border-[3px] border-card bg-primary" />
         </span>
       )}
-      <span className="line-clamp-1 w-full text-[0.82rem] font-black">{item.name.replace(/^(Tema|Avatar|Banner)\s+/, "")}</span>
+      <span className="line-clamp-1 w-full text-[0.82rem] font-black">{item.name.replace(/^(Tema|Avatar|Banner|Moldura)\s+/, "")}</span>
       {item.exclusive && (
         <span className="-mt-1 rounded-full bg-violet-500/15 px-2 py-0.5 text-[0.6rem] font-black uppercase tracking-[0.06em] text-violet-500">Exclusivo</span>
       )}
@@ -239,7 +224,7 @@ function ValendoAgora({ agora, vertical = false, className }: { agora: number; v
   );
 }
 
-function Historico({ transacoes }: { transacoes: Transaction[] }) {
+function Historico({ transacoes }: { transacoes: Transacao[] }) {
   return (
     <section className="rounded-[18px] border border-border bg-card p-4">
       <p className="flex items-center gap-2 text-[0.7rem] font-black uppercase tracking-[0.12em] text-muted-foreground">
@@ -269,27 +254,6 @@ function Historico({ transacoes }: { transacoes: Transaction[] }) {
 // A loja
 // ---------------------------------------------------------------------------
 
-type Catalogo = { items: Item[]; cosmetics: Cosmetic[]; transactions: Transaction[] };
-
-const SEM_CATALOGO: Catalogo = { items: [], cosmetics: [], transactions: [] };
-
-/** Guardado entre visitas (useDadosGuardados): voltar à loja mostra tudo na hora e atualiza por trás. */
-async function buscarCatalogo(token: string): Promise<Catalogo> {
-  const headers = { Authorization: `Bearer ${token}` };
-  const [a, b, c] = await Promise.all([
-    fetchComTimeout(`${API_BASE_URL}/user/zulcoins/items`, { headers }),
-    fetchComTimeout(`${API_BASE_URL}/user/zulcoins/cosmetics`, { headers }),
-    fetchComTimeout(`${API_BASE_URL}/user/zulcoins/history`, { headers }),
-  ]);
-  if (!a.ok && !b.ok && !c.ok) throw new Error("Falha ao carregar a loja");
-  const cosmetics: Cosmetic[] = b.ok ? await b.json() : [];
-  return {
-    items: a.ok ? await a.json() : [],
-    cosmetics: cosmetics.map((item) => ({ ...item, kind: String(item.kind).toUpperCase() as Kind })),
-    transactions: c.ok ? ((await c.json()).transactions ?? []) : [],
-  };
-}
-
 /**
  * A loja: uma página só, sem filtros. Primeiro o que está valendo agora;
  * depois os power-ups por seção, num cartão compacto em que o botão já é o
@@ -298,7 +262,7 @@ async function buscarCatalogo(token: string): Promise<Catalogo> {
  */
 function Store() {
   const { perfil, retry } = usePerfil();
-  const { dados: catalogo = SEM_CATALOGO, recarregar } = useDadosGuardados("loja", buscarCatalogo, 60_000);
+  const { dados: catalogo = SEM_CATALOGO, recarregar } = useDadosGuardados(CHAVE_DA_LOJA, buscarCatalogo, 60_000);
   const [working, setWorking] = useState<string | null>(null);
   const [notice, setNotice] = useState<Aviso | null>(null);
   // O relógio dos superpoderes: anda de segundo em segundo enquanto a loja está aberta.
@@ -338,7 +302,7 @@ function Store() {
   const semSaldo = (preco: number) =>
     setNotice({ title: "Saldo insuficiente", message: `Você tem ${saldo} Rupees e este item custa ${preco}.`, error: true });
 
-  const buyPower = async (item: Item) => {
+  const buyPower = async (item: ItemDaLoja) => {
     if (item.effect === "RECOVER_LIVES" && penasCheias) {
       return setNotice({ title: "Penas cheias", message: "Suas penas já estão cheias. Guarde as rupees para quando precisar.", error: true });
     }
@@ -349,7 +313,7 @@ function Store() {
     setNotice({ title: "Power-up ativado", message: data.message ?? "O benefício já está disponível." });
   };
 
-  const cosmeticAction = async (item: Cosmetic) => {
+  const cosmeticAction = async (item: Cosmetico) => {
     if (!item.owned && saldo < item.price) return semSaldo(item.price);
     const data = await send(item.id, `${API_BASE_URL}/user/zulcoins/cosmetics/${item.id}/${item.owned ? "equip" : "buy"}`);
     if (!data) return;
@@ -415,11 +379,11 @@ function Store() {
             })}
           </div>
 
-          {(["AVATAR", "BANNER"] as const).map((tipo) => {
+          {(["AVATAR", "FRAME", "BANNER"] as const).map((tipo) => {
             const lista = cosmetics.filter((item) => item.kind === tipo);
             if (!lista.length) return null;
             return (
-              <Carrossel key={tipo} className="mt-7" titulo={tituloDeSecao(tipo === "AVATAR" ? "Avatares" : "Banners")}>
+              <Carrossel key={tipo} className="mt-7" titulo={tituloDeSecao(TITULO_DO_TIPO[tipo])}>
                 {lista.map((item) => (
                   <CartaoDeCosmetico key={item.id} item={item} saldo={saldo} ocupado={working === item.id} aoAgir={cosmeticAction} />
                 ))}

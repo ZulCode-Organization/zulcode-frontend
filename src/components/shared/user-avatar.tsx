@@ -20,7 +20,7 @@ export function UserAvatar({ iniciais, avatarId, bannerColor, nivel, size = "md"
   return (
     <div className={cn("relative inline-flex", className)}>
       <div
-        className={cn("flex items-center justify-center bg-primary font-extrabold text-primary-foreground ring-4 ring-primary/15", SIZE_CLASSES[size])}
+        className={cn("flex items-center justify-center bg-primary font-extrabold text-white ring-4 ring-primary/15", SIZE_CLASSES[size])}
         style={bannerColor ? { background: bannerColor } : undefined}
       >
         {avatarId ? <AvatarIcon id={avatarId} /> : iniciais}

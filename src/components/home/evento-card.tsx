@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { Check, Loader2, PartyPopper, Zap } from "lucide-react";
 import { Rupee } from "@/components/shared/rupee";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
+import { AvatarComMoldura } from "@/components/shared/avatar-com-moldura";
+import { corDoAvatar } from "@/lib/avatares";
 import { limparPerfilCache, usePerfil } from "@/hooks/use-perfil";
 import { API_BASE_URL, fetchComTimeout } from "@/lib/api-config";
 import { envelhecerGuardado, mudarGuardado, useDadosGuardados } from "@/lib/dados-guardados";
 import { cn } from "@/lib/utils";
 
-type CosmeticoDoPremio = { id: string; name: string; kind: string; value: { avatarId?: string; gradient?: string; imageUrl?: string } };
+type CosmeticoDoPremio = { id: string; name: string; kind: string; value: { avatarId?: string; molduraId?: string; gradient?: string; background?: string; imageUrl?: string } };
 
 export type EventoDaHome = {
   id: string;
@@ -72,8 +74,15 @@ function textoDoEntregue(e: Entregue) {
 function AmostraDoCosmetico({ c }: { c: CosmeticoDoPremio }) {
   if (c.kind === "AVATAR") {
     return (
-      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-[0.95rem] text-primary-foreground">
+      <span className="grid size-7 shrink-0 place-items-center rounded-[9px] text-white" style={{ background: corDoAvatar(c.value.avatarId) }}>
         <AvatarIcon id={c.value.avatarId} />
+      </span>
+    );
+  }
+  if (c.kind === "FRAME") {
+    return (
+      <span className="grid size-7 shrink-0 place-items-center">
+        <AvatarComMoldura avatarId="capivara" molduraId={c.value.molduraId} capa="#1892ff" animar={false} className="size-4 rounded-[5px]" />
       </span>
     );
   }

@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { SeloVerificado } from "@/components/shared/selo-verificado";
 import { SeloPro } from "@/components/shared/selo-pro";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
+import { AvatarComMoldura } from "@/components/shared/avatar-com-moldura";
+import { ehMoldura } from "@/components/shared/moldura";
 import { usePerfil } from "@/hooks/use-perfil";
 import { LadrilhoCurso } from "@/components/app-shell/topbar-cursos";
 import { BotaoSeguir } from "./botao-seguir";
@@ -92,10 +94,10 @@ function SeguirComEmComum({ perfil, seguirId }: { perfil: PerfilUsuario; seguirI
             {emComum.primeiros.map((pessoa, i) => (
               <span
                 key={pessoa.id}
-                className={cn("flex size-8 items-center justify-center overflow-hidden rounded-full border-2 border-background text-sm", i > 0 && "-ml-2.5")}
+                className={cn("flex size-8 items-center justify-center overflow-hidden rounded-full border-2 border-background text-white", i > 0 && "-ml-2.5")}
                 style={{ background: pessoa.bannerColor ?? "#1892ff", zIndex: 3 - i }}
               >
-                <AvatarIcon id={pessoa.avatarId ?? "orbit"} />
+                <AvatarIcon id={pessoa.avatarId} />
               </span>
             ))}
           </span>
@@ -180,6 +182,22 @@ const BANNER_TESTER = "linear-gradient(135deg, #172554, #2563eb, #60a5fa)";
 const BANNER_PRO = "linear-gradient(135deg, #7c3aed, #d946ef 55%, #f0abfc)";
 const BANNER_RICHARD = "linear-gradient(135deg, #111827, #1e3a8a 52%, #38bdf8)";
 
+/**
+ * As artes das capas de selo (PRO, desenvolvedor, pioneiro e Richard), por
+ * cima do gradiente. As outras capas são só a cor. Vai dentro de uma caixa
+ * `relative` com `overflow-hidden`: o perfil e a prévia do editor usam.
+ */
+export function ArtesDaCapa({ cor }: { cor: string }) {
+  return (
+    <>
+      {cor === BANNER_TESTER && <ArteDaCapa desktop={ARTE.pioneiro.desktop} mobile={ARTE.pioneiro.mobile} vetor={<svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><rect width="800" height="180" fill="#101b4b"/><g stroke="#3b82f6" strokeOpacity=".28" strokeWidth="1"><path d="M0 30h800M0 60h800M0 90h800M0 120h800M0 150h800M80 0v180M160 0v180M240 0v180M320 0v180M400 0v180M480 0v180M560 0v180M640 0v180M720 0v180"/></g><path d="M-20 142C85 75 136 148 226 94S367 35 455 91 600 156 702 55 795 34 830 58" fill="none" stroke="#60a5fa" strokeWidth="4" strokeLinecap="round"/><g fill="#dbeafe"><circle cx="90" cy="103" r="7"/><circle cx="226" cy="94" r="7"/><circle cx="455" cy="91" r="7"/><circle cx="702" cy="55" r="7"/></g><g transform="translate(553 24)"><rect width="186" height="55" rx="27" fill="#dbeafe"/><text x="25" y="35" fill="#172554" fontFamily="Arial, sans-serif" fontSize="21" fontWeight="700" letterSpacing="3">BETA</text><path d="M136 16h28v6h-28zm0 12h28v6h-28zm0 12h18v6h-18z" fill="#2563eb"/></g></svg>} />}
+      {cor === BANNER_RICHARD && <ArteDaCapa desktop={ARTE.richard.desktop} mobile={ARTE.richard.mobile} vetor={VETOR_RICHARD} />}
+      {cor === BANNER_DEV && <ArteDaCapa desktop={ARTE.dev.desktop} mobile={ARTE.dev.mobile} vetor={<svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="#99f6e4" strokeOpacity=".48" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"><path d="m87 55-42 35 42 35m57-70 42 35-42 35m-23-82-20 124"/><path d="M476 145 596 22l65 69 58-91 66 145"/></g><g fill="#5eead4" fillOpacity=".28"><circle cx="596" cy="22" r="12"/><circle cx="661" cy="91" r="12"/><circle cx="719" cy="0" r="12"/></g><g transform="translate(595 110)"><rect width="153" height="42" rx="21" fill="#ccfbf1" fillOpacity=".94"/><text x="22" y="28" fill="#115e59" fontFamily="Arial, sans-serif" fontSize="16" fontWeight="700" letterSpacing="2">BUILD</text><path d="m118 14 13 7-13 7z" fill="#0f766e"/></g></svg>} />}
+      {cor === BANNER_PRO && <ArteDaCapa desktop={ARTE.pro.desktop} mobile={ARTE.pro.mobile} vetor={<svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><g fill="#fdf4ff" fillOpacity=".28"><circle cx="600" cy="32" r="4"/><circle cx="670" cy="72" r="7"/><circle cx="745" cy="28" r="4"/><circle cx="540" cy="115" r="5"/></g><path d="m627 37 16 34 37 5-27 26 7 37-33-18-33 18 7-37-27-26 37-5z" fill="#fef3c7" fillOpacity=".88"/><path d="M88 137 169 51l65 76 63-96 96 106" fill="none" stroke="#f5d0fe" strokeOpacity=".5" strokeWidth="5"/><g transform="translate(64 32)"><rect width="154" height="44" rx="22" fill="#fdf4ff" fillOpacity=".92"/><text x="25" y="29" fill="#86198f" fontFamily="Arial, sans-serif" fontSize="18" fontWeight="700" letterSpacing="2">PRO</text></g></svg>} />}
+    </>
+  );
+}
+
 export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: ProfileHeaderProps) {
   const { salvarDados, cursosEmAndamento, cursosConcluidos } = usePerfil();
   // No perfil de outra pessoa os cursos são os dela, que vêm junto do perfil
@@ -188,10 +206,10 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
     ? [...cursosEmAndamento, ...cursosConcluidos].map((curso) => ({ id: curso.id, nome: curso.nome, dica: `${curso.nome} · ${curso.percentual}%` }))
     : (perfil.cursosPublicos ?? []).map((curso) => ({ id: curso.id, nome: curso.name, dica: `${curso.name} · ${curso.xp.toLocaleString("pt-BR")} XP` }));
 
-  // A capa e o ícone vêm direto do perfil: escolher os dois é papel do
-  // EditorAvatar, e quando ele salva o perfil recarrega e chega aqui atualizado.
+  // A capa, o ícone e a moldura vêm direto do perfil: escolher é papel da
+  // tela /perfil/editar, e quando ela salva o perfil chega aqui atualizado.
   const corCapa = perfil.bannerColor ?? "#22c55e";
-  const avatar = perfil.avatarId ?? "orbit";
+  const temMoldura = ehMoldura(perfil.frameId);
   const [editorAtivo, setEditorAtivo] = useState<"nome" | null>(null);
   const [nome, setNome] = useState(perfil.nome);
 
@@ -199,10 +217,7 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
 
   const salvarNome = () => { const novoNome = nome.trim(); if (novoNome && novoNome !== perfil.nome) void salvarDados({ nome: novoNome }); else setNome(perfil.nome); setEditorAtivo(null); };
   const capaStyle = { background: corCapa };
-  const mostraArtePioneiro = corCapa === BANNER_TESTER;
-  const mostraArteDev = corCapa === BANNER_DEV;
   const mostraArtePro = corCapa === BANNER_PRO;
-  const mostraArteRichard = corCapa === BANNER_RICHARD;
   const seloPerfil = perfil.isDeveloper
     ? { texto: "DEV", classe: "bg-teal-400 text-teal-950" }
     : perfil.isEarlyTester
@@ -241,10 +256,7 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
           )}
           style={capaStyle}
         >
-          {mostraArtePioneiro && <ArteDaCapa desktop={ARTE.pioneiro.desktop} mobile={ARTE.pioneiro.mobile} vetor={<svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><rect width="800" height="180" fill="#101b4b"/><g stroke="#3b82f6" strokeOpacity=".28" strokeWidth="1"><path d="M0 30h800M0 60h800M0 90h800M0 120h800M0 150h800M80 0v180M160 0v180M240 0v180M320 0v180M400 0v180M480 0v180M560 0v180M640 0v180M720 0v180"/></g><path d="M-20 142C85 75 136 148 226 94S367 35 455 91 600 156 702 55 795 34 830 58" fill="none" stroke="#60a5fa" strokeWidth="4" strokeLinecap="round"/><g fill="#dbeafe"><circle cx="90" cy="103" r="7"/><circle cx="226" cy="94" r="7"/><circle cx="455" cy="91" r="7"/><circle cx="702" cy="55" r="7"/></g><g transform="translate(553 24)"><rect width="186" height="55" rx="27" fill="#dbeafe"/><text x="25" y="35" fill="#172554" fontFamily="Arial, sans-serif" fontSize="21" fontWeight="700" letterSpacing="3">BETA</text><path d="M136 16h28v6h-28zm0 12h28v6h-28zm0 12h18v6h-18z" fill="#2563eb"/></g></svg>} />}
-          {mostraArteRichard && <ArteDaCapa desktop={ARTE.richard.desktop} mobile={ARTE.richard.mobile} vetor={VETOR_RICHARD} />}
-          {mostraArteDev && <ArteDaCapa desktop={ARTE.dev.desktop} mobile={ARTE.dev.mobile} vetor={<svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="#99f6e4" strokeOpacity=".48" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"><path d="m87 55-42 35 42 35m57-70 42 35-42 35m-23-82-20 124"/><path d="M476 145 596 22l65 69 58-91 66 145"/></g><g fill="#5eead4" fillOpacity=".28"><circle cx="596" cy="22" r="12"/><circle cx="661" cy="91" r="12"/><circle cx="719" cy="0" r="12"/></g><g transform="translate(595 110)"><rect width="153" height="42" rx="21" fill="#ccfbf1" fillOpacity=".94"/><text x="22" y="28" fill="#115e59" fontFamily="Arial, sans-serif" fontSize="16" fontWeight="700" letterSpacing="2">BUILD</text><path d="m118 14 13 7-13 7z" fill="#0f766e"/></g></svg>} />}
-          {mostraArtePro && <ArteDaCapa desktop={ARTE.pro.desktop} mobile={ARTE.pro.mobile} vetor={<svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid slice"><g fill="#fdf4ff" fillOpacity=".28"><circle cx="600" cy="32" r="4"/><circle cx="670" cy="72" r="7"/><circle cx="745" cy="28" r="4"/><circle cx="540" cy="115" r="5"/></g><path d="m627 37 16 34 37 5-27 26 7 37-33-18-33 18 7-37-27-26 37-5z" fill="#fef3c7" fillOpacity=".88"/><path d="M88 137 169 51l65 76 63-96 96 106" fill="none" stroke="#f5d0fe" strokeOpacity=".5" strokeWidth="5"/><g transform="translate(64 32)"><rect width="154" height="44" rx="22" fill="#fdf4ff" fillOpacity=".92"/><text x="25" y="29" fill="#86198f" fontFamily="Arial, sans-serif" fontSize="18" fontWeight="700" letterSpacing="2">PRO</text></g></svg>} />}
+          <ArtesDaCapa cor={corCapa} />
           {/* O selo do PRO no canto da capa. Na capa do PRO ele não vai: a
               própria arte já tem o "PRO" grande, e seriam dois. */}
           {perfil.isPro && !mostraArtePro && (
@@ -264,14 +276,20 @@ export function ProfileHeader({ perfil, editavel = true, onEditar, seguirId }: P
       <div className="relative px-1.5">
         {/* As configurações ficam logo abaixo do banner, à direita (só no próprio perfil). */}
         {/* O avatar não é mais clicável: quem edita é o lápis da capa. */}
-        <span className="relative -mt-[42px] flex size-24 items-center justify-center rounded-[28px] border-[5px] border-background bg-primary text-3xl font-black text-primary-foreground" style={{ background: corCapa ?? "#22c55e" }}>
-          <AvatarIcon id={avatar} />
+        {/* Com moldura, o ícone ganha espaço em volta: a moldura sai para
+            fora do quadrado e não pode encostar na borda da tela nem no nome. */}
+        <AvatarComMoldura
+          avatarId={perfil.avatarId}
+          molduraId={perfil.frameId}
+          capa={corCapa}
+          className={cn("-mt-[42px] size-24 rounded-[28px] border-[5px] border-background", temMoldura && "ml-3")}
+        >
           <span className={cn("absolute -bottom-1.5 -right-2 z-10 rounded-lg border-[3px] border-background px-2 py-0.5 text-[0.68rem] font-black", seloPerfil.classe)}>
             {seloPerfil.texto}
           </span>
-        </span>
+        </AvatarComMoldura>
 
-        <div className="mt-3.5">
+        <div className={temMoldura ? "mt-6" : "mt-3.5"}>
           <div className="flex items-center gap-3">{editorAtivo === "nome" ? <input autoFocus value={nome} onChange={e => setNome(e.target.value)} onBlur={salvarNome} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { setNome(perfil.nome); setEditorAtivo(null); } }} className="w-full rounded-xl border border-primary bg-background px-3 py-1 text-2xl font-black text-foreground outline-none ring-2 ring-primary/20" /> : <button type="button" onClick={() => editavel && setEditorAtivo("nome")} className={cn("group flex items-center gap-2 text-left text-2xl font-black text-foreground", editavel && "cursor-text")}>{nome}{perfil.isVerified && <SeloVerificado className="text-[1.35rem]" />}{editavel && <Pencil className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />}</button>}{perfil.publicCode && <span className="text-sm font-black text-muted-foreground">#{perfil.publicCode}</span>}{editavel && (
             <Link
               href="/configuracoes"

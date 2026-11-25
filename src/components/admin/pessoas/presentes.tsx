@@ -6,20 +6,29 @@ import { Dialogo } from "../dialogo";
 import { Botao, Entrada, Escolha, Rotulo, Segmentado, Selo } from "../ui";
 import { avisar } from "../avisos";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
+import { AvatarComMoldura } from "@/components/shared/avatar-com-moldura";
+import { corDoAvatar } from "@/lib/avatares";
 import { invalidar, pedir, useDados } from "@/lib/admin/api";
 import { data } from "@/lib/admin/formato";
 import type { ConquistaDoAdmin, Cosmetico, CosmeticoDaPessoa, FichaDaPessoa, ItemDaLoja } from "@/lib/admin/tipos";
 
-/** A amostra de um cosmético: o avatar desenhado ou a faixa do banner. */
+/** A amostra de um cosmético: o ícone, a moldura em volta de um ícone ou a faixa do banner. */
 export function AmostraDoCosmetico({ c }: { c: Pick<Cosmetico, "kind" | "value"> }) {
   if (c.kind === "AVATAR") {
     return (
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-        <AvatarIcon id={c.value.avatarId} className="size-6" />
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-[11px] text-white" style={{ background: corDoAvatar(c.value.avatarId) }}>
+        <AvatarIcon id={c.value.avatarId} />
       </span>
     );
   }
-  return <span className="h-9 w-14 shrink-0 rounded-lg border" style={{ background: c.value.gradient ?? "#22c55e" }} />;
+  if (c.kind === "FRAME") {
+    return (
+      <span className="flex size-9 shrink-0 items-center justify-center">
+        <AvatarComMoldura avatarId="capivara" molduraId={c.value.molduraId} capa="#1892ff" animar={false} className="size-[21px] rounded-[6px]" />
+      </span>
+    );
+  }
+  return <span className="h-9 w-14 shrink-0 rounded-lg border" style={{ background: c.value.background ?? c.value.gradient ?? "#22c55e" }} />;
 }
 
 /** Escolhe um avatar ou banner, inclusive os que estão fora da loja (os exclusivos). */
@@ -32,8 +41,8 @@ export function EscolhaDeCosmetico({ valor, aoMudar, opcional = false }: { valor
       <Rotulo texto="Cosmético" dica="Para criar um exclusivo, vá em Loja e deixe-o fora de venda.">
         <Escolha value={valor} onChange={(e) => aoMudar(e.target.value)}>
           <option value="">{opcional ? "Nenhum" : "Escolha…"}</option>
-          {(["AVATAR", "BANNER"] as const).map((tipo) => (
-            <optgroup key={tipo} label={tipo === "AVATAR" ? "Avatares" : "Banners"}>
+          {(["AVATAR", "FRAME", "BANNER"] as const).map((tipo) => (
+            <optgroup key={tipo} label={tipo === "AVATAR" ? "Ícones" : tipo === "FRAME" ? "Molduras" : "Banners"}>
               {lista.filter((c) => c.kind === tipo).map((c) => (
                 <option key={c.id} value={c.id}>{c.name}{c.active ? "" : " · exclusivo (fora da loja)"}</option>
               ))}

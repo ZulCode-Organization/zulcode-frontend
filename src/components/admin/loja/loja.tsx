@@ -9,6 +9,9 @@ import { Dialogo, perguntar } from "../dialogo";
 import { apagarComDesfazer, avisar } from "../avisos";
 import { Rupee } from "@/components/shared/rupee";
 import { AVATARES, AvatarIcon } from "@/components/shared/avatar-icon";
+import { AvatarComMoldura } from "@/components/shared/avatar-com-moldura";
+import { MOLDURAS } from "@/components/shared/moldura";
+import { corDoAvatar } from "@/lib/avatares";
 import { invalidar, pedir, trocarNoCache, useDados } from "@/lib/admin/api";
 import { data, numero } from "@/lib/admin/formato";
 import { cn } from "@/lib/utils";
@@ -269,6 +272,7 @@ const TIPOS_DE_COSMETICO: { tipo: TipoDeCosmetico; nome: string; cor: string }[]
   { tipo: "THEME", nome: "Tema", cor: "text-sky-400" },
   { tipo: "AVATAR", nome: "Avatar", cor: "text-violet-400" },
   { tipo: "BANNER", nome: "Banner", cor: "text-pink-400" },
+  { tipo: "FRAME", nome: "Moldura", cor: "text-amber-400" },
 ];
 
 function VitrineDoCosmetico({ kind, value, className }: { kind: TipoDeCosmetico; value: Cosmetico["value"]; className?: string }) {
@@ -279,10 +283,20 @@ function VitrineDoCosmetico({ kind, value, className }: { kind: TipoDeCosmetico;
       </div>
     );
   }
-  if (kind === "BANNER") return <div className={className} style={{ background: value.gradient ?? "linear-gradient(135deg,#0284c7,#8b5cf6)" }} />;
+  if (kind === "BANNER") return <div className={className} style={{ background: value.background ?? value.gradient ?? "linear-gradient(135deg,#0284c7,#8b5cf6)" }} />;
+  // A moldura em volta de um ícone qualquer, como fica no perfil.
+  if (kind === "FRAME") {
+    return (
+      <div className={cn("grid place-items-center bg-amber-500/10", className)}>
+        <AvatarComMoldura avatarId="capivara" molduraId={value.molduraId} capa="#1892ff" className="size-9 rounded-[11px]" />
+      </div>
+    );
+  }
   return (
     <div className={cn("grid place-items-center bg-violet-500/10", className)}>
-      <AvatarIcon id={value.avatarId} className="size-8 text-violet-400" />
+      <span className="grid size-12 place-items-center rounded-[14px] text-white" style={{ background: corDoAvatar(value.avatarId) }}>
+        <AvatarIcon id={value.avatarId} />
+      </span>
     </div>
   );
 }
@@ -361,9 +375,10 @@ function EditorDeCosmetico({ cosmetico, aoFechar }: { cosmetico: Cosmetico | nul
   const [accent, setAccent] = useState(cosmetico?.value.accent ?? "#0ea5e9");
   const [gradient, setGradient] = useState(cosmetico?.value.gradient ?? "linear-gradient(135deg, #14b8a6, #8b5cf6)");
   const [avatarId, setAvatarId] = useState(cosmetico?.value.avatarId ?? AVATARES[0].id);
+  const [molduraId, setMolduraId] = useState(cosmetico?.value.molduraId ?? MOLDURAS[0].id);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
-  const value = kind === "THEME" ? { primary, accent } : kind === "BANNER" ? { gradient } : { avatarId };
+  const value = kind === "THEME" ? { primary, accent } : kind === "BANNER" ? { gradient } : kind === "FRAME" ? { molduraId } : { avatarId };
 
   return (
     <Dialogo
@@ -423,8 +438,22 @@ function EditorDeCosmetico({ cosmetico, aoFechar }: { cosmetico: Cosmetico | nul
               <p className="mb-1 text-xs font-bold text-muted-foreground">Avatar</p>
               <div className="grid grid-cols-6 gap-1.5">
                 {AVATARES.map((a) => (
-                  <button key={a.id} type="button" onClick={() => setAvatarId(a.id)} aria-pressed={avatarId === a.id} title={a.label} className={cn("flex aspect-square items-center justify-center rounded-lg border text-lg", avatarId === a.id ? "border-primary bg-primary/10 text-primary" : "hover:bg-muted")}>
-                    <AvatarIcon id={a.id} className="size-[1.1em]" />
+                  <button key={a.id} type="button" onClick={() => setAvatarId(a.id)} aria-pressed={avatarId === a.id} title={a.label} className={cn("flex aspect-square items-center justify-center rounded-lg border", avatarId === a.id ? "border-primary bg-primary/10" : "hover:bg-muted")}>
+                    <span className="grid size-[76%] place-items-center rounded-[28%] text-white" style={{ background: corDoAvatar(a.id) }}>
+                      <AvatarIcon id={a.id} />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {kind === "FRAME" && (
+            <div>
+              <p className="mb-1 text-xs font-bold text-muted-foreground">Moldura</p>
+              <div className="grid grid-cols-5 gap-1.5">
+                {MOLDURAS.map((m) => (
+                  <button key={m.id} type="button" onClick={() => setMolduraId(m.id)} aria-pressed={molduraId === m.id} title={m.nome} className={cn("flex aspect-square items-center justify-center rounded-lg border", molduraId === m.id ? "border-primary bg-primary/10" : "hover:bg-muted")}>
+                    <AvatarComMoldura avatarId="capivara" molduraId={m.id} capa="#1892ff" animar={false} className="size-[44%] rounded-[29%]" />
                   </button>
                 ))}
               </div>

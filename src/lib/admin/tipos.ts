@@ -215,10 +215,10 @@ export interface ItemDaLoja {
   availableFrom: string | null; availableUntil: string | null; vendas: number; vendas30: number; aVenda: boolean;
 }
 
-export type TipoDeCosmetico = "THEME" | "AVATAR" | "BANNER";
+export type TipoDeCosmetico = "THEME" | "AVATAR" | "BANNER" | "FRAME";
 export interface Cosmetico {
   id: string; name: string; description: string; kind: TipoDeCosmetico; price: number; active: boolean; order: number;
-  value: { primary?: string; accent?: string; gradient?: string; avatarId?: string };
+  value: { primary?: string; accent?: string; gradient?: string; background?: string; imageUrl?: string; avatarId?: string; molduraId?: string };
   vendas: number; vendas30: number;
 }
 

@@ -106,7 +106,7 @@ interface PerfilState {
    *  ele não pode voltar ao trocar de tela, que remonta o aviso do zero. */
   esconderAvisoDaOfensiva: () => void;
   /** Salva dados do perfil em PUT /user e atualiza a tela e o cache. */
-  salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null; idioma?: "pt" | "en"; metaDiaria?: number }) => Promise<ResultadoSalvar>;
+  salvarDados: (dados: { nome?: string; email?: string; avatarId?: string; frameId?: string | null; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null; idioma?: "pt" | "en"; metaDiaria?: number }) => Promise<ResultadoSalvar>;
 }
 
 /** A API do Nest devolve o motivo em `message`, às vezes como lista (quando
@@ -198,6 +198,7 @@ function usePerfilData(): PerfilState {
           nome: usuario.name,
           email: usuario.email,
           avatarId: usuario.avatarId,
+          frameId: usuario.frameId ?? null,
           bannerColor: usuario.bannerColor,
           statusId: usuario.statusId ?? null,
           ultimaAtividade: usuario.lastActivityAt ?? null,
@@ -303,7 +304,7 @@ function usePerfilData(): PerfilState {
   }, []);
 
   const salvarDados = useCallback(
-    async (dados: { nome?: string; email?: string; avatarId?: string; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null; idioma?: "pt" | "en"; metaDiaria?: number }): Promise<ResultadoSalvar> => {
+    async (dados: { nome?: string; email?: string; avatarId?: string; frameId?: string | null; bannerColor?: string; themeMode?: "light" | "dark"; statusId?: string | null; idioma?: "pt" | "en"; metaDiaria?: number }): Promise<ResultadoSalvar> => {
       const token = getToken();
       if (!token) return { ok: false, mensagem: "Sua sessão expirou. Entre de novo." };
 
@@ -315,6 +316,7 @@ function usePerfilData(): PerfilState {
             ...(dados.nome !== undefined ? { name: dados.nome } : {}),
             ...(dados.email !== undefined ? { email: dados.email } : {}),
             ...(dados.avatarId !== undefined ? { avatarId: dados.avatarId } : {}),
+            ...(dados.frameId !== undefined ? { frameId: dados.frameId } : {}),
             ...(dados.bannerColor !== undefined ? { bannerColor: dados.bannerColor } : {}),
             ...(dados.themeMode !== undefined ? { themeMode: dados.themeMode } : {}),
             ...(dados.statusId !== undefined ? { statusId: dados.statusId } : {}),
@@ -338,6 +340,8 @@ function usePerfilData(): PerfilState {
             nome: nome ?? atual.nome,
             email: email ?? atual.email,
             avatarId: corpo?.avatarId ?? dados.avatarId ?? atual.avatarId,
+            // A moldura pode voltar null (sem moldura), então o ?? não serve aqui.
+            frameId: dados.frameId !== undefined ? dados.frameId : corpo?.frameId !== undefined ? corpo.frameId : atual.frameId,
             bannerColor: corpo?.bannerColor ?? dados.bannerColor ?? atual.bannerColor,
             themeMode: corpo?.themeMode ?? dados.themeMode ?? atual.themeMode,
             statusId: dados.statusId !== undefined ? dados.statusId : corpo?.statusId ?? atual.statusId,

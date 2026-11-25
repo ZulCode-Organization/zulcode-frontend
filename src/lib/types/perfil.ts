@@ -11,6 +11,8 @@ export interface PerfilUsuario {
   email: string;
   iniciais: string;
   avatarId?: string;
+  /** A moldura em volta do ícone (components/shared/moldura.tsx). Null = sem moldura. */
+  frameId?: string | null;
   bannerColor?: string | null;
   /** Status mostrado junto do avatar na tabela de líderes. Null = sem status. */
   statusId?: string | null;

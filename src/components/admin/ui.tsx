@@ -3,6 +3,7 @@
 import { forwardRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
 import { ArrowDownRight, ArrowUpRight, Loader2, Minus } from "lucide-react";
 import { AvatarIcon } from "@/components/shared/avatar-icon";
+import { corDoAvatar } from "@/lib/avatares";
 import { cn } from "@/lib/utils";
 import { variacao as textoDaVariacao } from "@/lib/admin/formato";
 
@@ -251,8 +252,8 @@ export function Selo({ tom = "neutro", children, className, icone }: { tom?: Tom
 
 export function AvatarPequeno({ id, className }: { id?: string | null; className?: string }) {
   return (
-    <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-[0.95rem] text-primary", className)}>
-      <AvatarIcon id={id} className="size-[1.15em]" />
+    <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-[10px] text-white", className)} style={{ background: corDoAvatar(id) }}>
+      <AvatarIcon id={id} />
     </span>
   );
 }

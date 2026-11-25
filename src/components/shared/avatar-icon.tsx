@@ -1,84 +1,45 @@
-"use client";
-
 import Image from "next/image";
-import { useTheme } from "next-themes";
-import { Atom, BadgeCheck, Bot, Code2, Crown, Ghost, Rocket, ShieldCheck, Sparkles, Orbit, Terminal, FlaskConical, Cat, Cpu, Gem, Flame, Gamepad2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Rupee } from "@/components/shared/rupee";
+import { AVATARES_DESENHADOS, AVATARES_RAROS, resolverAvatar } from "@/lib/avatares";
 
-/** O único avatar que não é ícone de traço: é o logo da marca, em imagem. */
-export const AVATAR_MARCA = "zulcode";
-
-/** O avatar desenhado com o rupee da moeda do app (o Icon da lista não é usado). */
-const AVATAR_RUPEE = "crystal";
-
-/** Conta oficial, a única que pode escolher o logo como avatar. */
-const EMAIL_DA_MARCA = "contato.zulcode@gmail.com";
+/** Todos os ícones, para as listas de escolha da administração. */
+export const AVATARES: { id: string; label: string }[] = [
+  ...AVATARES_DESENHADOS.map((avatar) => ({ id: avatar.id, label: avatar.nome })),
+  ...AVATARES_RAROS.map((avatar) => ({ id: avatar.id, label: `${avatar.nome} (raro)` })),
+];
 
 /**
- * Quem pode usar o avatar da marca.
+ * O ícone do perfil, desenhado dentro do quadrado de quem o usa.
  *
- * ATENÇÃO: isto é só a trava da interface — esconde a opção de quem não é a
- * conta oficial. Não é segurança: qualquer pessoa pode mandar
- * `avatarId: "zulcode"` direto pro PUT /user. Pra valer de verdade, o backend
- * precisa recusar esse id quando o dono da requisição não for essa conta.
+ * O desenho ocupa 76% do quadrado, em qualquer tamanho, e pinta com a cor do
+ * texto (currentColor): quem usa decide a cor, quase sempre branco sobre a cor
+ * da capa. O raro é a arte oficial do app e cobre o quadrado inteiro, com os
+ * mesmos cantos dele.
  */
-export function podeUsarAvatarDaMarca(email?: string | null) {
-  return email?.trim().toLowerCase() === EMAIL_DA_MARCA;
-}
-
-export const AVATARES = [
-  { id: "orbit", label: "Órbita", Icon: Atom },
-  { id: "code", label: "Código", Icon: Code2 },
-  { id: "rocket", label: "Foguete", Icon: Rocket },
-  { id: "shield", label: "Escudo", Icon: ShieldCheck },
-  { id: "bot", label: "Bot", Icon: Bot },
-  { id: "spark", label: "Faísca", Icon: Sparkles },
-  { id: "crown", label: "Coroa", Icon: Crown },
-  { id: "ghost", label: "Fantasma", Icon: Ghost },
-  { id: "comet", label: "Cometa", Icon: Orbit },
-  { id: "pro", label: "Emblema PRO", Icon: BadgeCheck },
-  { id: "developer", label: "Desenvolvedor", Icon: Terminal },
-  { id: "early-tester", label: "Pioneiro", Icon: FlaskConical },
-  { id: "neon-cat", label: "Gato Neon", Icon: Cat },
-  { id: "processor", label: "Processador", Icon: Cpu },
-  { id: "crystal", label: "Cristal", Icon: Gem },
-  { id: "flame", label: "Chama", Icon: Flame },
-  { id: "arcade", label: "Arcade", Icon: Gamepad2 },
-  // O Icon aqui nunca é usado: o ZulCode cai no ramo da imagem logo abaixo.
-  { id: AVATAR_MARCA, label: "ZulCode", Icon: Atom },
-] as const;
-
-export type AvatarId = (typeof AVATARES)[number]["id"];
-
 export function AvatarIcon({ id, className }: { id?: string | null; className?: string }) {
-  const { resolvedTheme } = useTheme();
-  const avatar = AVATARES.find((item) => item.id === id) ?? AVATARES[0];
+  const resolvido = resolverAvatar(id);
 
-  if (avatar.id === AVATAR_MARCA) {
-    // Segue o tema pelo mesmo motivo da sidebar: o logo aparece tanto sobre a
-    // cor da capa quanto sobre o fundo neutro da grade de escolha, e a versão
-    // errada some contra o claro.
-    const arquivo = resolvedTheme === "dark" ? "/icon-only-dark.svg" : "/icon-only.svg";
+  if (resolvido.tipo === "raro") {
     return (
       <Image
-        src={arquivo}
-        alt={avatar.label}
-        width={64}
-        height={64}
-        // Bem maior que os icones de traco, de proposito: o logo tem margem
-        // interna na propria arte, entao no tamanho deles sobrava desenho de
-        // menos. Como o tamanho vem de em, ele acompanha o font-size de cada
-        // moldura e nunca estoura: no menor avatar da lista ocupa 74% do
-        // quadro, e nos maiores fica perto de 60%.
-        className={cn("size-[1.9em] object-contain", className)}
+        src={resolvido.avatar.imagem}
+        alt={resolvido.avatar.nome}
+        width={256}
+        height={256}
+        draggable={false}
+        className={cn("size-full shrink-0 select-none rounded-[inherit] object-cover", className)}
       />
     );
   }
 
-  // O Cristal é o rupee do ZulCode, o mesmo da barra de cima, e não uma pedra genérica.
-  if (avatar.id === AVATAR_RUPEE) return <Rupee rotulo={avatar.label} className={cn("size-[0.95em]", className)} />;
-
-  const Icon = avatar.Icon;
-  return <Icon aria-label={avatar.label} className={cn("size-[0.9em] stroke-[2.4]", className)} />;
+  return (
+    <svg
+      viewBox="0 0 48 48"
+      role="img"
+      aria-label={resolvido.avatar.nome}
+      className={cn("size-[76%] shrink-0", className)}
+      // O desenho é um texto fixo de src/lib/avatares.ts, nunca algo vindo de fora.
+      dangerouslySetInnerHTML={{ __html: resolvido.avatar.desenho }}
+    />
+  );
 }

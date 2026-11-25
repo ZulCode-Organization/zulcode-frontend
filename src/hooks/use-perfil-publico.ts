@@ -14,7 +14,7 @@ function paraPerfil(data: any): PerfilUsuario {
   const progresso = calcularProgressoNivel(data.xp, data.nivel);
   return {
     id: data.id, publicCode: data.publicCode, role: "USER", nome: data.name, email: "", iniciais: iniciais(data.name),
-    avatarId: data.avatarId, bannerColor: data.bannerColor, isVerified: data.isVerified, themeColor: data.themeColor, themeMode: data.themeMode,
+    avatarId: data.avatarId, frameId: data.frameId ?? null, bannerColor: data.bannerColor, isVerified: data.isVerified, themeColor: data.themeColor, themeMode: data.themeMode,
     xp: data.xp, nivel: data.nivel, nivelLabel: data.nivelLabel, xpNivelAtual: progresso.xpNivelAtual, xpNecessarioNivel: progresso.xpNecessarioNivel,
     xpProximoNivel: data.xpProximoNivel, streakAtual: data.currentStreak, streakRecorde: data.longestStreak, podios: data.podios ?? 0,
     seguidores: data.seguidores ?? 0, seguindo: data.seguindo ?? 0, euSigo: !!data.euSigo, membroDesde: data.createdAt ?? null,

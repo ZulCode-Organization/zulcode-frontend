@@ -1,6 +1,6 @@
 "use client";
 
-import { type PointerEvent as EventoDePonteiro, type ReactNode, type Ref, useCallback, useEffect, useRef, useState } from "react";
+import { type PointerEvent as EventoDePonteiro, type ReactNode, type Ref, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { ArrowLeft, Check, Code, Flag, Question, Star, Target, Timer } from "@phosphor-icons/react/dist/ssr";
@@ -28,11 +28,23 @@ import { abrirConfiguracoesDeAvisos } from "@/lib/avisos";
 import { adiarPedidoDeAvisos, ativarAvisosNesteAparelho, situacaoDosAvisos } from "@/lib/ativar-avisos";
 import { abrirAvaliacaoNaLoja, podeAvaliarNaLoja, registrarAvaliacao } from "@/lib/avaliacao";
 import { vibrar } from "@/lib/reacoes/vibrar";
+import { tocar } from "@/lib/reacoes/sons";
+import { prepararReacoes } from "@/lib/reacoes";
 import { cn } from "@/lib/utils";
 import "@/components/nivelamento/nivelamento.css";
 
-/** Quanto o dedo tem que arrastar para trocar de página. */
-const ARRASTE_PARA_TROCAR = 70;
+/** Quanto da largura o dedo tem que arrastar para trocar de página. */
+const ARRASTE_PARA_TROCAR = 0.22;
+/** Ou a velocidade de um peteleco, em px por ms. */
+const PETELECO = 0.45;
+/** A curva de quando a página assenta no lugar: rápida no começo e macia no fim. */
+const CURVA = "cubic-bezier(.22,1,.36,1)";
+
+/** O clique de botão das aulas com uma vibração forte: toda escolha responde assim. */
+function toqueForte() {
+  void tocar("toque");
+  void vibrar("impacto");
+}
 
 type Fase = "perguntas" | "enviando" | "teste" | "fim";
 type SituacaoDosAvisos = "pedir" | "bloqueadas" | "ativando" | "ativado" | "depois";
@@ -71,8 +83,6 @@ export default function NivelamentoPage() {
   const [animacao, setAnimacao] = useState<AnimacaoDaCabeca>("piscando");
   const [fala, setFala] = useState(FALAS_DAS_PAGINAS.inicio);
   const [pagina, setPagina] = useState(0);
-  const [arraste, setArraste] = useState(0);
-  const [arrastando, setArrastando] = useState(false);
   const [fase, setFase] = useState<Fase>("perguntas");
   const [erroAoEnviar, setErroAoEnviar] = useState(false);
   const [avisos, setAvisos] = useState<SituacaoDosAvisos | null>(null);
@@ -104,6 +114,8 @@ export default function NivelamentoPage() {
   const zulReage = useCallback(
     (tipo: ReacaoDoZul, novaFala?: string) => {
       reagir(tipo);
+      // O Zul se mexendo: uma vibração fraca, logo depois da do toque.
+      window.setTimeout(() => void vibrar("toque"), 70);
       if (novaFala) setFala(novaFala);
       if (tipo === "danca" || tipo === "gira") {
         setAnimacao("balancando");
@@ -185,49 +197,125 @@ export default function NivelamentoPage() {
   };
 
   // ── Arrastar com o dedo ────────────────────────────────────────────────
-  // Sem pointer capture: com ela o clique dos cartões iria para a área toda.
-  // O arraste só começa quando o gesto é mais de lado que de cima a baixo, e
-  // um arraste de verdade cancela o clique que viria ao soltar.
-  const gesto = useRef<{ x: number; y: number; ativo: boolean } | null>(null);
+  // O arraste não passa pelo React: o dedo mexe o trilho direto, uma vez por
+  // quadro, e só a página nova vira estado. Sem pointer capture (com ela o
+  // clique dos cartões iria para a área toda); o gesto só vira arraste quando
+  // é mais de lado que de cima a baixo, e um arraste cancela o clique de soltar.
+  const area = useRef<HTMLElement>(null);
+  const trilho = useRef<HTMLDivElement>(null);
+  const paginaRef = useRef(0);
+  const podeAvancarRef = useRef(false);
+  const quadroDoArraste = useRef<number | null>(null);
+  const gesto = useRef<{ x: number; y: number; ativo: boolean; dx: number; ultimoX: number; ultimoT: number; velocidade: number } | null>(null);
   const ultimoArraste = useRef(false);
+
+  /** Põe as páginas no lugar: o trilho anda e as vizinhas encolhem e viram de leve, como cartas. */
+  const posicionar = useCallback((dx: number, animar: boolean) => {
+    const t = trilho.current;
+    const a = area.current;
+    if (!t || !a) return;
+    const w = a.clientWidth || 1;
+    const atual = paginaRef.current;
+    t.style.transition = animar ? `transform 560ms ${CURVA}` : "none";
+    t.style.transform = `translate3d(${-atual * w + dx}px,0,0)`;
+    Array.from(t.children).forEach((filho, i) => {
+      const el = filho as HTMLElement;
+      const p = i - atual + dx / w;
+      const d = Math.min(1, Math.abs(p));
+      el.style.transition = animar ? `transform 560ms ${CURVA}, opacity 560ms ${CURVA}` : "none";
+      el.style.transformOrigin = p > 0 ? "0% 50%" : "100% 50%";
+      el.style.transform = `scale(${1 - 0.1 * d}) rotateY(${Math.max(-1, Math.min(1, p)) * -14}deg)`;
+      el.style.opacity = String(1 - 0.55 * d);
+    });
+    fundo.current?.arrastar(dx);
+  }, []);
+
+  // Página nova: assenta no lugar com a animação, saindo de onde o dedo largou.
+  useLayoutEffect(() => {
+    const primeira = trilho.current?.dataset.posto !== "sim";
+    paginaRef.current = pagina;
+    posicionar(0, !primeira);
+    if (trilho.current) trilho.current.dataset.posto = "sim";
+  }, [pagina, paginas.length, posicionar]);
+
+  useEffect(() => {
+    podeAvancarRef.current = respondida(atual) && pagina < ultima;
+  });
+
+  useEffect(() => {
+    prepararReacoes("toque");
+    const aoRedimensionar = () => posicionar(0, false);
+    window.addEventListener("resize", aoRedimensionar);
+    return () => window.removeEventListener("resize", aoRedimensionar);
+  }, [posicionar]);
+
   const aoApertar = (e: EventoDePonteiro<HTMLElement>) => {
-    gesto.current = { x: e.clientX, y: e.clientY, ativo: false };
+    gesto.current = { x: e.clientX, y: e.clientY, ativo: false, dx: 0, ultimoX: e.clientX, ultimoT: e.timeStamp, velocidade: 0 };
     ultimoArraste.current = false;
     fundo.current?.onda(e.clientX, e.clientY, 0.8);
   };
   const aoMover = (e: EventoDePonteiro<HTMLElement>) => {
     const g = gesto.current;
     if (!g) return;
-    let dx = e.clientX - g.x;
-    const dy = e.clientY - g.y;
+    const bruto = e.clientX - g.x;
+    const vertical = e.clientY - g.y;
     if (!g.ativo) {
-      if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy)) return;
+      if (Math.abs(bruto) < 8 && Math.abs(vertical) < 8) return;
+      // Mais de cima a baixo: é rolagem da página, não arraste.
+      if (Math.abs(bruto) < Math.abs(vertical)) {
+        gesto.current = null;
+        return;
+      }
       g.ativo = true;
-      setArrastando(true);
+      g.x += Math.sign(bruto) * 8;
     }
-    // Resistência na ponta: sem página antes, ou página sem resposta.
-    if ((dx < 0 && (!respondida(atual) || pagina >= ultima)) || (dx > 0 && pagina === 0)) dx *= 0.22;
-    setArraste(dx);
+    const dt = e.timeStamp - g.ultimoT;
+    if (dt > 0) g.velocidade = 0.8 * ((e.clientX - g.ultimoX) / dt) + 0.2 * g.velocidade;
+    g.ultimoX = e.clientX;
+    g.ultimoT = e.timeStamp;
+    let dx = e.clientX - g.x;
+    // Sem para onde ir (página sem resposta, ou a primeira): vira um elástico.
+    const pode = dx < 0 ? podeAvancarRef.current : paginaRef.current > 0;
+    if (!pode) dx = (dx * 0.45) / (1 + Math.abs(dx) / 200);
+    g.dx = dx;
+    if (quadroDoArraste.current === null) {
+      quadroDoArraste.current = requestAnimationFrame(() => {
+        quadroDoArraste.current = null;
+        if (gesto.current?.ativo) posicionar(gesto.current.dx, false);
+      });
+    }
   };
   const aoSoltar = () => {
     const g = gesto.current;
     gesto.current = null;
+    if (quadroDoArraste.current !== null) {
+      cancelAnimationFrame(quadroDoArraste.current);
+      quadroDoArraste.current = null;
+    }
     if (!g?.ativo) return;
-    setArrastando(false);
-    const dx = arraste;
-    setArraste(0);
-    if (dx < -ARRASTE_PARA_TROCAR && pagina < ultima && respondida(atual)) irPara(pagina + 1);
-    else if (dx > ARRASTE_PARA_TROCAR && pagina > 0) irPara(pagina - 1);
-    else if (dx < -40 && !respondida(atual)) zulReage("treme", "Escolhe uma opção antes!");
     // Foi arraste de verdade: o clique que vem ao soltar não escolhe nada.
     ultimoArraste.current = true;
+    const w = area.current?.clientWidth ?? 390;
+    const praFrente = g.dx < -w * ARRASTE_PARA_TROCAR || (g.velocidade < -PETELECO && g.dx < -16);
+    const praTras = g.dx > w * ARRASTE_PARA_TROCAR || (g.velocidade > PETELECO && g.dx > 16);
+    if (praFrente && podeAvancarRef.current) {
+      void vibrar("toque");
+      irPara(pagina + 1);
+      return;
+    }
+    if (praTras && paginaRef.current > 0) {
+      void vibrar("toque");
+      irPara(pagina - 1);
+      return;
+    }
+    if (g.dx < -40 && !respondida(atual)) zulReage("treme", "Escolhe uma opção antes!");
+    posicionar(0, true);
   };
 
   // ── Escolhas ───────────────────────────────────────────────────────────
   const escolherOpcao = (chave: string, indice: number) => {
     const r = reacaoDaOpcao(chave, indice);
     zulReage(r.reacao, r.fala);
-    void vibrar("toque");
   };
 
   const escolherLang = (id: string, indice: number) => {
@@ -350,7 +438,7 @@ export default function NivelamentoPage() {
     fase === "fim" ? "grade" : Math.floor(Math.max(0, pagina - 1) / 2) % 2 === 0 ? "ondas" : "grade";
 
   return (
-    <Moldura modo={modoDoFundo} pagina={pagina} arraste={arraste} fundoRef={fundo}>
+    <Moldura modo={modoDoFundo} pagina={pagina} fundoRef={fundo} aoTocarBotao={() => !ultimoArraste.current && toqueForte()}>
       {/* O Zul e a fala dele, no alto. */}
       <header className="relative z-20 mx-auto flex w-full max-w-lg items-center gap-3 px-5 pt-[calc(1rem+env(safe-area-inset-top))]">
         <CabecaDoZul animacao={animacao} reacao={reacao} cair className="size-24 shrink-0" />
@@ -379,6 +467,7 @@ export default function NivelamentoPage() {
       ) : (
         <>
           <main
+            ref={area}
             onPointerDown={aoApertar}
             onPointerMove={aoMover}
             onPointerUp={aoSoltar}
@@ -390,21 +479,14 @@ export default function NivelamentoPage() {
                 ultimoArraste.current = false;
               }
             }}
-            className="relative z-10 mx-auto w-full max-w-lg flex-1 touch-pan-y overflow-hidden select-none"
+            className="relative z-10 mx-auto w-full max-w-lg flex-1 touch-pan-y overflow-hidden select-none [perspective:1100px]"
           >
-            <div
-              className="flex h-full"
-              style={{
-                width: `${paginas.length * 100}%`,
-                transform: `translateX(calc(${(-pagina * 100) / paginas.length}% + ${arraste}px))`,
-                transition: arrastando ? "none" : "transform 0.5s cubic-bezier(.25,1.15,.4,1)",
-              }}
-            >
+            <div ref={trilho} className="flex h-full will-change-transform [transform-style:preserve-3d]" style={{ width: `${paginas.length * 100}%` }}>
               {paginas.map((p, i) => (
                 <section
                   key={p.id}
                   inert={i !== pagina}
-                  className="zc-scroll-hidden h-full overflow-y-auto px-5 pb-6 pt-4"
+                  className="zc-scroll-hidden h-full touch-pan-y overflow-y-auto px-5 pb-6 pt-4 will-change-transform [backface-visibility:hidden]"
                   style={{ width: `${100 / paginas.length}%` }}
                 >
                   {/* A chave muda ao entrar na página: as animações de entrada tocam de novo. */}
@@ -449,7 +531,6 @@ export default function NivelamentoPage() {
                           alternar(qid, oid);
                           if (ja) {
                             zulReage("inclina", "Ok, tirei essa.");
-                            void vibrar("toque");
                           } else escolherOpcao(`${qid}:${oid}`, indice);
                         }}
                       />
@@ -532,19 +613,25 @@ export default function NivelamentoPage() {
 function Moldura({
   modo,
   pagina,
-  arraste,
   fundoRef,
+  aoTocarBotao,
   children,
 }: {
   modo: ModoDoFundo;
   pagina?: number;
-  arraste?: number;
   fundoRef?: Ref<FundoAsciiControle>;
+  /** Qualquer botão tocado aqui dentro (o som e a vibração de toda escolha). */
+  aoTocarBotao?: () => void;
   children: ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-background text-foreground">
-      <FundoAscii ref={fundoRef} modo={modo} pagina={pagina} arraste={arraste} origemDaTroca={{ x: 0.62, y: 0.93 }} origemDoPulso={{ x: 0.14, y: 0.08 }} />
+    <div
+      className="fixed inset-0 flex flex-col overflow-hidden bg-background text-foreground"
+      onClickCapture={(e) => {
+        if (aoTocarBotao && (e.target as HTMLElement).closest("button:not(:disabled)")) aoTocarBotao();
+      }}
+    >
+      <FundoAscii ref={fundoRef} modo={modo} pagina={pagina} origemDaTroca={{ x: 0.62, y: 0.93 }} origemDoPulso={{ x: 0.14, y: 0.08 }} />
       {children}
     </div>
   );

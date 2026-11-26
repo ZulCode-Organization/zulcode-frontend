@@ -24,6 +24,9 @@ export interface FundoAsciiControle {
   onda: (clientX: number, clientY: number, forca?: number) => void;
   /** Dá um empurrão no giro do planeta. */
   girar: (velocidade?: number) => void;
+  /** Quanto o dedo está arrastando agora, em px. Vai direto para o desenho,
+   *  sem passar pelo React: o fundo acompanha o dedo em todo quadro. */
+  arrastar: (dx: number) => void;
 }
 
 interface FundoAsciiProps {
@@ -127,6 +130,8 @@ export const FundoAscii = forwardRef<FundoAsciiControle, FundoAsciiProps>(functi
   const estado = useRef({
     // As ondas começam abaixo da tela e sobem até a altura pedida.
     alturaDasOndas: 1.1,
+    /** O arraste que chega pelo controle (sem re-render). */
+    arraste: 0,
     toques: [] as Toque[],
     rolaBase: 0,
     rolaExtra: 0,
@@ -146,6 +151,9 @@ export const FundoAscii = forwardRef<FundoAsciiControle, FundoAsciiProps>(functi
     },
     girar(velocidade = 0.004) {
       estado.current.giro = velocidade;
+    },
+    arrastar(dx) {
+      estado.current.arraste = dx;
     },
   }));
 
@@ -197,7 +205,7 @@ export const FundoAscii = forwardRef<FundoAsciiControle, FundoAsciiProps>(functi
       const cx = largura / 2;
       const cy = altura + R * 0.2;
       st.rolaBase += dt * st.giro;
-      const alvo = props.current.pagina * 0.9 - props.current.arraste / R;
+      const alvo = props.current.pagina * 0.9 - (props.current.arraste + estado.current.arraste) / R;
       st.rolaExtra += (alvo - st.rolaExtra) * 0.08;
       const rola = st.rolaBase + st.rolaExtra;
       const halo = ctx.createRadialGradient(cx, cy, R * 0.72, cx, cy, R * 1.32);
@@ -305,7 +313,7 @@ export const FundoAscii = forwardRef<FundoAsciiControle, FundoAsciiProps>(functi
 
     // ── Ondas ───────────────────────────────────────────────────────────
     const ondas = (t: number) => {
-      const alvo = props.current.pagina * 70 - props.current.arraste * 0.5;
+      const alvo = props.current.pagina * 70 - (props.current.arraste + estado.current.arraste) * 0.5;
       st.desloca += (alvo - st.desloca) * 0.08;
       ctx.font = fonte();
       st.alturaDasOndas += (props.current.alturaDasOndas - st.alturaDasOndas) * 0.06;

@@ -44,14 +44,12 @@ export const metadata: Metadata = {
  * conteúdo do relógio e dos botões, somadas ao espaçamento que cada barra do
  * app já tinha — procure por `safe-area-inset` para ver onde.
  *
- * `themeColor` é a cor que o sistema usa nas bordas da janela, uma por tema.
+ * `themeColor` é a cor que o sistema usa nas bordas da janela: a do tema
+ * escuro, que é o padrão em todo aparelho.
  */
 export const viewport: Viewport = {
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f8fc" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f1115" },
-  ],
+  themeColor: "#0f1115",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -67,8 +65,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="w-dvw h-dvh overflow-x-hidden">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          // Escuro por padrão em todo aparelho, sem seguir o tema do sistema;
+          // quem escolher o claro nas Configurações continua no claro.
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <NextIntlClientProvider>

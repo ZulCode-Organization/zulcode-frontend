@@ -9,6 +9,8 @@ import { CabecaDoZul, useReacaoDoZul, type AnimacaoDaCabeca, type ReacaoDoZul } 
 import { LoginForm, type CampoDaEntrada } from "@/components/auth/LoginForm";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { vibrar } from "@/lib/reacoes/vibrar";
+import { tocar } from "@/lib/reacoes/sons";
+import { prepararReacoes } from "@/lib/reacoes";
 import { cn } from "@/lib/utils";
 
 type Modo = "inicio" | "entrar" | "criar";
@@ -55,8 +57,11 @@ export default function Welcome() {
   const volta = useRef<number | null>(null);
   const aberto = modo !== "inicio";
 
-  useEffect(() => () => {
-    if (volta.current) window.clearTimeout(volta.current);
+  useEffect(() => {
+    prepararReacoes("toque");
+    return () => {
+      if (volta.current) window.clearTimeout(volta.current);
+    };
   }, []);
 
   // No Android, o botão voltar fecha a folha em vez de sair da tela.
@@ -92,10 +97,10 @@ export default function Welcome() {
     toques.current += 1;
     setMexeu(true);
     reagir(r);
+    window.setTimeout(() => void vibrar("toque"), 70);
     setFala(f);
     if (r === "gira" || r === "danca") balancar();
     fundo.current?.girar();
-    void vibrar("toque");
   };
 
   const abrir = (novo: Modo) => {
@@ -105,6 +110,7 @@ export default function Welcome() {
     if (novo !== "inicio") {
       setFormulario(novo);
       reagir("pulo");
+      window.setTimeout(() => void vibrar("toque"), 70);
       fundo.current?.girar(0.003);
     }
   };
@@ -113,11 +119,20 @@ export default function Welcome() {
     if (campo) {
       setFala(FALA_DO_CAMPO[campo]);
       reagir(campo === "senha" ? "inclina" : "aperta");
+      void vibrar("toque");
     }
   };
 
   return (
-    <div className="fixed inset-0 touch-pan-y overflow-hidden bg-background text-foreground">
+    <div
+      className="fixed inset-0 touch-pan-y overflow-hidden bg-background text-foreground"
+      // Todo botão tocado aqui responde com o clique das aulas e uma vibração forte.
+      onClickCapture={(e) => {
+        if (!(e.target as HTMLElement).closest("button:not(:disabled)")) return;
+        void tocar("toque");
+        void vibrar("impacto");
+      }}
+    >
       {/* Com a folha aberta, as ondas do nivelamento sobem e ficam atrás do Zul. */}
       <FundoAscii
         ref={fundo}
@@ -166,10 +181,11 @@ export default function Welcome() {
         inert={!aberto}
         className={cn(
           "absolute inset-x-0 bottom-0 mx-auto flex max-h-[calc(100dvh-8.5rem-env(safe-area-inset-top))] w-full max-w-md flex-col rounded-t-[1.75rem] border-x-2 border-t-2 border-border bg-card transition-transform duration-[600ms] [transition-timing-function:cubic-bezier(.22,1.15,.36,1)]",
-          aberto ? "translate-y-0" : "translate-y-[110%]",
+          // Fechada, desce também a altura do Zul que fica em cima dela: senão a cabeça espiava no pé da tela.
+          aberto ? "translate-y-0" : "translate-y-[calc(100%+9rem)]",
         )}
       >
-        <div className="pointer-events-none absolute -top-[6.75rem] left-5 right-5 flex items-end gap-3">
+        <div className={cn("pointer-events-none absolute -top-[6.75rem] left-5 right-5 flex items-end gap-3 transition-opacity duration-300", !aberto && "opacity-0")}>
           <CabecaDoZul animacao={animacao} reacao={reacao} className="size-20 shrink-0" />
           {aberto && (
             <p key={fala} className="zc-balao-entra mb-3 rounded-2xl border-2 border-border bg-card px-3.5 py-2 text-sm font-extrabold text-foreground">

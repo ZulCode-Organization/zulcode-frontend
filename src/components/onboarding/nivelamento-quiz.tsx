@@ -1,43 +1,43 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useMemo, useState } from "react";
+import { Check, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { obterPerguntasNivelamento } from "@/lib/nivelamento/perguntas";
 import { RespostaNivelamento, ResultadoNivelamento } from "@/lib/nivelamento-local";
+import type { PerguntaAlternativa } from "@/data/atividades";
+import { BarraDaAula } from "@/components/atividade/barra-da-aula";
+import { ExercicioAlternativa } from "@/components/atividade/exercicio-alternativa";
+import { FaixaDaResposta } from "@/components/atividade/faixa-da-resposta";
 import { FalaDoZul } from "@/components/atividade/zul-da-aula";
-import { LanguageIcon } from "./language-icon";
+import { reagir } from "@/lib/reacoes";
+import "@/components/atividade/aula.css";
 
 interface NivelamentoQuizProps {
   languageSlug: string;
   languageName: string;
   onFinish: (resultado: ResultadoNivelamento) => void | Promise<void>;
+  /** Sem o fundo próprio: deixa aparecer o fundo animado de quem o mostra. */
+  semFundo?: boolean;
 }
 
-/** A, B, C… no lugar dos ids crus das alternativas. */
-const LETRAS = ["A", "B", "C", "D", "E"];
-/** "Ainda não sei": conta como não saber, sem a pessoa precisar chutar. */
-const NAO_SEI = "nao-sei";
-/** Tempo para a escolha aparecer marcada antes de passar para a próxima. */
-const PAUSA_MS = 320;
-
 /**
- * Teste de nivelamento: uma pergunta por unidade da trilha, na ordem. Não é
- * prova: nada fica verde ou vermelho, a pessoa só escolhe e segue (ou diz que
- * ainda não sabe). Quem acerta as N primeiras seguidas começa na unidade N+1 —
- * é esse número que vai em `acertos`.
- *
- * Cada toque trava a tela até a próxima pergunta aparecer, para um clique
- * duplo não responder duas perguntas de uma vez.
+ * O teste de nivelamento, feito igual a uma aula: a mesma barra que enche,
+ * as alternativas numeradas de 1 a 4, escolher e tocar em Verificar, e a
+ * faixa que sobe com o resultado e o Continuar. A diferença é que não gasta
+ * pena nem repete a questão errada: cada unidade tem uma pergunta, na ordem,
+ * e quem acerta as N primeiras seguidas começa na unidade N+1 — é esse
+ * número que vai em `acertos`. O X encerra o teste com o que já respondeu.
  */
-export function NivelamentoQuiz({ languageSlug, languageName, onFinish }: NivelamentoQuizProps) {
+export function NivelamentoQuiz({ languageSlug, languageName, onFinish, semFundo = false }: NivelamentoQuizProps) {
   const perguntas = obterPerguntasNivelamento(languageSlug);
   const [indice, setIndice] = useState(0);
   const [respostas, setRespostas] = useState<RespostaNivelamento[]>([]);
   const [escolhida, setEscolhida] = useState<string | null>(null);
+  const [verificado, setVerificado] = useState(false);
+  const [correto, setCorreto] = useState(false);
+  const [seguidas, setSeguidas] = useState(0);
   const [enviando, setEnviando] = useState(false);
-  const timer = useRef<number | null>(null);
 
   const semPerguntas = perguntas.length === 0;
 
@@ -49,153 +49,119 @@ export function NivelamentoQuiz({ languageSlug, languageName, onFinish }: Nivela
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [semPerguntas]);
 
-  useEffect(() => () => {
-    if (timer.current) window.clearTimeout(timer.current);
-  }, []);
-
-  if (semPerguntas) return null;
-
   const pergunta = perguntas[indice];
+  // A pergunta do nivelamento no formato da aula: com código, é do tipo "lógica".
+  const comoNaAula = useMemo<PerguntaAlternativa | null>(
+    () =>
+      pergunta
+        ? {
+            id: pergunta.id,
+            tipo: pergunta.codigo ? "logica" : "alternativa",
+            enunciado: pergunta.enunciado,
+            codigo: pergunta.codigo,
+            alternativas: pergunta.alternativas,
+            respostaCorretaId: pergunta.corretaId,
+          }
+        : null,
+    [pergunta],
+  );
+
+  if (semPerguntas || !pergunta || !comoNaAula) return null;
 
   const terminar = async (todas: RespostaNivelamento[]) => {
     setEnviando(true);
     // Acertos seguidos desde a primeira: é o que decide a unidade de início.
-    let seguidas = 0;
+    let primeiras = 0;
     for (const p of perguntas) {
-      if (todas.find((r) => r.perguntaId === p.id)?.correta) seguidas += 1;
+      if (todas.find((r) => r.perguntaId === p.id)?.correta) primeiras += 1;
       else break;
     }
     try {
-      await onFinish({ languageSlug, respostas: todas, acertos: seguidas, total: perguntas.length, concluidoEm: new Date().toISOString() });
+      await onFinish({ languageSlug, respostas: todas, acertos: primeiras, total: perguntas.length, concluidoEm: new Date().toISOString() });
     } finally {
       setEnviando(false);
     }
   };
 
-  const responder = (alternativaId: string) => {
-    if (escolhida || enviando) return;
-    setEscolhida(alternativaId);
-    const todas = [
-      ...respostas.filter((r) => r.perguntaId !== pergunta.id),
-      { perguntaId: pergunta.id, alternativaId, correta: alternativaId === pergunta.corretaId },
-    ];
-    setRespostas(todas);
-    timer.current = window.setTimeout(() => {
-      setEscolhida(null);
-      if (indice + 1 >= perguntas.length) void terminar(todas);
-      else setIndice((i) => i + 1);
-    }, PAUSA_MS);
+  const escolher = (id: string) => {
+    if (verificado) return;
+    if (id !== escolhida) reagir("toque");
+    setEscolhida(id);
   };
 
-  const voltar = () => {
-    if (indice === 0 || escolhida || enviando) return;
-    setIndice((i) => i - 1);
+  const verificar = () => {
+    if (!escolhida || verificado) return;
+    const ok = escolhida === pergunta.corretaId;
+    reagir(ok ? "acerto" : "erro");
+    setCorreto(ok);
+    setVerificado(true);
+    setSeguidas((s) => (ok ? s + 1 : 0));
+    setRespostas((atuais) => [...atuais.filter((r) => r.perguntaId !== pergunta.id), { perguntaId: pergunta.id, alternativaId: escolhida, correta: ok }]);
+  };
+
+  const continuar = () => {
+    if (indice + 1 >= perguntas.length) {
+      void terminar(respostas);
+      return;
+    }
+    setIndice((i) => i + 1);
+    setEscolhida(null);
+    setVerificado(false);
+    setCorreto(false);
   };
 
   if (enviando) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background px-6 text-center">
+      <div className={cn("flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center", !semFundo && "bg-background")}>
         <Loader2 className="size-8 animate-spin text-primary" />
         <p className="text-base font-bold text-foreground">Montando sua trilha de {languageName}…</p>
       </div>
     );
   }
 
+  const progresso = Math.round(((indice + (verificado ? 1 : 0)) / perguntas.length) * 100);
+  const certa = pergunta.alternativas.find((a) => a.id === pergunta.corretaId);
+  const fala = verificado && !correto
+    ? "Sem problema! É só para eu saber onde você começa."
+    : indice === 0
+      ? `Vamos ver onde você começa em ${languageName}. Escolha uma resposta e toque em Verificar.`
+      : `Questão ${indice + 1} de ${perguntas.length}.`;
+
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      <header className="sticky top-0 z-10 border-b border-border/60 bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-2xl items-center gap-3 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] lg:pb-4 lg:pt-[calc(1rem+env(safe-area-inset-top))]">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={voltar}
-            disabled={indice === 0}
-            aria-label="Voltar"
-            className={cn("shrink-0", indice === 0 && "pointer-events-none opacity-0")}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          {/* Só o andamento: nada de placar de acertos, para não virar prova. */}
-          <div className="flex flex-1 gap-1.5">
-            {perguntas.map((item, posicao) => (
-              <span
-                key={item.id}
-                className={cn(
-                  "h-2 flex-1 rounded-full transition-colors duration-300",
-                  posicao < indice ? "bg-primary" : posicao === indice ? "bg-primary/50" : "bg-muted"
-                )}
-              />
-            ))}
-          </div>
-          <span className="w-10 shrink-0 text-right text-xs font-bold tabular-nums text-muted-foreground">
-            {indice + 1}/{perguntas.length}
-          </span>
-        </div>
-      </header>
+    <div className={cn("zc-aula relative flex min-h-dvh flex-col", !semFundo && "bg-background")}>
+      <BarraDaAula progresso={progresso} seguidas={seguidas} vidas={0} semVidas onSair={() => void terminar(respostas)} />
 
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-16 pt-6 lg:justify-center">
-        {indice === 0 && (
-          <FalaDoZul pose="lupa" className="animate-fade-in-up mb-6">
-            Vamos ver onde você começa em {languageName}. Não é prova: se não souber, toque em “Ainda não sei”.
-          </FalaDoZul>
+      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-[env(safe-area-inset-bottom)]">
+        <div className="flex flex-1 flex-col justify-center py-4">
+          <div key={pergunta.id} className="zc-aula-entra flex flex-col">
+            <FalaDoZul pose={verificado && !correto ? "derretido" : indice === 0 ? "lupa" : "oculos"} className="mb-4">
+              {fala}
+            </FalaDoZul>
+            <ExercicioAlternativa pergunta={comoNaAula} selecionada={escolhida} onSelecionar={escolher} verificado={verificado} />
+          </div>
+        </div>
+
+        {verificado ? (
+          <FaixaDaResposta correto={correto}>
+            <p className="zc-aula-faixa-titulo flex items-center gap-2.5 text-xl font-black">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--faixa-cor)] text-white">
+                {correto ? <Check className="size-5" strokeWidth={3.5} /> : <X className="size-5" strokeWidth={3.5} />}
+              </span>
+              {correto ? "Mandou bem!" : "Quase!"}
+            </p>
+            {!correto && certa && <p className="zc-aula-faixa-porque mt-2 text-[0.95rem] font-bold leading-relaxed">A resposta certa era: {certa.texto}</p>}
+            <button type="button" onClick={continuar} data-cor={correto ? "verde" : "vermelho"} className="zc-aula-botao mt-4">
+              Continuar
+            </button>
+          </FaixaDaResposta>
+        ) : (
+          <div className="py-5">
+            <button type="button" disabled={!escolhida} onClick={verificar} className="zc-aula-botao">
+              Verificar
+            </button>
+          </div>
         )}
-
-        <div key={pergunta.id} className="animate-slide-in-right">
-          <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.08em] text-primary">
-            <LanguageIcon id={languageSlug} name={languageName} className="size-4" />
-            {languageName}
-          </p>
-          <h1 className="mt-3 text-2xl font-extrabold leading-tight text-foreground lg:text-[1.9rem]">{pergunta.enunciado}</h1>
-
-          {pergunta.codigo && (
-            <pre className="mt-5 overflow-x-auto rounded-2xl border-2 border-border bg-card px-5 py-4 font-mono text-[0.88rem] leading-relaxed text-foreground">
-              <code>{pergunta.codigo}</code>
-            </pre>
-          )}
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            {pergunta.alternativas.map((alternativa, index) => {
-              const marcada = escolhida === alternativa.id;
-              return (
-                <button
-                  key={alternativa.id}
-                  type="button"
-                  onClick={() => responder(alternativa.id)}
-                  disabled={!!escolhida}
-                  className={cn(
-                    "animate-fade-in-up group flex w-full items-center gap-3.5 rounded-2xl border-2 px-4 py-3.5 text-left font-mono text-[0.95rem] transition-all duration-150",
-                    marcada ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50 hover:bg-primary/5 active:scale-[0.99]"
-                  )}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <span
-                    className={cn(
-                      "flex size-8 shrink-0 items-center justify-center rounded-xl font-sans text-sm font-black transition-colors",
-                      marcada ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:bg-primary/15 group-hover:text-primary"
-                    )}
-                  >
-                    {LETRAS[index] ?? index + 1}
-                  </span>
-                  <span className="flex-1 text-card-foreground">{alternativa.texto}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => responder(NAO_SEI)}
-            disabled={!!escolhida}
-            className={cn(
-              "mt-4 w-full rounded-2xl border-2 border-dashed px-4 py-3 text-sm font-bold transition-colors",
-              escolhida === NAO_SEI ? "border-primary text-primary" : "border-border text-muted-foreground hover:border-primary/50 hover:text-primary"
-            )}
-          >
-            Ainda não sei
-          </button>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }

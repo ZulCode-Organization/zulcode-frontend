@@ -243,12 +243,16 @@ export async function licaoConcluidaParaAnuncio() {
   }
 }
 
-/** Na saída da lição concluída: mostra o anúncio se ele carregou, e só volta quando ele fecha. */
-export async function mostrarIntersticialSePronto() {
-  if (!intersticialPronto) return;
+/**
+ * Na saída da lição concluída: mostra o anúncio se ele carregou, e só volta
+ * quando ele fecha. Diz se mostrou (o pedido de avaliação não vem junto).
+ */
+export async function mostrarIntersticialSePronto(): Promise<boolean> {
+  if (!intersticialPronto) return false;
   intersticialPronto = false;
   const m = await admob();
-  if (!m) return;
+  if (!m) return false;
   gravarContagem({ licoes: 0, ultimo: Date.now() });
   await esperarFechar(m, [m.InterstitialAdPluginEvents.Dismissed, m.InterstitialAdPluginEvents.FailedToShow], () => m.AdMob.showInterstitial());
+  return true;
 }

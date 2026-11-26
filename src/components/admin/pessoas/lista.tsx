@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import {
-  AlertTriangle, ArrowDown, ArrowUp, BadgeCheck, Bookmark, ChevronLeft, ChevronRight, Code2, Crown, Download, Filter, Gem, Search, Sparkles, X,
+  AlertTriangle, ArrowDown, ArrowUp, BadgeCheck, Bell, BellOff, Bookmark, ChevronLeft, ChevronRight, Code2, Crown, Download, Filter, Gem, Search, Sparkles, Star, StarOff, X,
 } from "lucide-react";
 import { ChamaDupla } from "@/components/shared/chama-dupla";
 import { Pagina } from "../shell";
@@ -15,10 +15,10 @@ import { AcoesEmLote } from "./lote";
 import { baixar, invalidar, pedir, query, useDados } from "@/lib/admin/api";
 import { data, numero, relativo } from "@/lib/admin/formato";
 import { cn } from "@/lib/utils";
-import type { Alerta, PaginaDePessoas, PessoaDaLista, Segmento } from "@/lib/admin/tipos";
+import type { Alerta, EngajamentoDasPessoas, PaginaDePessoas, PessoaDaLista, Segmento } from "@/lib/admin/tipos";
 
 /** Os filtros que a lista entende. Ficam na URL: o link de uma busca leva à mesma busca. */
-const CAMPOS = ["busca", "status", "papel", "plano", "curso", "faixa", "semEstudarDias", "cadastroDe", "cadastroAte", "origem", "selo", "ordem", "direcao", "pagina"] as const;
+const CAMPOS = ["busca", "status", "papel", "plano", "curso", "faixa", "semEstudarDias", "cadastroDe", "cadastroAte", "origem", "selo", "notificacao", "avaliacao", "ordem", "direcao", "pagina"] as const;
 type Campo = (typeof CAMPOS)[number];
 type Filtros = Partial<Record<Campo, string>>;
 
@@ -38,6 +38,8 @@ const ROTULOS: Partial<Record<Campo, Record<string, string>>> = {
   plano: { pro: "PRO pagante", teste: "Em teste", cortesia: "Cortesia", gratis: "Grátis" },
   faixa: { nenhuma: "Sem ofensiva", azul: "Chama azul", ciano: "Chama ciano", dourada: "Chama dourada" },
   selo: { dev: "Desenvolvedor", tester: "Pioneiro", verificado: "Verificado" },
+  notificacao: { ativa: "Com notificação", sem: "Sem notificação" },
+  avaliacao: { clicou: "Tocou em Avaliar", pulou: "Pulou a avaliação", nunca: "Ainda não viu o pedido" },
 };
 
 export function ListaDePessoas() {
@@ -82,6 +84,7 @@ export function ListaDePessoas() {
   const opcoes = useDados<{ cursos: { id: string; name: string }[]; origens: { slug: string; label: string }[] }>("/admin/pessoas/opcoes");
   const segmentos = useDados<Segmento[]>("/admin/segmentos");
   const alertas = useDados<Alerta[]>("/admin/pessoas/alertas");
+  const engajamento = useDados<EngajamentoDasPessoas>("/admin/pessoas/engajamento", { velhoDepoisDe: 60_000 });
 
   const ordem = filtros.ordem ?? "cadastro";
   const direcao = filtros.direcao ?? "desc";
@@ -200,6 +203,34 @@ export function ListaDePessoas() {
         </div>
       )}
 
+      {/* ── Notificações e avaliação na Play Store ── */}
+      <div className="mb-4 grid gap-2 sm:grid-cols-3">
+        {([
+          { filtro: { notificacao: "ativa" }, titulo: "Com notificação ativa", valor: engajamento.dados?.notificacaoAtiva, icone: <Bell className="size-4 text-emerald-500" />, sufixo: true },
+          { filtro: { avaliacao: "clicou" }, titulo: "Tocaram em Avaliar", valor: engajamento.dados?.tocaramEmAvaliar, icone: <Star className="size-4 text-amber-500" />, sufixo: false },
+          { filtro: { avaliacao: "pulou" }, titulo: "Pularam a avaliação", valor: engajamento.dados?.pularamAvaliacao, icone: <StarOff className="size-4 text-muted-foreground" />, sufixo: false },
+        ] as const).map((c) => (
+          <button
+            key={c.titulo}
+            type="button"
+            onClick={() => mudar({ notificacao: "", avaliacao: "", ...c.filtro })}
+            className="flex items-center gap-3 rounded-xl border bg-card px-3.5 py-3 text-left transition-colors hover:border-primary/50"
+          >
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">{c.icone}</span>
+            <span className="min-w-0">
+              <span className="block text-xs font-bold text-muted-foreground">{c.titulo}</span>
+              <span className="block text-lg font-black tabular-nums">
+                {c.valor === undefined ? "…" : numero(c.valor)}
+                {c.sufixo && engajamento.dados && engajamento.dados.total > 0 && (
+                  <span className="ml-1.5 text-xs font-bold text-muted-foreground">{Math.round((engajamento.dados.notificacaoAtiva / engajamento.dados.total) * 100)}% das contas</span>
+                )}
+              </span>
+            </span>
+          </button>
+        ))}
+      </div>
+      <p className="-mt-2 mb-4 text-xs text-muted-foreground">O Google não conta se a pessoa avaliou de fato: &quot;Tocou em Avaliar&quot; quer dizer que a Play Store abriu pelo pedido do fim do nivelamento.</p>
+
       {/* ── Busca, filtros e segmentos ── */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <div className="relative min-w-[220px] flex-1 sm:max-w-sm">
@@ -251,8 +282,8 @@ export function ListaDePessoas() {
       {painelFiltros && (
         <Cartao className="mb-3" corpo="p-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {(["status", "plano", "faixa", "papel", "selo"] as const).map((c) => (
-              <Rotulo key={c} texto={{ status: "Situação", plano: "Plano", faixa: "Ofensiva", papel: "Papel", selo: "Selo" }[c]}>
+            {(["status", "plano", "faixa", "papel", "selo", "notificacao", "avaliacao"] as const).map((c) => (
+              <Rotulo key={c} texto={{ status: "Situação", plano: "Plano", faixa: "Ofensiva", papel: "Papel", selo: "Selo", notificacao: "Notificações", avaliacao: "Play Store" }[c]}>
                 <Escolha value={filtros[c] ?? ""} onChange={(e) => mudar({ [c]: e.target.value })}>
                   <option value="">Qualquer</option>
                   {Object.entries(ROTULOS[c]!).map(([v, t]) => <option key={v} value={v}>{t}</option>)}
@@ -330,6 +361,8 @@ export function ListaDePessoas() {
                 </th>
                 <Coluna campo="nome" rotulo="Pessoa" ordem={ordem} direcao={direcao} aoOrdenar={ordenar} alinhar="left" />
                 <th className="px-3 py-2.5 text-left font-bold">Plano</th>
+                <th className="px-3 py-2.5 text-left font-bold">Notificações</th>
+                <th className="px-3 py-2.5 text-left font-bold">Play Store</th>
                 <Coluna campo="xp" rotulo="XP" ordem={ordem} direcao={direcao} aoOrdenar={ordenar} />
                 <Coluna campo="ofensiva" rotulo="Ofensiva" ordem={ordem} direcao={direcao} aoOrdenar={ordenar} />
                 <Coluna campo="rupees" rotulo="Rupees" ordem={ordem} direcao={direcao} aoOrdenar={ordenar} />
@@ -340,7 +373,7 @@ export function ListaDePessoas() {
             <tbody>
               {!dados && carregando &&
                 Array.from({ length: 8 }, (_, i) => (
-                  <tr key={i} className="border-b last:border-0"><td colSpan={8} className="px-3 py-3"><Esqueleto linhas={1} /></td></tr>
+                  <tr key={i} className="border-b last:border-0"><td colSpan={10} className="px-3 py-3"><Esqueleto linhas={1} /></td></tr>
                 ))}
               {dados?.itens.map((p) => (
                 <LinhaDaPessoa
@@ -440,6 +473,21 @@ function SeloDoPlano({ p }: { p: PessoaDaLista }) {
   return <span className="text-xs text-muted-foreground">Grátis</span>;
 }
 
+function SeloDasNotificacoes({ p }: { p: PessoaDaLista }) {
+  const aparelhos = p._count.pushTokens + p._count.webPushSubscriptions;
+  if (p.notificacoesAtivas && aparelhos > 0)
+    return <Selo tom="verde" icone={<Bell className="size-3" />}>Ativa · {aparelhos} {aparelhos === 1 ? "aparelho" : "aparelhos"}</Selo>;
+  if (!p.notificacoesAtivas) return <Selo icone={<BellOff className="size-3" />}>Desligou</Selo>;
+  return <span className="text-xs text-muted-foreground">Sem aparelho</span>;
+}
+
+function SeloDaAvaliacao({ p }: { p: PessoaDaLista }) {
+  if (p.avaliacaoClicadaEm)
+    return <span title={`Em ${data(p.avaliacaoClicadaEm)}`}><Selo tom="ambar" icone={<Star className="size-3" />}>Tocou em Avaliar · {data(p.avaliacaoClicadaEm)}</Selo></span>;
+  if (p.avaliacaoPuladaEm) return <Selo>Pulou · {data(p.avaliacaoPuladaEm)}</Selo>;
+  return <span className="text-xs text-muted-foreground">—</span>;
+}
+
 function LinhaDaPessoa({ p, marcado, aoMarcar }: { p: PessoaDaLista; marcado: boolean; aoMarcar: () => void }) {
   const router = useRouter();
   const suspensa = p.isBanned && p.bannedUntil;
@@ -471,6 +519,8 @@ function LinhaDaPessoa({ p, marcado, aoMarcar }: { p: PessoaDaLista; marcado: bo
         </div>
       </td>
       <td className="px-3 py-2"><SeloDoPlano p={p} /></td>
+      <td className="px-3 py-2"><SeloDasNotificacoes p={p} /></td>
+      <td className="px-3 py-2"><SeloDaAvaliacao p={p} /></td>
       <td className="px-3 py-2 text-right tabular-nums">{numero(p.xp)}</td>
       <td className="px-3 py-2 text-right tabular-nums">
         <span className="inline-flex items-center gap-1">{p.currentStreak > 0 && <ChamaDupla className="size-3.5" dias={p.currentStreak} />}{numero(p.currentStreak)}</span>

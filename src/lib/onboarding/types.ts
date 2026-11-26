@@ -8,7 +8,8 @@ export interface OnboardingOption {
   disabled?: boolean;
 }
 
-export type QuestionType = "single-choice";
+/** "multiple-choice": a pessoa marca quantas quiser (os motivos). */
+export type QuestionType = "single-choice" | "multiple-choice";
 
 export interface OnboardingQuestion {
   id: QuestionId;

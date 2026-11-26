@@ -19,7 +19,9 @@ import { FilaDeComemoracoes } from "@/components/comemoracoes/fila";
 import { comemoracoesDaLicao, type Comemoracao, type ResultadoDaLicao } from "@/lib/types/comemoracao";
 import { PenaPorAnuncio } from "@/components/anuncios/pena-por-anuncio";
 import { licaoConcluidaParaAnuncio, mostrarIntersticialSePronto } from "@/lib/anuncios";
+import { contarLicaoParaAvaliacao, pedirAvaliacaoSeForAHora } from "@/lib/avaliacao";
 import { BarraDaAula } from "./barra-da-aula";
+import { FaixaDaResposta } from "./faixa-da-resposta";
 import { FalaDoZul, PoseDoZul, ZulDaAula } from "./zul-da-aula";
 import { ExercicioTestes } from "./exercicio-testes";
 import { ExercicioBug } from "./exercicio-bug";
@@ -166,48 +168,6 @@ function MoldeAtividade({ progresso, seguidas, vidas, vidasIlimitadas, onSair, c
 }
 
 /**
- * A faixa da resposta, presa ao pé da tela e na largura toda. Antes ela vinha
- * no fim da página: numa questão comprida ficava em parte fora da tela (no
- * computador) e o "Continuar" sumia lá embaixo, pedindo rolagem. No lugar
- * dela fica um espaço da mesma altura, para o fim da questão ainda poder
- * subir até aparecer acima da faixa.
- */
-function FaixaDaResposta({ correto, children }: { correto: boolean; children: ReactNode }) {
-  const faixaRef = useRef<HTMLDivElement>(null);
-  const [altura, setAltura] = useState(0);
-
-  useEffect(() => {
-    const faixa = faixaRef.current;
-    if (!faixa || typeof ResizeObserver === "undefined") return;
-    // O observador avisa logo ao começar, já com a altura inicial.
-    const observador = new ResizeObserver(() => setAltura(faixa.offsetHeight));
-    observador.observe(faixa);
-    return () => observador.disconnect();
-  }, []);
-
-  return (
-    <>
-      <div aria-hidden style={{ height: altura }} />
-      <div
-        ref={faixaRef}
-        className="zc-aula-faixa fixed inset-x-0 bottom-0 z-40 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5"
-        data-certo={correto}
-        role="status"
-      >
-        {/* A mesma grade da aula (a questão e, no computador, o vão do
-            Playground ao lado): o texto fica alinhado com a questão. */}
-        <div className="mx-auto flex w-full max-w-6xl gap-8 px-4 lg:px-8">
-          <div className="min-w-0 flex-1">
-            <div className="mx-auto w-full max-w-xl">{children}</div>
-          </div>
-          <div className="hidden w-[380px] shrink-0 lg:block" />
-        </div>
-      </div>
-    </>
-  );
-}
-
-/**
  * Tela de fazer a lição: primeiro ensina o conteúdo (telas de introdução),
  * só depois pergunta — cada pergunta dá pra responder com o que apareceu na
  * introdução, então vira aprendizado de verdade em vez de chute. Quatro
@@ -275,7 +235,9 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
   // Ao sair de uma lição concluída — nunca no meio dela — pode vir o anúncio
   // de tela cheia, se ele já carregou; a volta para a trilha espera ele fechar.
   const sairDaLicaoConcluida = async () => {
-    if (comAnuncios) await mostrarIntersticialSePronto();
+    const mostrouAnuncio = comAnuncios ? await mostrarIntersticialSePronto() : false;
+    // O pedido de avaliação nunca vem logo depois de um anúncio.
+    if (!mostrouAnuncio) void pedirAvaliacaoSeForAHora();
     sair();
   };
   const respondidasRef = useRef<Set<string>>(new Set());
@@ -311,6 +273,7 @@ export function ActivityPlayer({ atividade, licao, aoConcluir, onConcluirLocal, 
     onConcluirLocal?.();
     // Conta a lição e, se for a vez do anúncio, já o carrega enquanto a pessoa vê o resultado.
     if (comAnuncios) void licaoConcluidaParaAnuncio();
+    contarLicaoParaAvaliacao();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fase]);
 

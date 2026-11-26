@@ -6,13 +6,14 @@ import { useSignup } from "@/hooks/useSignup";
 import { BotaoRelevo } from "@/components/shared/botao-relevo";
 import { BotoesSociais } from "@/components/auth/botoes-sociais";
 import { Input } from "../ui/input";
+import type { CampoDaEntrada } from "./LoginForm";
 
 /**
  * Criar conta: nome, e-mail e senha (o olho do campo mostra a senha, então não
  * há "confirmar senha"), ou direto com Google e GitHub. Os termos e a política
  * ficam ditos antes do botão, e quem já tem conta tem o atalho para entrar.
  */
-export function SignupForm() {
+export function SignupForm({ onTrocar, onCampo }: { onTrocar?: () => void; onCampo?: (campo: CampoDaEntrada) => void } = {}) {
   const { nome, setNome, email, setEmail, senha, setSenha, error, loading, handleSubmit } = useSignup();
 
   return (
@@ -34,6 +35,8 @@ export function SignupForm() {
           autoComplete="name"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
+          onFocus={() => onCampo?.("nome")}
+          onBlur={() => onCampo?.(null)}
           icon={<User className="size-4" />}
         />
         <Input
@@ -43,6 +46,8 @@ export function SignupForm() {
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onFocus={() => onCampo?.("email")}
+          onBlur={() => onCampo?.(null)}
           icon={<Mail className="size-4" />}
         />
         <Input
@@ -52,6 +57,8 @@ export function SignupForm() {
           autoComplete="new-password"
           value={senha}
           onChange={(e) => setSenha(e.target.value)}
+          onFocus={() => onCampo?.("senha")}
+          onBlur={() => onCampo?.(null)}
           icon={<Lock className="size-4" />}
         />
 
@@ -84,9 +91,15 @@ export function SignupForm() {
 
       <p className="mt-5 text-center text-sm text-muted-foreground [@media(max-height:700px)]:mt-3">
         Já tem conta?{" "}
-        <Link href="/login" className="font-semibold text-primary hover:underline">
-          Entrar
-        </Link>
+        {onTrocar ? (
+          <button type="button" onClick={onTrocar} className="font-semibold text-primary hover:underline">
+            Entrar
+          </button>
+        ) : (
+          <Link href="/login" className="font-semibold text-primary hover:underline">
+            Entrar
+          </Link>
+        )}
       </p>
     </div>
   );

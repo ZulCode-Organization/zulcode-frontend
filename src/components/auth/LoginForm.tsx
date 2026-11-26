@@ -8,7 +8,16 @@ import { BotoesSociais } from "@/components/auth/botoes-sociais";
 import { Input } from "@/components/ui/input";
 import { useLogin } from "@/hooks/useLogin";
 
-export function LoginForm() {
+/** O campo em foco: a tela inicial usa para o Zul reagir ao que a pessoa digita. */
+export type CampoDaEntrada = "nome" | "email" | "senha" | null;
+
+interface LoginFormProps {
+  /** Dentro da folha da tela inicial: sem o "voltar", e o "criar conta" troca de folha. */
+  onTrocar?: () => void;
+  onCampo?: (campo: CampoDaEntrada) => void;
+}
+
+export function LoginForm({ onTrocar, onCampo }: LoginFormProps = {}) {
   const { email, setEmail, senha, setSenha, error, loading, handleSubmit } = useLogin();
 
   // Quando a entrada por provedor falha, quem traz o motivo e a URL: a falha
@@ -34,6 +43,8 @@ export function LoginForm() {
           placeholder="seu@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onFocus={() => onCampo?.("email")}
+          onBlur={() => onCampo?.(null)}
           icon={<Mail className="size-4" />}
         />
         <Input
@@ -42,6 +53,8 @@ export function LoginForm() {
           placeholder="••••••••"
           value={senha}
           onChange={(e) => setSenha(e.target.value)}
+          onFocus={() => onCampo?.("senha")}
+          onBlur={() => onCampo?.(null)}
           icon={<Lock className="size-4" />}
         />
 
@@ -64,9 +77,18 @@ export function LoginForm() {
       </form>
 
       <p className="mt-8 text-center text-sm text-muted-foreground">
-        <Link href="/welcome" className="font-semibold text-primary hover:underline">
-          Voltar para a tela inicial
-        </Link>
+        {onTrocar ? (
+          <>
+            Ainda não tem conta?{" "}
+            <button type="button" onClick={onTrocar} className="font-semibold text-primary hover:underline">
+              Criar agora
+            </button>
+          </>
+        ) : (
+          <Link href="/welcome" className="font-semibold text-primary hover:underline">
+            Voltar para a tela inicial
+          </Link>
+        )}
       </p>
 
       <div className="mt-7">

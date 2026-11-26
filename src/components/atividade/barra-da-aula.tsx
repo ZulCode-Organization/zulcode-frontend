@@ -13,6 +13,8 @@ interface BarraDaAulaProps {
   seguidas: number;
   vidas: number;
   vidasIlimitadas?: boolean;
+  /** Sem as penas (o teste de nivelamento não gasta pena). */
+  semVidas?: boolean;
   onSair: () => void;
 }
 
@@ -20,7 +22,7 @@ interface BarraDaAulaProps {
  * A barra de cima da aula: enche como líquido (a onda anda por dentro e a ponta
  * balança quando ela sobe), brilha a cada passo e esquenta com acertos seguidos.
  */
-export function BarraDaAula({ progresso, seguidas, vidas, vidasIlimitadas, onSair }: BarraDaAulaProps) {
+export function BarraDaAula({ progresso, seguidas, vidas, vidasIlimitadas, semVidas = false, onSair }: BarraDaAulaProps) {
   const tema = useTemaDaBarra();
   const cheio = useRef<HTMLDivElement>(null);
   const anterior = useRef(progresso);
@@ -72,19 +74,21 @@ export function BarraDaAula({ progresso, seguidas, vidas, vidasIlimitadas, onSai
         )}
       </div>
 
-      <span
-        className={cn("flex shrink-0 items-center gap-1.5 text-sm font-black", COR_DA_PENA_NO_TEMA[vidas <= 0 && !vidasIlimitadas ? "vazia" : tema])}
-        title={vidasIlimitadas ? "Penas ilimitadas" : `${vidas} penas restantes`}
-      >
-        {vidasIlimitadas ? (
-          <PenaInfinita className="size-8" />
-        ) : (
-          <>
-            <PenaDesgastada restantes={vidas} className="size-8" />
-            {vidas}
-          </>
-        )}
-      </span>
+      {!semVidas && (
+        <span
+          className={cn("flex shrink-0 items-center gap-1.5 text-sm font-black", COR_DA_PENA_NO_TEMA[vidas <= 0 && !vidasIlimitadas ? "vazia" : tema])}
+          title={vidasIlimitadas ? "Penas ilimitadas" : `${vidas} penas restantes`}
+        >
+          {vidasIlimitadas ? (
+            <PenaInfinita className="size-8" />
+          ) : (
+            <>
+              <PenaDesgastada restantes={vidas} className="size-8" />
+              {vidas}
+            </>
+          )}
+        </span>
+      )}
     </div>
   );
 }

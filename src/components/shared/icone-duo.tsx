@@ -86,6 +86,20 @@ export const DuoCurar = solar("Curar", "DuoCurar");
 export const DuoEscudo = solar("Escudo", "DuoEscudo");
 export const DuoFimDeSemana = solar("FimDeSemana", "DuoFimDeSemana");
 
+/**
+ * Qualquer ícone da Phosphor no mesmo estilo de duas camadas da navegação
+ * (corpo translúcido + traço em negrito), para telas que escolhem o ícone por
+ * dado, como as opções do nivelamento.
+ */
+export function IconeDuo({ icone: Icone, className }: { icone: IconePhosphor; className?: string }) {
+  return (
+    <span aria-hidden className={cn("zc-duo relative inline-block size-[30px] shrink-0", className)}>
+      <Icone weight="duotone" className="zc-duo-corpo absolute inset-0 size-full" />
+      <Icone weight="bold" className="zc-duo-traco absolute inset-0 size-full" />
+    </span>
+  );
+}
+
 /** Qualquer desenho da Solar pelo nome, para listas que escolhem o ícone por dado (ex.: os elementos). */
 export function IconeSolar({ nome, className }: { nome: keyof typeof DESENHOS_SOLAR; className?: string }) {
   return (

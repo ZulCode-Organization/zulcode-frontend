@@ -92,11 +92,20 @@ export interface PessoaDaLista {
   lastActivityAt: string | null;
   createdAt: string;
   subscription: { status: string; plano: string | null } | null;
+  /** A chave das notificações nas Configurações. */
+  notificacoesAtivas: boolean;
+  /** O pedido de avaliação do fim do nivelamento: tocou em "Avaliar" ou pulou. */
+  avaliacaoClicadaEm: string | null;
+  avaliacaoPuladaEm: string | null;
+  _count: { pushTokens: number; webPushSubscriptions: number };
 }
+
+/** Os cartões de notificação e avaliação, no topo da lista de pessoas. */
+export interface EngajamentoDasPessoas { total: number; notificacaoAtiva: number; tocaramEmAvaliar: number; pularamAvaliacao: number }
 
 export interface PaginaDePessoas { itens: PessoaDaLista[]; total: number; pagina: number; porPagina: number; paginas: number }
 
-export interface FichaDaPessoa extends Omit<PessoaDaLista, "subscription"> {
+export interface FichaDaPessoa extends Omit<PessoaDaLista, "subscription" | "_count"> {
   streakFreezes: number;
   errorShields: number;
   doubleXpUntil: string | null;

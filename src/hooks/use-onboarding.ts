@@ -11,15 +11,16 @@ import {
 import { getAvailableLanguages, getOnboardingQuestions, submitOnboarding } from "@/lib/onboarding/service";
 
 /** As perguntas feitas depois da escolha da linguagem, nesta ordem. */
-const ORDEM_DAS_PERGUNTAS = ["language_level", "language_reason", "commitment", "how_heard"];
+export const ORDEM_DAS_PERGUNTAS = ["language_level", "language_reason", "commitment", "how_heard"];
 
 /** Perguntas que a pessoa pode pular. */
 export const PERGUNTAS_OPCIONAIS = ["how_heard"];
 
-type Step =
-  | { kind: "question"; question: OnboardingQuestion }
-  | { kind: "language-select" };
-
+/**
+ * Os dados e as respostas do nivelamento. Quem anda pelas páginas é a tela;
+ * aqui ficam as perguntas da API, a linguagem escolhida, as respostas (uma por
+ * pergunta, ou várias nas de múltipla escolha) e o envio.
+ */
 export function useOnboarding() {
   const [questions, setQuestions] = useState<OnboardingQuestion[]>([]);
   const [languages, setLanguages] = useState<LanguageOption[]>([]);
@@ -28,7 +29,7 @@ export function useOnboarding() {
 
   const [languageId, setLanguageId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [stepIndex, setStepIndex] = useState(0);
+  const [multiplas, setMultiplas] = useState<Record<string, string[]>>({});
 
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{
@@ -36,10 +37,8 @@ export function useOnboarding() {
     response: OnboardingSubmissionResult;
   } | null>(null);
 
-  const loadData = useCallback(() => {
-    setLoading(true);
-    setLoadError(false);
-    Promise.all([getOnboardingQuestions(), getAvailableLanguages()])
+  const buscar = useCallback(() => {
+    return Promise.all([getOnboardingQuestions(), getAvailableLanguages()])
       .then(([q, l]) => {
         // Resposta 200 com array vazio não é erro de rede, mas sem perguntas
         // não há o que exibir — trata como falha pra não travar no loading.
@@ -54,95 +53,64 @@ export function useOnboarding() {
       .finally(() => setLoading(false));
   }, []);
 
+  // A primeira busca já começa com "carregando" no estado inicial.
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    void buscar();
+  }, [buscar]);
 
-  // A ordem do fluxo: primeiro a linguagem, depois o que muda a trilha, e por
-  // último a pesquisa de "como conheceu", que dá para pular. Perguntas que a
-  // API devolva fora desta lista não entram; "interest" é feita dentro do passo
-  // da linguagem, no "Não sei qual escolher".
-  const steps: Step[] = useMemo(() => {
+  const loadData = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
+    void buscar();
+  }, [buscar]);
+
+  // Perguntas que a API devolva fora desta lista não entram; "interest" é
+  // feita dentro do passo da linguagem, no "Não sei qual escolher".
+  const perguntas = useMemo(() => {
     const porSlug = new Map(questions.map((q) => [q.id, q]));
-    const result: Step[] = [{ kind: "language-select" }];
-    for (const slug of ORDEM_DAS_PERGUNTAS) {
-      const pergunta = porSlug.get(slug);
-      if (pergunta) result.push({ kind: "question", question: pergunta });
-    }
-    return result;
+    return ORDEM_DAS_PERGUNTAS.map((slug) => porSlug.get(slug)).filter((q): q is OnboardingQuestion => Boolean(q));
   }, [questions]);
 
   const interesse = useMemo(() => questions.find((q) => q.id === "interest"), [questions]);
-
-  const totalSteps = steps.length;
-  const currentStep = steps[stepIndex] ?? null;
-  const progress = totalSteps > 0 ? Math.round((stepIndex / totalSteps) * 100) : 0;
-  const canGoBack = stepIndex > 0;
-  const isLastStep = stepIndex === totalSteps - 1;
-
   const selectedLanguage = languages.find((l) => l.id === languageId) ?? null;
 
-  const interpolatedTitle = useMemo(() => {
-    if (!currentStep || currentStep.kind !== "question") return "";
-    return currentStep.question.title.replace("{{language}}", selectedLanguage?.name ?? "");
-  }, [currentStep, selectedLanguage]);
-
-  const goNext = useCallback(() => {
-    setStepIndex((i) => Math.min(i + 1, Math.max(totalSteps - 1, 0)));
-  }, [totalSteps]);
-
-  const goBack = useCallback(() => {
-    setStepIndex((i) => Math.max(i - 1, 0));
+  const responder = useCallback((questionId: string, optionId: string) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
   }, []);
 
-  const answerQuestion = useCallback(
-    (questionId: string, optionId: string) => {
-      setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
-      goNext();
-    },
-    [goNext]
-  );
+  /** Marca ou desmarca uma opção numa pergunta de múltipla escolha. */
+  const alternar = useCallback((questionId: string, optionId: string) => {
+    setMultiplas((prev) => {
+      const atuais = prev[questionId] ?? [];
+      const novas = atuais.includes(optionId) ? atuais.filter((o) => o !== optionId) : [...atuais, optionId];
+      return { ...prev, [questionId]: novas };
+    });
+  }, []);
 
-  /** O gosto do "Não sei qual escolher": vai junto com as respostas, sem mudar de passo. */
+  /** O gosto do "Não sei qual escolher": vai junto com as outras respostas. */
   const guardarInteresse = useCallback((optionId: string) => {
     setAnswers((prev) => ({ ...prev, interest: optionId }));
   }, []);
 
-  const selectLanguage = useCallback(
-    (id: string) => {
-      setLanguageId(id);
-      goNext();
-    },
-    [goNext]
-  );
-
-  const finish = useCallback(
-    async (pendingAnswer?: OnboardingAnswer) => {
-      setSubmitting(true);
-      try {
-        const merged = pendingAnswer
-          ? { ...answers, [pendingAnswer.questionId]: pendingAnswer.optionId }
-          : answers;
-
-        const answerList: OnboardingAnswer[] = Object.entries(merged).map(
-          ([questionId, optionId]) => ({ questionId, optionId })
-        );
-
-        const payload: OnboardingSubmission = {
-          languageId: languageId ?? "",
-          answers: answerList,
-          completedAt: new Date().toISOString(),
-        };
-
-        const response = await submitOnboarding(payload);
-        setResult({ payload, response });
-        return { payload, response };
-      } finally {
-        setSubmitting(false);
-      }
-    },
-    [answers, languageId]
-  );
+  const finish = useCallback(async () => {
+    setSubmitting(true);
+    try {
+      const answerList: OnboardingAnswer[] = [
+        ...Object.entries(answers).map(([questionId, optionId]) => ({ questionId, optionId })),
+        ...Object.entries(multiplas).flatMap(([questionId, opcoes]) => opcoes.map((optionId) => ({ questionId, optionId }))),
+      ];
+      const payload: OnboardingSubmission = {
+        languageId: languageId ?? "",
+        answers: answerList,
+        completedAt: new Date().toISOString(),
+      };
+      const response = await submitOnboarding(payload);
+      setResult({ payload, response });
+      return { payload, response };
+    } finally {
+      setSubmitting(false);
+    }
+  }, [answers, multiplas, languageId]);
 
   return {
     loading,
@@ -150,23 +118,17 @@ export function useOnboarding() {
     retry: loadData,
     languages,
     interesse,
-    steps,
-    stepIndex,
-    totalSteps,
-    currentStep,
-    interpolatedTitle,
+    perguntas,
     selectedLanguage,
-    progress,
-    canGoBack,
-    isLastStep,
+    languageId,
+    escolherLinguagem: setLanguageId,
+    answers,
+    multiplas,
+    responder,
+    alternar,
+    guardarInteresse,
     submitting,
     result,
-    answers,
-    languageId,
-    goBack,
-    answerQuestion,
-    selectLanguage,
-    guardarInteresse,
     finish,
   };
 }

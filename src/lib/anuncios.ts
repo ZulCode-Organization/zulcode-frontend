@@ -11,13 +11,24 @@ import { API_BASE_URL, fetchComTimeout } from "./api-config";
  * Fora do app (navegador) e num APK sem o AdMob, tudo devolve "sem anúncio" e
  * nada aparece.
  *
- * Os blocos de anúncio do ZulCode vêm de NEXT_PUBLIC_ADMOB_RECOMPENSADO e
- * NEXT_PUBLIC_ADMOB_INTERSTICIAL; o id do app fica no APK (ADMOB_APP_ID, em
- * android/app/build.gradle).
+ * Os blocos de anúncio do ZulCode estão em DO_ZULCODE, logo abaixo; o id do
+ * app fica no APK (ADMOB_APP_ID, em android/gradle.properties).
  */
 const TESTE = {
   recompensado: "ca-app-pub-3940256099942544/5224354917",
   intersticial: "ca-app-pub-3940256099942544/1033173712",
+};
+
+/**
+ * Os blocos de verdade do ZulCode no AdMob. Não são segredo: vão dentro do
+ * app de qualquer jeito, e o AdMob só paga o app dono do id (o do APK). Ficam
+ * no código para o app no ar nunca cair nos de teste por falta de variável na
+ * Vercel. NEXT_PUBLIC_ADMOB_RECOMPENSADO e _INTERSTICIAL ainda trocam, se
+ * existirem.
+ */
+const DO_ZULCODE = {
+  recompensado: "ca-app-pub-3421793734694346/7385346558",
+  intersticial: "ca-app-pub-3421793734694346/8887884501",
 };
 
 /**
@@ -31,8 +42,8 @@ const TESTE = {
  * risco, o jeito é pôr o aparelho em NEXT_PUBLIC_ADMOB_APARELHOS_DE_TESTE.
  */
 const MODO_DE_TESTE = process.env.NEXT_PUBLIC_ADMOB_TESTE === "1";
-const ID_RECOMPENSADO = (!MODO_DE_TESTE && process.env.NEXT_PUBLIC_ADMOB_RECOMPENSADO) || TESTE.recompensado;
-const ID_INTERSTICIAL = (!MODO_DE_TESTE && process.env.NEXT_PUBLIC_ADMOB_INTERSTICIAL) || TESTE.intersticial;
+const ID_RECOMPENSADO = MODO_DE_TESTE ? TESTE.recompensado : process.env.NEXT_PUBLIC_ADMOB_RECOMPENSADO || DO_ZULCODE.recompensado;
+const ID_INTERSTICIAL = MODO_DE_TESTE ? TESTE.intersticial : process.env.NEXT_PUBLIC_ADMOB_INTERSTICIAL || DO_ZULCODE.intersticial;
 const deTeste = (id: string) => id.startsWith("ca-app-pub-3940256099942544");
 
 /**

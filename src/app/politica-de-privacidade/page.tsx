@@ -24,7 +24,7 @@ const SECOES: Secao[] = [
     titulo: "Quem mais vê",
     paragrafos: [
       "Outras pessoas veem o que é público: seu nome, avatar, código, XP, ofensiva e conquistas no perfil e na tabela da liga.",
-      "Serviços que ajudam o app a funcionar: Stripe (pagamentos), Google e GitHub (se você entrar por eles), Firebase (notificações) e Google AdMob (anúncios para quem não tem PRO, que pode usar o identificador de publicidade do aparelho).",
+      "Serviços que ajudam o app a funcionar: Stripe (pagamentos), Google e GitHub (se você entrar por eles), Firebase (notificações), Google AdMob (anúncios no app Android para quem não tem PRO, que pode usar o identificador de publicidade do aparelho) e Google AdSense (anúncios no site, no computador, para quem não tem PRO, que podem usar cookies do Google).",
     ],
   },
   {

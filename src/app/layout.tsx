@@ -62,6 +62,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
       suppressHydrationWarning
     >
+      <head>
+        {/* O escuro virou o padrão: uma vez só, todo aparelho que já tinha um
+            tema guardado (o claro, ou o "sistema" de antes) passa para o
+            escuro. Depois disso a escolha nas Configurações vale. Roda antes
+            do script do next-themes, então a tela não pisca branca. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var s=localStorage,t=s.getItem('theme');if(!s.getItem('zc-tema-escuro-v1')){s.setItem('theme','dark');s.setItem('zc-tema-escuro-v1','1')}else if(t!=='light'&&t!=='dark'){s.setItem('theme','dark')}}catch(e){}",
+          }}
+        />
+      </head>
       <body className="w-dvw h-dvh overflow-x-hidden">
         <ThemeProvider
           attribute="class"

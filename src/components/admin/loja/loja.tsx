@@ -16,6 +16,7 @@ import { invalidar, pedir, trocarNoCache, useDados } from "@/lib/admin/api";
 import { data, numero } from "@/lib/admin/formato";
 import { cn } from "@/lib/utils";
 import type { Cosmetico, EfeitoDaLoja, ItemDaLoja, TipoDeCosmetico } from "@/lib/admin/tipos";
+import { LoteDeCosmeticos } from "./lote";
 
 const EFEITOS: { efeito: EfeitoDaLoja; nome: string; descricao: string }[] = [
   { efeito: "RECOVER_LIVES", nome: "Recuperar penas", descricao: "Enche as penas na hora" },
@@ -301,8 +302,16 @@ function VitrineDoCosmetico({ kind, value, className }: { kind: TipoDeCosmetico;
   );
 }
 
+/** O filtro da lista de cosméticos: todos ou um tipo só. */
+type FiltroDeTipo = "todos" | TipoDeCosmetico;
+
+const PLURAL_DO_TIPO: Record<TipoDeCosmetico, string> = { THEME: "Temas", AVATAR: "Avatares", BANNER: "Banners", FRAME: "Molduras" };
+
 function Cosmeticos({ aoEditar }: { aoEditar: (c: Cosmetico) => void }) {
   const { dados, erro, recarregar, atualizando } = useDados<Cosmetico[]>(CHAVE_COSMETICOS);
+  const [filtro, setFiltro] = useState<FiltroDeTipo>("todos");
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
+  const [lote, setLote] = useState(false);
 
   const ligar = async (c: Cosmetico, active: boolean) => {
     trocarNoCache<Cosmetico[]>(CHAVE_COSMETICOS, (l) => (l ?? []).map((x) => (x.id === c.id ? { ...x, active } : x)));
@@ -319,49 +328,111 @@ function Cosmeticos({ aoEditar }: { aoEditar: (c: Cosmetico) => void }) {
   if (!dados) return <Esqueleto linhas={6} />;
   if (!dados.length) return <Vazio titulo="Nenhum cosmético" icone={<ShoppingBag className="size-5" />} />;
 
+  const visiveis = filtro === "todos" ? dados : dados.filter((c) => c.kind === filtro);
+  // Só os que ainda existem: um apagado some da seleção junto.
+  const escolhidos = dados.filter((c) => selecionados.has(c.id));
+  const todosMarcados = visiveis.length > 0 && visiveis.every((c) => selecionados.has(c.id));
+  const marcar = (id: string) =>
+    setSelecionados((atual) => {
+      const novo = new Set(atual);
+      if (novo.has(id)) novo.delete(id);
+      else novo.add(id);
+      return novo;
+    });
+  const marcarTodos = () =>
+    setSelecionados((atual) => {
+      const novo = new Set(atual);
+      visiveis.forEach((c) => (todosMarcados ? novo.delete(c.id) : novo.add(c.id)));
+      return novo;
+    });
+  const tipos = TIPOS_DE_COSMETICO.filter((t) => dados.some((c) => c.kind === t.tipo));
+
   return (
-    <div className={cn("grid gap-3 sm:grid-cols-2 lg:grid-cols-3", atualizando && "opacity-70")}>
-      {dados.map((c) => {
-        const tipo = TIPOS_DE_COSMETICO.find((t) => t.tipo === c.kind)!;
-        return (
-          <article key={c.id} className={cn("overflow-hidden rounded-xl border bg-card", !c.active && "opacity-60")}>
-            <VitrineDoCosmetico kind={c.kind} value={c.value} className="h-20" />
-            <div className="p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <span className={cn("text-[0.62rem] font-black uppercase tracking-[0.1em]", tipo.cor)}>{tipo.nome}</span>
-                  <p className="truncate font-black">{c.name}</p>
+    <>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <Segmentado<FiltroDeTipo>
+          rotulo="Tipo de cosmético"
+          valor={filtro}
+          aoMudar={setFiltro}
+          opcoes={[
+            { valor: "todos", texto: `Todos (${numero(dados.length)})` },
+            ...tipos.map((t) => ({ valor: t.tipo, texto: `${PLURAL_DO_TIPO[t.tipo]} (${numero(dados.filter((c) => c.kind === t.tipo).length)})` })),
+          ]}
+        />
+        <label className="flex cursor-pointer items-center gap-2 text-xs font-bold text-muted-foreground">
+          <input type="checkbox" checked={todosMarcados} onChange={marcarTodos} className="size-4 accent-[var(--primary)]" />
+          {filtro === "todos" ? "Marcar todos" : `Marcar todos os ${PLURAL_DO_TIPO[filtro].toLowerCase()}`}
+        </label>
+      </div>
+
+      {/* ── Barra da seleção ── */}
+      {escolhidos.length > 0 && (
+        <div className="sticky top-0 z-10 mb-3 flex flex-wrap items-center gap-2 rounded-lg border bg-primary/10 px-3 py-2 text-sm backdrop-blur">
+          <b>{numero(escolhidos.length)} {escolhidos.length === 1 ? "selecionado" : "selecionados"}</b>
+          <Botao tamanho="sm" variante="primario" onClick={() => setLote(true)}>Ação em lote…</Botao>
+          <Botao tamanho="sm" variante="fantasma" onClick={() => setSelecionados(new Set())}>Limpar seleção</Botao>
+        </div>
+      )}
+
+      <div className={cn("grid gap-3 sm:grid-cols-2 lg:grid-cols-3", atualizando && "opacity-70")}>
+        {visiveis.map((c) => {
+          const tipo = TIPOS_DE_COSMETICO.find((t) => t.tipo === c.kind)!;
+          const marcado = selecionados.has(c.id);
+          return (
+            <article key={c.id} className={cn("relative overflow-hidden rounded-xl border bg-card", !c.active && "opacity-60", marcado && "ring-2 ring-primary")}>
+              <label className="absolute left-2 top-2 z-[1] grid size-7 cursor-pointer place-items-center rounded-md bg-card/90 shadow-sm">
+                <input type="checkbox" checked={marcado} onChange={() => marcar(c.id)} aria-label={`Selecionar ${c.name}`} className="size-4 accent-[var(--primary)]" />
+              </label>
+              <VitrineDoCosmetico kind={c.kind} value={c.value} className="h-20" />
+              <div className="p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <span className={cn("text-[0.62rem] font-black uppercase tracking-[0.1em]", tipo.cor)}>{tipo.nome}</span>
+                    <p className="truncate font-black">{c.name}</p>
+                  </div>
+                  <Interruptor rotulo={`${c.name} na loja`} ligado={c.active} aoMudar={(v) => ligar(c, v)} />
                 </div>
-                <Interruptor rotulo={`${c.name} na loja`} ligado={c.active} aoMudar={(v) => ligar(c, v)} />
+                <div className="mt-2 flex items-center justify-between text-xs">
+                  <span className="inline-flex items-center gap-1 font-black text-emerald-600 dark:text-emerald-400"><Rupee className="size-3.5" />{numero(c.price)}</span>
+                  <span className="text-muted-foreground"><b className="text-foreground">{numero(c.vendas)}</b> vendidos · {numero(c.vendas30)} em 30 dias</span>
+                </div>
+                <div className="mt-2 flex justify-end gap-1">
+                  <Botao tamanho="sm" variante="fantasma" icone={<Pencil className="size-3.5" />} onClick={() => aoEditar(c)}>Editar</Botao>
+                  <Botao
+                    tamanho="sm"
+                    variante="fantasma"
+                    icone={<Trash2 className="size-3.5" />}
+                    onClick={async () => {
+                      if (c.vendas > 0 && !(await perguntar({ titulo: `Apagar "${c.name}"?`, texto: `${numero(c.vendas)} ${c.vendas === 1 ? "pessoa comprou e perde" : "pessoas compraram e perdem"} o item. Para só tirar da loja, desligue em vez de apagar.`, sim: "Apagar mesmo assim", perigoso: true }))) return;
+                      const antes = dados;
+                      apagarComDesfazer({
+                        texto: `"${c.name}" apagado.`,
+                        tirarDaTela: () => trocarNoCache<Cosmetico[]>(CHAVE_COSMETICOS, (l) => (l ?? []).filter((x) => x.id !== c.id)),
+                        restaurar: () => trocarNoCache<Cosmetico[]>(CHAVE_COSMETICOS, () => antes),
+                        executar: () => pedir(`/admin/loja/cosmeticos/${c.id}`, { method: "DELETE" }).then(() => invalidar(CHAVE_COSMETICOS)),
+                      });
+                    }}
+                    aria-label={`Apagar ${c.name}`}
+                  />
+                </div>
               </div>
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <span className="inline-flex items-center gap-1 font-black text-emerald-600 dark:text-emerald-400"><Rupee className="size-3.5" />{numero(c.price)}</span>
-                <span className="text-muted-foreground"><b className="text-foreground">{numero(c.vendas)}</b> vendidos · {numero(c.vendas30)} em 30 dias</span>
-              </div>
-              <div className="mt-2 flex justify-end gap-1">
-                <Botao tamanho="sm" variante="fantasma" icone={<Pencil className="size-3.5" />} onClick={() => aoEditar(c)}>Editar</Botao>
-                <Botao
-                  tamanho="sm"
-                  variante="fantasma"
-                  icone={<Trash2 className="size-3.5" />}
-                  onClick={async () => {
-                    if (c.vendas > 0 && !(await perguntar({ titulo: `Apagar "${c.name}"?`, texto: `${numero(c.vendas)} ${c.vendas === 1 ? "pessoa comprou e perde" : "pessoas compraram e perdem"} o item. Para só tirar da loja, desligue em vez de apagar.`, sim: "Apagar mesmo assim", perigoso: true }))) return;
-                    const antes = dados;
-                    apagarComDesfazer({
-                      texto: `"${c.name}" apagado.`,
-                      tirarDaTela: () => trocarNoCache<Cosmetico[]>(CHAVE_COSMETICOS, (l) => (l ?? []).filter((x) => x.id !== c.id)),
-                      restaurar: () => trocarNoCache<Cosmetico[]>(CHAVE_COSMETICOS, () => antes),
-                      executar: () => pedir(`/admin/loja/cosmeticos/${c.id}`, { method: "DELETE" }).then(() => invalidar(CHAVE_COSMETICOS)),
-                    });
-                  }}
-                  aria-label={`Apagar ${c.name}`}
-                />
-              </div>
-            </div>
-          </article>
-        );
-      })}
-    </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {lote && (
+        <LoteDeCosmeticos
+          selecionados={escolhidos}
+          aoFechar={() => setLote(false)}
+          aoConcluir={() => {
+            setLote(false);
+            setSelecionados(new Set());
+            invalidar(CHAVE_COSMETICOS);
+          }}
+        />
+      )}
+    </>
   );
 }
 
